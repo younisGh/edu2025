@@ -79,7 +79,7 @@ jobs:
             --output_name "Runner.ipa"
 
       - name: Upload IPA to TestFlight
-        uses: apple-actions/upload-testflight
+        uses: apple-actions/upload-testflight@v1
         with:
           app-path: ios/build/Runner.ipa
           issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
