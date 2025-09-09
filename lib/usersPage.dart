@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class UsersPage extends StatefulWidget {
   const UsersPage({super.key});
@@ -35,17 +37,19 @@ class _UsersPageState extends State<UsersPage> {
   Stream<List<UserData>> _buildUsersStream() {
     final col = FirebaseFirestore.instance.collection('users');
     return col.snapshots().map(
-      (snap) => snap.docs.map((d) {
-        final data = d.data();
-        // Debug: اطبع عدد المستندات المحمّلة (يظهر في وحدة التحكم)
-        // ignore: avoid_print
-        print('Users loaded: ${snap.docs.length}');
-        final id = d.id;
-        final name = (data['name'] ?? '').toString();
-        final phone = (data['phone'] ?? '').toString();
-        // نخزن الدور بالإنجليزية في Firestore ونعرِضه بالعربية في الواجهة
-        final roleStorage = (data['role'] ?? 'User').toString().toLowerCase();
-        final avatar = (data['pictureUrl'] ?? '').toString();
+      (snap) {
+        final currentUid = FirebaseAuth.instance.currentUser?.uid;
+        final list = snap.docs.map((d) {
+          final data = d.data();
+          // Debug: اطبع عدد المستندات المحمّلة (يظهر في وحدة التحكم)
+          // ignore: avoid_print
+          print('Users loaded: ${snap.docs.length}');
+          final id = d.id;
+          final name = (data['name'] ?? '').toString();
+          final phone = (data['phone'] ?? '').toString();
+          // نخزن الدور بالإنجليزية في Firestore ونعرِضه بالعربية في الواجهة
+          final roleStorage = (data['role'] ?? 'User').toString().toLowerCase();
+          final avatar = (data['pictureUrl'] ?? '').toString();
 
         // الاستدلال على حقول الحالة في الواجهة عند عدم وجودها
         final isBanned =
@@ -94,7 +98,10 @@ class _UsersPageState extends State<UsersPage> {
               ? 'https://ui-avatars.com/api/?name=${Uri.encodeComponent(name.isEmpty ? 'User' : name)}&background=E5E7EB&color=111827'
               : avatar,
         );
-      }).toList(),
+      }).toList();
+        // استبعاد حساب المستخدم الحالي من القائمة
+        return list.where((u) => u.id != currentUid).toList();
+      },
     );
   }
 
@@ -556,6 +563,7 @@ class _UsersPageState extends State<UsersPage> {
   }
 
   Widget _buildDesktopRow(UserData user) {
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
     final hovered = _hoveredUserId == user.id;
     return MouseRegion(
       onEnter: (_) => setState(() => _hoveredUserId = user.id),
@@ -625,7 +633,8 @@ class _UsersPageState extends State<UsersPage> {
                             ),
                             tooltip: 'تعديل',
                           ),
-                          IconButton(
+                          if (user.id != currentUid)
+                            IconButton(
                             onPressed: () => _deleteUser(user),
                             icon: const Icon(
                               Icons.delete_outline,
@@ -740,6 +749,7 @@ class _UsersPageState extends State<UsersPage> {
 
   // Inline actions (hover on desktop)
   Widget _buildInlineActions(UserData user) {
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
     return Wrap(
       spacing: 4,
       children: [
@@ -753,11 +763,12 @@ class _UsersPageState extends State<UsersPage> {
           icon: const Icon(Icons.edit_outlined, color: Color(0xFF6B7280)),
           tooltip: 'تعديل',
         ),
-        IconButton(
-          onPressed: () => _deleteUser(user),
-          icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
-          tooltip: 'حذف',
-        ),
+        if (user.id != currentUid)
+          IconButton(
+            onPressed: () => _deleteUser(user),
+            icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
+            tooltip: 'حذف',
+          ),
       ],
     );
   }
@@ -797,6 +808,15 @@ class _UsersPageState extends State<UsersPage> {
   }
 
   Future<void> _deleteUser(UserData user) async {
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    if (user.id == currentUid) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('لا يمكنك حذف حسابك الشخصي.')),
+        );
+      }
+      return;
+    }
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => Directionality(
@@ -821,20 +841,19 @@ class _UsersPageState extends State<UsersPage> {
     );
     if (ok != true) return;
     try {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.id)
-          .delete();
+      // Call Cloud Function to delete the user from Firebase Auth and Firestore
+      final callable = FirebaseFunctions.instance.httpsCallable('deleteUserByUid');
+      await callable.call({ 'uid': user.id });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('تم حذف المستخدم')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تم حذف المستخدم من النظام')),
+        );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('فشل حذف المستخدم: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('فشل حذف المستخدم: $e')),
+        );
       }
     }
   }

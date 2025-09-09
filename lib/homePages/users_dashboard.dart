@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:educational_platform/services/settings_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/services.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:educational_platform/run_videos.dart';
 import 'package:educational_platform/services/engagement_service.dart';
@@ -39,7 +38,7 @@ class _UsersDashboardState extends State<UsersDashboard>
     'userDashboardScroll',
   );
   String _sortOption =
-      'latest'; // latest, oldest, most_viewed, least_viewed, favorites_first
+      'latest'; // latest, oldest, most_viewed, least_viewed
 
   // Search state
   final TextEditingController _searchController = TextEditingController();
@@ -68,6 +67,8 @@ class _UsersDashboardState extends State<UsersDashboard>
     }
   }
 
+  
+
   // Firestore helpers and card UI (moved inside State)
   Widget _buildFirestoreVideoCard(
     QueryDocumentSnapshot<Map<String, dynamic>> doc,
@@ -86,8 +87,9 @@ class _UsersDashboardState extends State<UsersDashboard>
       if (words.length <= 10) return description;
       return '${words.sublist(0, 10).join(' ')}…';
     })();
-    final videoUrl = (data['videoUrl'] ?? '').toString();
+    final videoUrl = ((data['videoUrl'] ?? data['vodUrl']) ?? '').toString();
     final thumbFromDoc = (data['thumbnailUrl'] ?? '').toString();
+
     final thumb = thumbFromDoc.isNotEmpty
         ? thumbFromDoc
         : _deriveYoutubeThumbnail(videoUrl);
@@ -116,68 +118,47 @@ class _UsersDashboardState extends State<UsersDashboard>
           ),
         );
       },
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.white, Colors.grey.shade50],
-          ),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.grey.shade200, width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 24,
-              offset: const Offset(0, 8),
-              spreadRadius: 0,
-            ),
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-              spreadRadius: 0,
-            ),
-          ],
+      child: Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: Colors.grey.shade200),
         ),
+        clipBehavior: Clip.antiAlias,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Thumbnail
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(20),
-              ),
+            AspectRatio(
+              aspectRatio: 16 / 9,
               child: Stack(
                 children: [
-                  AspectRatio(
-                    aspectRatio: 16 / 9,
-                    child: thumb.isNotEmpty
-                        ? Image.network(
-                            thumb,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stack) => Container(
-                              color: const Color(0xFFE5E7EB),
-                              child: const Center(
-                                child: Icon(
-                                  Icons.ondemand_video_rounded,
-                                  size: 48,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ),
-                          )
-                        : Container(
-                            color: const Color(0xFFE5E7EB),
-                            child: const Center(
-                              child: Icon(
-                                Icons.ondemand_video_rounded,
-                                size: 48,
-                                color: Colors.grey,
-                              ),
-                            ),
+                  if (thumb.isNotEmpty)
+                    Image.network(
+                      thumb,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stack) => Container(
+                        color: const Color(0xFFE5E7EB),
+                        child: const Center(
+                          child: Icon(
+                            Icons.ondemand_video_rounded,
+                            size: 48,
+                            color: Colors.grey,
                           ),
-                  ),
+                        ),
+                      ),
+                    )
+                  else
+                    Container(
+                      color: const Color(0xFFE5E7EB),
+                      child: const Center(
+                        child: Icon(
+                          Icons.ondemand_video_rounded,
+                          size: 48,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
                   // Dark overlay to improve foreground contrast (matches admin)
                   Container(color: Colors.black26),
                   // Bottom-left: views badge (live from EngagementService)
@@ -347,12 +328,16 @@ class _UsersDashboardState extends State<UsersDashboard>
                 ],
               ),
             ),
-            // Texts (no Expanded to avoid forcing extra empty space)
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+            // Texts wrapped in Flexible to avoid overflow in constrained heights
+            Flexible(
+              fit: FlexFit.loose,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                     Text(
                       truncatedTitle.isEmpty ? 'بدون عنوان' : truncatedTitle,
                       maxLines: 1,
@@ -373,7 +358,9 @@ class _UsersDashboardState extends State<UsersDashboard>
                         color: const Color(0xFF6B7280),
                       ),
                     ),
-                ],
+                    ],
+                  ),
+                ),
               ),
             ),
           ],
@@ -382,31 +369,7 @@ class _UsersDashboardState extends State<UsersDashboard>
     );
   }
 
-  Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>>
-  _orderFavoritesFirst(
-    List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
-  ) async {
-    final service = EngagementService.instance;
-    final List<QueryDocumentSnapshot<Map<String, dynamic>>> favs = [];
-    final List<QueryDocumentSnapshot<Map<String, dynamic>>> nonFavs = [];
-
-    for (final d in docs) {
-      final data = d.data();
-      final url = (data['videoUrl'] ?? '').toString();
-      if (url.isEmpty) {
-        nonFavs.add(d);
-      } else {
-        final key = service.videoKeyFromUrl(url);
-        final isFav = await service.isFavorite(key);
-        if (isFav) {
-          favs.add(d);
-        } else {
-          nonFavs.add(d);
-        }
-      }
-    }
-    return [...favs, ...nonFavs];
-  }
+  
 
   String _deriveYoutubeThumbnail(String url) {
     if (url.isEmpty) return '';
@@ -727,17 +690,59 @@ class _UsersDashboardState extends State<UsersDashboard>
                       // For simplicity, just closing.
                     },
                   ),
-                  _buildSidebarItem(
-                    Icons.sensors,
-                    'الانظمام للبث المباشر',
-                    false, // This will not be active when on LiveStreamPage
-                    onTap: () {
-                      _toggleSidebar();
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LiveStreamPage(),
-                        ),
+                  // Join Live item: disabled when no live is active
+                  StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                    stream: FirebaseFirestore.instance
+                        .collection('live_channels')
+                        .doc('edu')
+                        .snapshots(),
+                    builder: (context, snap) {
+                      // snap.data is AsyncSnapshot's data (DocumentSnapshot) and can be null
+                      final st = (snap.data?.data()?['status'] ?? '')
+                          .toString();
+                      final isLive = st == 'live';
+                      return _buildSidebarItem(
+                        Icons.sensors,
+                        'الانظمام للبث المباشر',
+                        false,
+                        onTap: isLive
+                            ? () async {
+                                // Double-check latest status before navigation
+                                try {
+                                  final doc = await FirebaseFirestore.instance
+                                      .collection('live_channels')
+                                      .doc('edu')
+                                      .get();
+                                  final latest = (doc.data()?['status'] ?? '')
+                                      .toString();
+                                  if (latest == 'live') {
+                                    _toggleSidebar();
+                                    if (!mounted) return;
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const LiveStreamPage(),
+                                      ),
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'لا يوجد بث مباشر حالياً',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                } catch (_) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('تعذر التحقق من حالة البث'),
+                                    ),
+                                  );
+                                }
+                              }
+                            : null,
                       );
                     },
                   ),
@@ -1131,12 +1136,6 @@ class _UsersDashboardState extends State<UsersDashboard>
       case 'least_viewed':
         query = query.orderBy('views', descending: false);
         break;
-      case 'favorites_first':
-        query = query.orderBy(
-          'timeAdded',
-          descending: true,
-        ); // Base sort for favorites
-        break;
       default: // 'latest'
         query = query.orderBy('timeAdded', descending: true);
     }
@@ -1155,6 +1154,8 @@ class _UsersDashboardState extends State<UsersDashboard>
             ),
           );
         }
+
+        
 
         // Client-side category filter (by categoryId or fallback by category name)
         var docs = snapshot.data!.docs.where((d) {
@@ -1200,51 +1201,11 @@ class _UsersDashboardState extends State<UsersDashboard>
           );
         }
 
-        // Favorites-first reordering
-        if (_sortOption == 'favorites_first') {
-          return FutureBuilder<
-            List<QueryDocumentSnapshot<Map<String, dynamic>>>
-          >(
-            future: _orderFavoritesFirst(
-              docs,
-            ), // This now takes the already filtered (and sorted by timeAdded) docs
-            builder: (context, favSnap) {
-              if (favSnap.connectionState == ConnectionState.waiting &&
-                  docs.isNotEmpty) {
-                // Show a subtle loader or the base-sorted list while favorites are being determined
-                return ResponsiveVideoGrid(
-                  itemCount: docs.length,
-                  childAspectRatio: 0.95,
-                  itemBuilder: (context, index) {
-                    return _buildFirestoreVideoCard(docs[index]);
-                  },
-                );
-              }
-              final ordered =
-                  favSnap.data ??
-                  docs; // Fallback to docs if future is not complete or returns null
-              if (ordered.isEmpty) {
-                return const Center(
-                  child: Text(
-                    'لا توجد فيديوهات مفضلة أو نتائج مطابقة.',
-                    style: TextStyle(color: Color(0xFF6B7280)),
-                  ),
-                );
-              }
-              return ResponsiveVideoGrid(
-                itemCount: ordered.length,
-                childAspectRatio: 0.95,
-                itemBuilder: (context, index) {
-                  return _buildFirestoreVideoCard(ordered[index]);
-                },
-              );
-            },
-          );
-        }
+        // Favorites-only and favorites-first removed
 
         return ResponsiveVideoGrid(
           itemCount: docs.length,
-          childAspectRatio: 0.95,
+          childAspectRatio: 1.2,
           itemBuilder: (context, index) {
             return _buildFirestoreVideoCard(docs[index]);
           },
@@ -1427,16 +1388,18 @@ class _UsersDashboardState extends State<UsersDashboard>
                     : Container(color: Colors.black12),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Text(
-                title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF111827),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Text(
+                  title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF111827),
+                  ),
                 ),
               ),
             ),

@@ -393,22 +393,26 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
   }
 
   Widget _buildHeader() {
+    final width = MediaQuery.of(context).size.width;
+    final isTiny = width < 360;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'إدارة مقاطع الفيديو',
           style: TextStyle(
-            fontSize: 32,
+            fontSize: isTiny ? 22 : 32,
             fontWeight: FontWeight.w800,
-            color: Color(0xFF111827),
+            color: const Color(0xFF111827),
           ),
         ),
-        const SizedBox(height: 8),
-        const Text(
-          'تنظيم وتحرير وحذف مقاطع الفيديو الخاصة بك بسهولة.',
-          style: TextStyle(fontSize: 18, color: Color(0xFF6B7280)),
-        ),
+        if (!isTiny) ...[
+          const SizedBox(height: 8),
+          const Text(
+            'تنظيم وتحرير وحذف مقاطع الفيديو الخاصة بك بسهولة.',
+            style: TextStyle(fontSize: 18, color: Color(0xFF6B7280)),
+          ),
+        ],
         const SizedBox(height: 24),
         TextField(
           controller: _searchController,

@@ -16,8 +16,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:educational_platform/homePages/recorded_videos_page.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 const appId = "8e5303f31e2246e2b0851ad8b39979d7";
 // Token will be fetched dynamically from Firebase Function `getAgoraRtcToken`
@@ -57,13 +55,11 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
     'local_recording',
   );
   bool _isLocalRecording = false;
-  String? _currentAgoraToken;
   // Web-only recorder
   WebLocalRecorder? _webRecorder;
 
   bool _hasJoined = false; // join guard
-  String? _sharedDocUrl; // currently shared document URL
-  String? _sharedDocName; // document name
+
   // Web screen sharing
   ScreenShareBridge? _screenShare;
   bool _isScreenSharing = false;
@@ -79,8 +75,13 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
   }
 
   // Fetch token for a specific uid (used for screen share client)
-  Future<String> _fetchAgoraTokenFor({required String role, required int uid}) async {
-    final callable = FirebaseFunctions.instance.httpsCallable('getAgoraRtcToken');
+  Future<String> _fetchAgoraTokenFor({
+    required String role,
+    required int uid,
+  }) async {
+    final callable = FirebaseFunctions.instance.httpsCallable(
+      'getAgoraRtcToken',
+    );
     final res = await callable.call({
       'channel': channel,
       'uid': uid,
@@ -100,16 +101,30 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
       _screenShare ??= ScreenShareBridge();
       // Use a dedicated uid for the screen client (must be different from camera uid)
       const int screenUid = 1001;
-      final token = await _fetchAgoraTokenFor(role: 'broadcaster', uid: screenUid);
-      await _screenShare!.init(appId: appId, channel: channel, uidScreen: screenUid, tokenScreen: token);
+      final token = await _fetchAgoraTokenFor(
+        role: 'broadcaster',
+        uid: screenUid,
+      );
+      await _screenShare!.init(
+        appId: appId,
+        channel: channel,
+        uidScreen: screenUid,
+        tokenScreen: token,
+      );
       await _screenShare!.start();
       if (mounted) setState(() => _isScreenSharing = true);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('بدأت مشاركة الشاشة (ويب)'), backgroundColor: Colors.green),
+        const SnackBar(
+          content: Text('بدأت مشاركة الشاشة (ويب)'),
+          backgroundColor: Colors.green,
+        ),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('تعذر بدء مشاركة الشاشة: $e'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text('تعذر بدء مشاركة الشاشة: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -122,154 +137,24 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
       }
       if (mounted) setState(() => _isScreenSharing = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('تم إيقاف مشاركة الشاشة'), backgroundColor: Colors.orange),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('تعذر إيقاف مشاركة الشاشة: $e'), backgroundColor: Colors.red),
-      );
-    }
-  }
-
-  Future<void> _shareDocument() async {
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['pdf', 'doc', 'docx'],
-        withData: true,
-      );
-      if (result == null || result.files.isEmpty) return;
-      final f = result.files.single;
-      final bytes = f.bytes;
-      if (bytes == null) return;
-      final fileName = f.name;
-      final ts = DateTime.now().millisecondsSinceEpoch;
-      final ref = FirebaseStorage.instance
-          .ref()
-          .child('shared_docs/$channel/${ts}_$fileName');
-      await ref.putData(bytes, SettableMetadata(contentType: _mimeFor(fileName)));
-      final url = await ref.getDownloadURL();
-      await FirebaseFirestore.instance
-          .collection('live_channels')
-          .doc(channel)
-          .set({
-            'sharedDoc': {
-              'url': url,
-              'name': fileName,
-              'updatedAt': FieldValue.serverTimestamp(),
-            }
-          }, SetOptions(merge: true));
-      if (!mounted) return;
-      setState(() {
-        _sharedDocUrl = url;
-        _sharedDocName = fileName;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('تم مشاركة المستند'), backgroundColor: Colors.green),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('تعذر مشاركة المستند: $e'), backgroundColor: Colors.red),
-      );
-    }
-  }
-
-  Future<void> _stopSharingDocument() async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('live_channels')
-          .doc(channel)
-          .set({'sharedDoc': FieldValue.delete()}, SetOptions(merge: true));
-      if (mounted) {
-        setState(() {
-          _sharedDocUrl = '';
-          _sharedDocName = null;
-        });
-      }
-    } catch (e) {
-      debugPrint('Failed to clear sharedDoc: $e');
-    }
-  }
-
-  String _mimeFor(String name) {
-    final lower = name.toLowerCase();
-    if (lower.endsWith('.pdf')) return 'application/pdf';
-    if (lower.endsWith('.doc')) return 'application/msword';
-    if (lower.endsWith('.docx')) return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-    return 'application/octet-stream';
-  }
-
-  Widget _buildSharedDocOverlay() {
-    return Positioned(
-      top: 60,
-      left: 12,
-      right: 12,
-      bottom: 120,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.85),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white24),
+        const SnackBar(
+          content: Text('تم إيقاف مشاركة الشاشة'),
+          backgroundColor: Colors.orange,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.55),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
-                ),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.description, color: Colors.white70, size: 18),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      _sharedDocName ?? 'مستند مشارك',
-                      style: const TextStyle(color: Colors.white),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  IconButton(
-                    tooltip: 'إغلاق',
-                    onPressed: _stopSharingDocument,
-                    icon: const Icon(Icons.close, color: Colors.white70),
-                  )
-                ],
-              ),
-            ),
-            const SizedBox(height: 6),
-            Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(12),
-                  bottomRight: Radius.circular(12),
-                ),
-                child: InAppWebView(
-                  initialUrlRequest: URLRequest(url: WebUri(_sharedDocUrl!)),
-                  initialSettings: InAppWebViewSettings(
-                    transparentBackground: true,
-                    supportZoom: true,
-                    javaScriptEnabled: true,
-                  ),
-                ),
-              ),
-            ),
-          ],
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('تعذر إيقاف مشاركة الشاشة: $e'),
+          backgroundColor: Colors.red,
         ),
-      ),
-    );
+      );
+    }
   }
 
   Future<void> _joinChannelAsAudience() async {
     try {
       final newToken = await _fetchAgoraToken(role: 'audience');
-      _currentAgoraToken = newToken;
       await _engine.joinChannel(
         token: newToken,
         channelId: channel,
@@ -331,8 +216,6 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
             if (mounted) {
               setState(() {
                 _liveStatus = st;
-                _sharedDocUrl = (d.data()?['sharedDoc']?['url'])?.toString();
-                _sharedDocName = (d.data()?['sharedDoc']?['name'])?.toString();
               });
               if (!_isAdmin && st == 'live' && !_hasJoined) {
                 // Audience joins only when live starts
@@ -488,7 +371,6 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
       final newToken = await _fetchAgoraToken(
         role: _isAdmin ? 'broadcaster' : 'audience',
       );
-      _currentAgoraToken = newToken;
       await _engine.renewToken(newToken);
       debugPrint('Agora token renewed successfully');
     } catch (e) {
@@ -513,7 +395,9 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
     await _participantsSub?.cancel();
     // Stop screen share (web) if still active
     if (kIsWeb && _isScreenSharing) {
-      try { await _screenShare?.stop(); } catch (_) {}
+      try {
+        await _screenShare?.stop();
+      } catch (_) {}
       _isScreenSharing = false;
     }
     await _engine.leaveChannel();
@@ -647,8 +531,6 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
                   ],
                 ),
               ),
-              if (_sharedDocUrl != null && _sharedDocUrl!.isNotEmpty)
-                _buildSharedDocOverlay(),
               // Participant List Overlay
               if (_showParticipantList) _buildParticipantList(),
               // Comments Panel
@@ -854,8 +736,8 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: _isCameraDisabled
-                        ? Colors.white.withOpacity(0.3)
-                        : Colors.black.withOpacity(0.4),
+                        ? Colors.white.withValues(alpha: 0.3)
+                        : Colors.black.withValues(alpha: 0.4),
                   ),
                   child: Icon(
                     _isCameraDisabled ? Icons.videocam_off : Icons.videocam,
@@ -902,28 +784,17 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
         ),
         if (kIsWeb)
           Tooltip(
-            message: _isScreenSharing ? 'إيقاف مشاركة الشاشة' : 'بدء مشاركة الشاشة',
+            message: _isScreenSharing
+                ? 'إيقاف مشاركة الشاشة'
+                : 'بدء مشاركة الشاشة',
             child: IconButton(
               icon: Icon(
                 _isScreenSharing ? Icons.stop_screen_share : Icons.screen_share,
                 color: Colors.cyanAccent,
               ),
-              onPressed: _isScreenSharing ? _stopScreenShareWeb : _startScreenShareWeb,
-            ),
-          ),
-        Tooltip(
-          message: 'مشاركة مستند (PDF/DOCX)',
-          child: IconButton(
-            icon: const Icon(Icons.screen_share, color: Colors.cyanAccent),
-            onPressed: _shareDocument,
-          ),
-        ),
-        if (_sharedDocUrl != null && _sharedDocUrl!.isNotEmpty)
-          Tooltip(
-            message: 'إيقاف مشاركة المستند',
-            child: IconButton(
-              icon: const Icon(Icons.stop_screen_share, color: Colors.cyan),
-              onPressed: _stopSharingDocument,
+              onPressed: _isScreenSharing
+                  ? _stopScreenShareWeb
+                  : _startScreenShareWeb,
             ),
           ),
         const SizedBox(width: 8),
@@ -1037,8 +908,10 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Text('ماذا تريد أن تفعل بالتسجيل؟',
-                        style: TextStyle(color: Colors.white, fontSize: 16)),
+                    const Text(
+                      'ماذا تريد أن تفعل بالتسجيل؟',
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
                     const SizedBox(height: 12),
                     ElevatedButton.icon(
                       onPressed: () async {
@@ -1070,7 +943,10 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
                     const SizedBox(height: 10),
                     OutlinedButton(
                       onPressed: () => Navigator.pop(ctx),
-                      child: const Text('إلغاء', style: TextStyle(color: Colors.white70)),
+                      child: const Text(
+                        'إلغاء',
+                        style: TextStyle(color: Colors.white70),
+                      ),
                     ),
                   ],
                 ),
@@ -1168,7 +1044,6 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
       // Join channel as broadcaster now (no auto-join on page load)
       try {
         final newToken = await _fetchAgoraToken(role: 'broadcaster');
-        _currentAgoraToken = newToken;
         await _engine.joinChannel(
           token: newToken,
           channelId: channel,
@@ -1307,8 +1182,10 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
       await FirebaseFirestore.instance
           .collection('live_channels')
           .doc(channel)
-          .set({'status': 'ended', 'endedAt': FieldValue.serverTimestamp()},
-              SetOptions(merge: true));
+          .set({
+            'status': 'ended',
+            'endedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
 
       await _engine.leaveChannel();
       await _engine.stopPreview();

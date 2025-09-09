@@ -5,6 +5,7 @@ const { defineSecret } = require("firebase-functions/params");
 const { Storage } = require('@google-cloud/storage');
 const { initializeApp } = require("firebase-admin/app");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
+const { getAuth } = require("firebase-admin/auth");
 const { getMessaging } = require("firebase-admin/messaging");
 const { onDocumentCreated, onDocumentWritten } = require("firebase-functions/v2/firestore");
 const { RtcRole, RtcTokenBuilder } = require('agora-access-token');
@@ -369,6 +370,50 @@ exports.onLiveStatusChangeNotify = onDocumentWritten({ region: 'asia-northeast1'
     await sendFcmToUsers(users, payload);
   } catch (e) {
     logger.error('onLiveStatusChangeNotify error', e);
+  }
+});
+
+// ===================== User Management (Admin) =====================
+// Callable: Delete a user by UID from Firebase Authentication and Firestore users collection
+exports.deleteUserByUid = onCall({ region: 'us-central1', cors: true }, async (request) => {
+  try {
+    if (!request.auth) throw new HttpsError('unauthenticated', 'Must be authenticated.');
+    const callerUid = request.auth.uid;
+    const db = getFirestore();
+    const callerDoc = await db.collection('users').doc(callerUid).get();
+    const isAdmin = !!(callerDoc.data() && (callerDoc.data().isAdmin === true));
+    if (!isAdmin) throw new HttpsError('permission-denied', 'Admin only.');
+
+    const uid = (request.data && String(request.data.uid || '').trim());
+    if (!uid) throw new HttpsError('invalid-argument', "Missing 'uid'.");
+
+    // Delete from Firebase Authentication
+    await getAuth().deleteUser(uid).catch((err) => {
+      // If user does not exist in Auth, continue to cleanup Firestore
+      if (err && err.code !== 'auth/user-not-found') throw err;
+    });
+
+    // Delete Firestore user document
+    await db.collection('users').doc(uid).delete().catch(() => {});
+
+    // Optional: cleanup user notifications subcollection (best-effort)
+    try {
+      const notifCol = db.collection('users').doc(uid).collection('notifications');
+      const notifSnap = await notifCol.get();
+      const batchSize = 400;
+      for (let i = 0; i < notifSnap.docs.length; i += batchSize) {
+        const chunk = notifSnap.docs.slice(i, i + batchSize);
+        const batch = db.batch();
+        for (const d of chunk) batch.delete(d.ref);
+        await batch.commit();
+      }
+    } catch (_) { /* ignore */ }
+
+    return { ok: true };
+  } catch (err) {
+    if (err instanceof HttpsError) throw err;
+    logger.error('deleteUserByUid error', err);
+    throw new HttpsError('internal', 'Failed to delete user');
   }
 });
 
