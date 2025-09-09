@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # educational_platform
 
 A new Flutter project.
@@ -14,3 +15,8 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+=======
+# Edu
+education platform
+>>>>>>> 52788921840cf5562182d1500c6757c4f499f773
+# edu2025
