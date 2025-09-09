@@ -1,0 +1,93 @@
+name: iOS Build and TestFlight
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'ios-v*'
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+
+      - name: Install Bundler
+        run: gem install bundler
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Install CocoaPods
+        run: |
+          sudo gem install cocoapods -N
+          pod --version
+
+      - name: Pod repo update
+        working-directory: ios
+        run: pod repo update
+
+      - name: Install Fastlane
+        run: sudo gem install fastlane -N
+
+      - name: Setup Keychain (optional)
+        run: |
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security set-keychain-settings build.keychain
+
+      - name: Fastlane match (fetch certs and profiles)
+        env:
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+        run: |
+          cd ios
+          bundle init || true
+          echo 'gem "fastlane"' >> Gemfile
+          bundle install
+          bundle exec fastlane match appstore \
+            --readonly false \
+            --git_url "${{ secrets.MATCH_GIT_URL }}" \
+            --keychain_name build.keychain \
+            --keychain_password "" \
+            --team_id "${{ secrets.APPLE_TEAM_ID }}"
+
+      - name: Build IPA with Fastlane (gym)
+        working-directory: ios
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          bundle exec fastlane run gym \
+            --scheme "Runner" \
+            --configuration "Release" \
+            --export_method "app-store" \
+            --include_bitcode false \
+            --include_symbols true \
+            --output_directory "./build" \
+            --output_name "Runner.ipa"
+
+      - name: Upload IPA to TestFlight
+        uses: apple-actions/upload-testflight@v1
+        with:
+          app-path: ios/build/Runner.ipa
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+
+      - name: Upload IPA as artifact (optional)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Runner-ipa
+          path: ios/build/Runner.ipa
