@@ -38,16 +38,19 @@ class _SettingsPageState extends State<SettingsPage> {
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تم حفظ إعدادات المنصة')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('تم حفظ إعدادات المنصة')));
       }
     } finally {
       if (mounted) setState(() => _savingGeneral = false);
     }
   }
 
-  Future<void> _showCategoryDialog({String? id, String initialName = ''}) async {
+  Future<void> _showCategoryDialog({
+    String? id,
+    String initialName = '',
+  }) async {
     final ctrl = TextEditingController(text: initialName);
     await showDialog(
       context: context,
@@ -81,7 +84,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     'updatedAt': FieldValue.serverTimestamp(),
                   });
                 }
-                if (mounted) Navigator.pop(ctx);
+                if (mounted) Navigator.pop(context);
               },
               child: const Text('حفظ'),
             ),
@@ -96,10 +99,18 @@ class _SettingsPageState extends State<SettingsPage> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('حذف الصنف'),
-        content: const Text('هل أنت متأكد من حذف هذا الصنف؟ قد يؤثر على تصنيف الفيديوهات.'),
+        content: const Text(
+          'هل أنت متأكد من حذف هذا الصنف؟ قد يؤثر على تصنيف الفيديوهات.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('إلغاء')),
-          ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('حذف')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('إلغاء'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('حذف'),
+          ),
         ],
       ),
     );
@@ -113,9 +124,7 @@ class _SettingsPageState extends State<SettingsPage> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('الإعدادات'),
-        ),
+        appBar: AppBar(title: const Text('الإعدادات')),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () => _showCategoryDialog(),
           icon: const Icon(Icons.add),
@@ -128,20 +137,35 @@ class _SettingsPageState extends State<SettingsPage> {
             children: [
               Card(
                 elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: Colors.grey.shade200)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: Colors.grey.shade200),
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
                     stream: _generalRef.snapshots(),
                     builder: (context, snap) {
                       final data = (snap.data?.data()) ?? {};
-                      _titleCtrl.value = TextEditingValue(text: (data['platformTitle'] ?? '').toString());
-                      _channelCtrl.value = TextEditingValue(text: (data['channelId'] ?? '').toString());
-                      _descCtrl.value = TextEditingValue(text: (data['platformDescription'] ?? '').toString());
+                      _titleCtrl.value = TextEditingValue(
+                        text: (data['platformTitle'] ?? '').toString(),
+                      );
+                      _channelCtrl.value = TextEditingValue(
+                        text: (data['channelId'] ?? '').toString(),
+                      );
+                      _descCtrl.value = TextEditingValue(
+                        text: (data['platformDescription'] ?? '').toString(),
+                      );
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('إعدادات عامة', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          const Text(
+                            'إعدادات عامة',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           const SizedBox(height: 12),
                           TextField(
                             controller: _titleCtrl,
@@ -173,7 +197,9 @@ class _SettingsPageState extends State<SettingsPage> {
                             child: ElevatedButton.icon(
                               onPressed: _savingGeneral ? null : _saveGeneral,
                               icon: const Icon(Icons.save),
-                              label: Text(_savingGeneral ? 'جارٍ الحفظ...' : 'حفظ'),
+                              label: Text(
+                                _savingGeneral ? 'جارٍ الحفظ...' : 'حفظ',
+                              ),
                             ),
                           ),
                         ],
@@ -185,22 +211,33 @@ class _SettingsPageState extends State<SettingsPage> {
               const SizedBox(height: 16),
               Card(
                 elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: Colors.grey.shade200)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: Colors.grey.shade200),
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('الأصناف', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const Text(
+                        'الأصناف',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       const SizedBox(height: 12),
                       StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                         stream: _categoriesCol.orderBy('name').snapshots(),
                         builder: (context, snap) {
                           if (snap.connectionState == ConnectionState.waiting) {
-                            return const Center(child: Padding(
-                              padding: EdgeInsets.all(16.0),
-                              child: CircularProgressIndicator(),
-                            ));
+                            return const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
                           }
                           final docs = snap.data?.docs ?? [];
                           if (docs.isEmpty) {
@@ -213,25 +250,39 @@ class _SettingsPageState extends State<SettingsPage> {
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: docs.length,
-                            separatorBuilder: (_, __) => const Divider(height: 1),
+                            separatorBuilder: (_, _) =>
+                                const Divider(height: 1),
                             itemBuilder: (context, i) {
                               final doc = docs[i];
                               final data = doc.data();
                               return ListTile(
                                 leading: const Icon(Icons.label_outline),
                                 title: Text(data['name'] ?? ''),
-                                subtitle: Text(doc.id, style: const TextStyle(color: Colors.grey)),
+                                subtitle: Text(
+                                  doc.id,
+                                  style: const TextStyle(color: Colors.grey),
+                                ),
                                 trailing: PopupMenuButton<String>(
                                   onSelected: (v) async {
                                     if (v == 'edit') {
-                                      await _showCategoryDialog(id: doc.id, initialName: (data['name'] ?? '').toString());
+                                      await _showCategoryDialog(
+                                        id: doc.id,
+                                        initialName: (data['name'] ?? '')
+                                            .toString(),
+                                      );
                                     } else if (v == 'delete') {
                                       await _confirmDeleteCategory(doc.id);
                                     }
                                   },
                                   itemBuilder: (_) => const [
-                                    PopupMenuItem(value: 'edit', child: Text('تعديل')),
-                                    PopupMenuItem(value: 'delete', child: Text('حذف')),
+                                    PopupMenuItem(
+                                      value: 'edit',
+                                      child: Text('تعديل'),
+                                    ),
+                                    PopupMenuItem(
+                                      value: 'delete',
+                                      child: Text('حذف'),
+                                    ),
                                   ],
                                 ),
                               );

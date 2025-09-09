@@ -375,7 +375,7 @@ class _RecordedVideosPageState extends State<RecordedVideosPage> {
               }
               return ListView.separated(
                 scrollDirection: Axis.horizontal,
-                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                separatorBuilder: (_, _) => const SizedBox(width: 12),
                 itemCount: docs.length,
                 itemBuilder: (context, i) {
                   final progDoc = docs[i];
@@ -450,7 +450,7 @@ class _RecordedVideosPageState extends State<RecordedVideosPage> {
           border: Border.all(color: Colors.grey.shade200),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -482,7 +482,7 @@ class _RecordedVideosPageState extends State<RecordedVideosPage> {
                     child: LinearProgressIndicator(
                       value: progress,
                       minHeight: 6,
-                      backgroundColor: Colors.white.withOpacity(0.4),
+                      backgroundColor: Colors.white.withValues(alpha: 0.4),
                       valueColor: const AlwaysStoppedAnimation(
                         Color(0xFF667EEA),
                       ),

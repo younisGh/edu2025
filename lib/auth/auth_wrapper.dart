@@ -49,7 +49,7 @@ class RoleBasedRedirect extends StatelessWidget {
         return userDoc.data()?['role'] as String?;
       }
     } catch (e) {
-      print('Error fetching user role: $e');
+      debugPrint('Error fetching user role: $e');
     }
     return null; // Default or error case
   }

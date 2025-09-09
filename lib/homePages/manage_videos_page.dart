@@ -319,7 +319,7 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
         child: Scaffold(
           backgroundColor: const Color(0xFFFFFFFF),
           appBar: AppBar(
-            backgroundColor: Colors.white.withOpacity(0.8),
+            backgroundColor: Colors.white.withValues(alpha: 0.8),
             elevation: 1,
             title: Row(
               children: [
@@ -889,7 +889,7 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
         child: TextButton(
           onPressed: onPressed,
           style: TextButton.styleFrom(
-            backgroundColor: color.withOpacity(0.1),
+            backgroundColor: color.withValues(alpha: 0.1),
             foregroundColor: color,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),

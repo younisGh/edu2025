@@ -10,7 +10,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:educational_platform/run_videos.dart';
 import 'package:educational_platform/services/engagement_service.dart';
 import 'package:educational_platform/components/shared_video_widgets.dart';
-import 'package:educational_platform/liveStreamPage.dart'; // Added import
+import 'package:educational_platform/live_stream_page.dart'; // Added import
 import 'package:educational_platform/components/notification_bell.dart';
 
 class UsersDashboard extends StatefulWidget {
@@ -37,8 +37,7 @@ class _UsersDashboardState extends State<UsersDashboard>
   final PageStorageKey _pageStorageKey = const PageStorageKey(
     'userDashboardScroll',
   );
-  String _sortOption =
-      'latest'; // latest, oldest, most_viewed, least_viewed
+  String _sortOption = 'latest'; // latest, oldest, most_viewed, least_viewed
 
   // Search state
   final TextEditingController _searchController = TextEditingController();
@@ -66,8 +65,6 @@ class _UsersDashboardState extends State<UsersDashboard>
       if (mounted) setState(() => _activeCategoryName = null);
     }
   }
-
-  
 
   // Firestore helpers and card UI (moved inside State)
   Widget _buildFirestoreVideoCard(
@@ -338,26 +335,26 @@ class _UsersDashboardState extends State<UsersDashboard>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                    Text(
-                      truncatedTitle.isEmpty ? 'بدون عنوان' : truncatedTitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: isMobile ? 14 : 16,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF111827),
+                      Text(
+                        truncatedTitle.isEmpty ? 'بدون عنوان' : truncatedTitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: isMobile ? 14 : 16,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF111827),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      truncatedDesc.isEmpty ? 'لا يوجد وصف' : truncatedDesc,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: isMobile ? 12 : 13,
-                        color: const Color(0xFF6B7280),
+                      const SizedBox(height: 6),
+                      Text(
+                        truncatedDesc.isEmpty ? 'لا يوجد وصف' : truncatedDesc,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: isMobile ? 12 : 13,
+                          color: const Color(0xFF6B7280),
+                        ),
                       ),
-                    ),
                     ],
                   ),
                 ),
@@ -368,8 +365,6 @@ class _UsersDashboardState extends State<UsersDashboard>
       ),
     );
   }
-
-  
 
   String _deriveYoutubeThumbnail(String url) {
     if (url.isEmpty) return '';
@@ -708,6 +703,7 @@ class _UsersDashboardState extends State<UsersDashboard>
                         onTap: isLive
                             ? () async {
                                 // Double-check latest status before navigation
+                                final ctx = context;
                                 try {
                                   final doc = await FirebaseFirestore.instance
                                       .collection('live_channels')
@@ -717,16 +713,16 @@ class _UsersDashboardState extends State<UsersDashboard>
                                       .toString();
                                   if (latest == 'live') {
                                     _toggleSidebar();
-                                    if (!mounted) return;
+                                    if (!ctx.mounted) return;
                                     Navigator.push(
-                                      context,
+                                      ctx,
                                       MaterialPageRoute(
-                                        builder: (context) =>
-                                            const LiveStreamPage(),
+                                        builder: (_) => const LiveStreamPage(),
                                       ),
                                     );
                                   } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
+                                    if (!ctx.mounted) return;
+                                    ScaffoldMessenger.of(ctx).showSnackBar(
                                       const SnackBar(
                                         content: Text(
                                           'لا يوجد بث مباشر حالياً',
@@ -735,7 +731,8 @@ class _UsersDashboardState extends State<UsersDashboard>
                                     );
                                   }
                                 } catch (_) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
+                                  if (!ctx.mounted) return;
+                                  ScaffoldMessenger.of(ctx).showSnackBar(
                                     const SnackBar(
                                       content: Text('تعذر التحقق من حالة البث'),
                                     ),
@@ -1155,8 +1152,6 @@ class _UsersDashboardState extends State<UsersDashboard>
           );
         }
 
-        
-
         // Client-side category filter (by categoryId or fallback by category name)
         var docs = snapshot.data!.docs.where((d) {
           if (_activeTab == 'all') return true;
@@ -1263,7 +1258,7 @@ class _UsersDashboardState extends State<UsersDashboard>
               return ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: favDocs.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                separatorBuilder: (_, _) => const SizedBox(width: 12),
                 itemBuilder: (context, i) {
                   final fav = favDocs[i];
                   final metaRef =
@@ -1366,7 +1361,7 @@ class _UsersDashboardState extends State<UsersDashboard>
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -1531,7 +1526,7 @@ class _UsersDashboardState extends State<UsersDashboard>
               return ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: progDocs.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                separatorBuilder: (_, _) => const SizedBox(width: 12),
                 itemBuilder: (context, i) {
                   final p = progDocs[i];
                   final metaRef =

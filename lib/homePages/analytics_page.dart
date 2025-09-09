@@ -114,7 +114,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                     border: Border.all(color: Colors.grey.shade200),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -187,8 +187,9 @@ class _KpiSection extends StatelessWidget {
       final v = d.data()['views'];
       if (v is int) {
         total += v;
-      } else if (v is num)
+      } else if (v is num) {
         total += v.toInt();
+      }
     }
     return total;
   }
@@ -224,7 +225,7 @@ class _KpiSection extends StatelessWidget {
             border: Border.all(color: Colors.grey.shade200, width: 1),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.06),
+                color: Colors.black.withValues(alpha: 0.06),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
@@ -309,7 +310,7 @@ class _KpiCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.12),
+                  color: Colors.black.withValues(alpha: 0.12),
                   blurRadius: 18,
                   offset: const Offset(0, 8),
                 ),
@@ -380,13 +381,13 @@ class _TopVideosByViewsSection extends StatelessWidget {
         border: Border.all(color: Colors.grey.shade200, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 24,
             offset: const Offset(0, 8),
             spreadRadius: 0,
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
             spreadRadius: 0,
@@ -409,7 +410,7 @@ class _TopVideosByViewsSection extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF667EEA).withOpacity(0.3),
+                      color: const Color(0xFF667EEA).withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -518,7 +519,9 @@ class _TopVideosByViewsSection extends StatelessWidget {
                               height: 32,
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
-                                color: const Color(0xFF8B5CF6).withOpacity(0.1),
+                                color: const Color(
+                                  0xFF8B5CF6,
+                                ).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
@@ -596,13 +599,13 @@ class _VideosAddedTrendSection extends StatelessWidget {
         border: Border.all(color: Colors.grey.shade200, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 24,
             offset: const Offset(0, 8),
             spreadRadius: 0,
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
             spreadRadius: 0,
@@ -625,7 +628,7 @@ class _VideosAddedTrendSection extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF10B981).withOpacity(0.3),
+                      color: const Color(0xFF10B981).withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -783,8 +786,8 @@ class _VideosAddedTrendSection extends StatelessWidget {
                           show: true,
                           gradient: LinearGradient(
                             colors: [
-                              const Color(0xFF10B981).withOpacity(0.25),
-                              const Color(0xFF34D399).withOpacity(0.05),
+                              const Color(0xFF10B981).withValues(alpha: 0.25),
+                              const Color(0xFF34D399).withValues(alpha: 0.05),
                             ],
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
@@ -821,13 +824,13 @@ class _FavoriteVideosSection extends StatelessWidget {
         border: Border.all(color: Colors.grey.shade200, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 24,
             offset: const Offset(0, 8),
             spreadRadius: 0,
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
             spreadRadius: 0,
@@ -850,7 +853,7 @@ class _FavoriteVideosSection extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF10B981).withOpacity(0.3),
+                      color: const Color(0xFF10B981).withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),

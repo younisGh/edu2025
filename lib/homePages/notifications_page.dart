@@ -162,7 +162,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 controller: _scrollController,
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 itemCount: _items.length + 1,
-                separatorBuilder: (_, __) => const Divider(height: 1),
+                separatorBuilder: (_, _) => const Divider(height: 1),
                 itemBuilder: (context, index) {
                   if (index == _items.length) {
                     // Load more indicator

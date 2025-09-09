@@ -621,7 +621,7 @@ class _AdminVideoDetailsPageState extends State<AdminVideoDetailsPage> {
                 }
                 return ListView.separated(
                   itemCount: docs.length,
-                  separatorBuilder: (_, __) => const Divider(height: 16),
+                  separatorBuilder: (_, _) => const Divider(height: 16),
                   itemBuilder: (context, i) {
                     final d = docs[i].data();
                     final commentId = docs[i].id;
@@ -676,7 +676,7 @@ class _AdminVideoDetailsPageState extends State<AdminVideoDetailsPage> {
                 }
                 return ListView.separated(
                   itemCount: docs.length,
-                  separatorBuilder: (_, __) => const Divider(height: 16),
+                  separatorBuilder: (_, _) => const Divider(height: 16),
                   itemBuilder: (context, i) {
                     final d = docs[i].data();
                     final uid = (d['userId'] ?? '').toString();
@@ -727,7 +727,7 @@ class _AdminVideoDetailsPageState extends State<AdminVideoDetailsPage> {
                 }
                 return ListView.separated(
                   itemCount: docs.length,
-                  separatorBuilder: (_, __) => const Divider(height: 16),
+                  separatorBuilder: (_, _) => const Divider(height: 16),
                   itemBuilder: (context, i) {
                     final d = docs[i].data();
                     final uid = (d['userId'] ?? '').toString();

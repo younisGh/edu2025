@@ -1,5 +1,5 @@
 // Web implementation: calls window.agoraBridge JS functions
-// ignore: avoid_web_libraries_in_flutter
+// ignore_for_file: avoid_web_libraries_in_flutter, deprecated_member_use
 import 'dart:html' as html;
 import 'dart:js_util' as js_util;
 

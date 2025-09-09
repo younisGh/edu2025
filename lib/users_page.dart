@@ -36,20 +36,19 @@ class _UsersPageState extends State<UsersPage> {
 
   Stream<List<UserData>> _buildUsersStream() {
     final col = FirebaseFirestore.instance.collection('users');
-    return col.snapshots().map(
-      (snap) {
-        final currentUid = FirebaseAuth.instance.currentUser?.uid;
-        final list = snap.docs.map((d) {
-          final data = d.data();
-          // Debug: اطبع عدد المستندات المحمّلة (يظهر في وحدة التحكم)
-          // ignore: avoid_print
-          print('Users loaded: ${snap.docs.length}');
-          final id = d.id;
-          final name = (data['name'] ?? '').toString();
-          final phone = (data['phone'] ?? '').toString();
-          // نخزن الدور بالإنجليزية في Firestore ونعرِضه بالعربية في الواجهة
-          final roleStorage = (data['role'] ?? 'User').toString().toLowerCase();
-          final avatar = (data['pictureUrl'] ?? '').toString();
+    return col.snapshots().map((snap) {
+      final currentUid = FirebaseAuth.instance.currentUser?.uid;
+      final list = snap.docs.map((d) {
+        final data = d.data();
+        // Debug: اطبع عدد المستندات المحمّلة (يظهر في وحدة التحكم)
+        // ignore: avoid_print
+        print('Users loaded: ${snap.docs.length}');
+        final id = d.id;
+        final name = (data['name'] ?? '').toString();
+        final phone = (data['phone'] ?? '').toString();
+        // نخزن الدور بالإنجليزية في Firestore ونعرِضه بالعربية في الواجهة
+        final roleStorage = (data['role'] ?? 'User').toString().toLowerCase();
+        final avatar = (data['pictureUrl'] ?? '').toString();
 
         // الاستدلال على حقول الحالة في الواجهة عند عدم وجودها
         final isBanned =
@@ -99,12 +98,12 @@ class _UsersPageState extends State<UsersPage> {
               : avatar,
         );
       }).toList();
-        // استبعاد حساب المستخدم الحالي من القائمة
-        return list.where((u) => u.id != currentUid).toList();
-      },
-    );
+      // استبعاد حساب المستخدم الحالي من القائمة
+      return list.where((u) => u.id != currentUid).toList();
+    });
   }
 
+  /*
   Future<void> _toggleBan(UserData user) async {
     final newBanned = !user.isBanned;
     final confirm = await showDialog<bool>(
@@ -164,7 +163,8 @@ class _UsersPageState extends State<UsersPage> {
       }
     }
   }
-
+*/
+  /*
   Future<void> _toggleActive(UserData user) async {
     final newActive = !user.isActive;
     // تحديث محلي سريع
@@ -189,7 +189,7 @@ class _UsersPageState extends State<UsersPage> {
       }
     }
   }
-
+*/
   Future<void> _viewUser(UserData user) async {
     await showDialog(
       context: context,
@@ -368,7 +368,7 @@ class _UsersPageState extends State<UsersPage> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 20,
               offset: const Offset(0, 4),
             ),
@@ -635,20 +635,20 @@ class _UsersPageState extends State<UsersPage> {
                           ),
                           if (user.id != currentUid)
                             IconButton(
-                            onPressed: () => _deleteUser(user),
-                            icon: const Icon(
-                              Icons.delete_outline,
-                              color: Color(0xFFEF4444),
-                              size: 16,
+                              onPressed: () => _deleteUser(user),
+                              icon: const Icon(
+                                Icons.delete_outline,
+                                color: Color(0xFFEF4444),
+                                size: 16,
+                              ),
+                              visualDensity: VisualDensity.compact,
+                              padding: const EdgeInsets.all(2),
+                              constraints: const BoxConstraints.tightFor(
+                                width: 32,
+                                height: 32,
+                              ),
+                              tooltip: 'حذف',
                             ),
-                            visualDensity: VisualDensity.compact,
-                            padding: const EdgeInsets.all(2),
-                            constraints: const BoxConstraints.tightFor(
-                              width: 32,
-                              height: 32,
-                            ),
-                            tooltip: 'حذف',
-                          ),
                         ],
                       ),
                     ),
@@ -842,8 +842,10 @@ class _UsersPageState extends State<UsersPage> {
     if (ok != true) return;
     try {
       // Call Cloud Function to delete the user from Firebase Auth and Firestore
-      final callable = FirebaseFunctions.instance.httpsCallable('deleteUserByUid');
-      await callable.call({ 'uid': user.id });
+      final callable = FirebaseFunctions.instance.httpsCallable(
+        'deleteUserByUid',
+      );
+      await callable.call({'uid': user.id});
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('تم حذف المستخدم من النظام')),
@@ -851,9 +853,9 @@ class _UsersPageState extends State<UsersPage> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('فشل حذف المستخدم: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('فشل حذف المستخدم: $e')));
       }
     }
   }
@@ -1031,7 +1033,7 @@ class _UsersPageState extends State<UsersPage> {
   Widget _buildSidebarOverlay() {
     return GestureDetector(
       onTap: () => setState(() => sidebarOpen = false),
-      child: Container(color: Colors.black.withOpacity(0.3)),
+      child: Container(color: Colors.black.withValues(alpha: 0.3)),
     );
   }
 

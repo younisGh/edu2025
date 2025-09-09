@@ -38,15 +38,15 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # Firebase
-  firebase_core: ^2.27.0
+  firebase_core: ^2.24.2
   firebase_auth: ^4.17.8
   cloud_firestore: ^4.15.8
   cloud_functions: ^4.6.0
   firebase_storage: ^11.6.9
-  firebase_messaging: ^14.7.19
+  firebase_messaging: ^14.7.12
 
   # Sign In
-  google_sign_in: ^6.2.1
+  google_sign_in: ^6.1.6
 
   # Media
   image_picker: ^1.0.7

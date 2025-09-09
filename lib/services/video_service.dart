@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'package:educational_platform/services/engagement_service.dart';
 
 class VideoService {
@@ -33,7 +33,7 @@ class VideoService {
       final downloadUrl = await snapshot.ref.getDownloadURL();
       return downloadUrl;
     } catch (e) {
-      print('Error uploading file: $e');
+      debugPrint('Error uploading file: $e');
       rethrow;
     }
   }
@@ -79,13 +79,17 @@ class VideoService {
         'timeAdded': FieldValue.serverTimestamp(),
         'views': 0,
         // Category fields (optional)
-        if (categoryId != null && categoryId.isNotEmpty) 'categoryId': categoryId,
-        if (categoryName != null && categoryName.isNotEmpty) 'category': categoryName,
+        if (categoryId != null && categoryId.isNotEmpty)
+          'categoryId': categoryId,
+        if (categoryName != null && categoryName.isNotEmpty)
+          'category': categoryName,
         // You can add other fields like duration, etc.
       });
 
       // 5. Mirror minimal metadata into video_meta keyed by URL hash for engagement features
-      final videoKey = EngagementService.instance.videoKeyFromUrl(finalVideoUrl);
+      final videoKey = EngagementService.instance.videoKeyFromUrl(
+        finalVideoUrl,
+      );
       await EngagementService.instance.ensureVideoMeta(
         videoKey: videoKey,
         title: name,
@@ -96,10 +100,13 @@ class VideoService {
         await FirebaseFirestore.instance
             .collection('video_meta')
             .doc(videoKey)
-            .set({'pdfUrl': pdfUrl, 'updatedAt': FieldValue.serverTimestamp()}, SetOptions(merge: true));
+            .set({
+              'pdfUrl': pdfUrl,
+              'updatedAt': FieldValue.serverTimestamp(),
+            }, SetOptions(merge: true));
       }
     } catch (e) {
-      print('Error adding video: $e');
+      debugPrint('Error adding video: $e');
       rethrow;
     }
   }
@@ -125,18 +132,16 @@ class VideoService {
       if (categoryName != null) payload['category'] = categoryName;
       await _firestore.collection('videos').doc(docId).update(payload);
     } catch (e) {
-      print('Error updating video: $e');
+      debugPrint('Error updating video: $e');
       rethrow;
     }
   }
 
-  Future<void> deleteVideo({
-    required String docId,
-  }) async {
+  Future<void> deleteVideo({required String docId}) async {
     try {
       await _firestore.collection('videos').doc(docId).delete();
     } catch (e) {
-      print('Error deleting video: $e');
+      debugPrint('Error deleting video: $e');
       rethrow;
     }
   }

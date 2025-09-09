@@ -1,7 +1,9 @@
-// Web-only implementation using dart:html MediaRecorder
+// Web-only implementation using MediaRecorder
 // This file is selected at compile-time via conditional import from the stub.
+// We intentionally use dart:html here because this file is only compiled on web
+// via conditional imports. Suppress lints accordingly.
+// ignore_for_file: avoid_web_libraries_in_flutter, deprecated_member_use
 
-// ignore: avoid_web_libraries_in_flutter
 import 'dart:html' as html;
 import 'dart:async';
 import 'dart:typed_data';
@@ -11,7 +13,11 @@ class WebRecordedData {
   final Uint8List bytes;
   final String mimeType;
   final String fileName;
-  const WebRecordedData({required this.bytes, required this.mimeType, required this.fileName});
+  const WebRecordedData({
+    required this.bytes,
+    required this.mimeType,
+    required this.fileName,
+  });
 }
 
 class WebLocalRecorder {
@@ -31,7 +37,7 @@ class WebLocalRecorder {
     }
     _stream = await mediaDevices.getUserMedia({
       'audio': true,
-      'video': {'width': 1280, 'height': 720}
+      'video': {'width': 1280, 'height': 720},
     });
 
     String mimeType = 'video/webm;codecs=vp9';
@@ -75,13 +81,24 @@ class WebLocalRecorder {
           } else if (result is List<int>) {
             done.complete(Uint8List.fromList(result));
           } else {
-            done.completeError(StateError('Unexpected FileReader.result type: ${result.runtimeType}'));
+            done.completeError(
+              StateError(
+                'Unexpected FileReader.result type: ${result.runtimeType}',
+              ),
+            );
           }
         });
         reader.readAsArrayBuffer(blob);
         final bytes = await done.future;
-        final fileName = 'recording_${DateTime.now().millisecondsSinceEpoch}.webm';
-        stopCompleter.complete(WebRecordedData(bytes: bytes, mimeType: blob.type, fileName: fileName));
+        final fileName =
+            'recording_${DateTime.now().millisecondsSinceEpoch}.webm';
+        stopCompleter.complete(
+          WebRecordedData(
+            bytes: bytes,
+            mimeType: blob.type,
+            fileName: fileName,
+          ),
+        );
       } catch (e) {
         stopCompleter.completeError(e);
       } finally {

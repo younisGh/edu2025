@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart' as yt_flutter;
+import 'package:youtube_player_flutter/youtube_player_flutter.dart'
+    as yt_flutter;
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -59,12 +60,17 @@ class _RunVideosPageState extends State<RunVideosPage> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
-      final snap = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      final snap = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
       final data = snap.data();
       final roleVal = (data?['role'] ?? '').toString();
       final isAdminVal = data?['isAdmin'] == true;
       if (!mounted) return;
-      setState(() { _isAdmin = isAdminVal || roleVal == 'Admin'; });
+      setState(() {
+        _isAdmin = isAdminVal || roleVal == 'Admin';
+      });
     } catch (_) {}
   }
 
@@ -101,7 +107,10 @@ class _RunVideosPageState extends State<RunVideosPage> {
     );
     if (ok == true) {
       if (_isAdmin) {
-        await EngagementService.instance.adminDeleteComment(_videoKey, commentId);
+        await EngagementService.instance.adminDeleteComment(
+          _videoKey,
+          commentId,
+        );
       } else {
         await EngagementService.instance.deleteComment(_videoKey, commentId);
       }
@@ -120,6 +129,7 @@ class _RunVideosPageState extends State<RunVideosPage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
+        final ctx = context; // capture bottom-sheet context
         return Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom + 16,
@@ -156,7 +166,8 @@ class _RunVideosPageState extends State<RunVideosPage> {
                       commentId,
                       text,
                     );
-                    if (mounted) Navigator.pop(context);
+                    if (!ctx.mounted) return;
+                    Navigator.pop(ctx);
                   },
                   icon: const Icon(Icons.save),
                   label: const Text('حفظ'),
@@ -329,7 +340,9 @@ class _RunVideosPageState extends State<RunVideosPage> {
     _progressTimer?.cancel();
     // Save last known progress on dispose for non-YouTube videos
     try {
-      if (!_isYouTube && _videoController != null && _videoController!.value.isInitialized) {
+      if (!_isYouTube &&
+          _videoController != null &&
+          _videoController!.value.isInitialized) {
         final pos = _videoController!.value.position;
         final dur = _videoController!.value.duration;
         final posSec = pos.inSeconds;
@@ -388,20 +401,20 @@ class _RunVideosPageState extends State<RunVideosPage> {
                     style: TextStyle(color: Colors.white),
                   )
                 : _isYouTube
-                    ? kIsWeb
-                        ? (_ytIframeController != null
+                ? kIsWeb
+                      ? (_ytIframeController != null
                             ? YoutubePlayer(
                                 controller: _ytIframeController!,
                                 aspectRatio: 16 / 9,
                               )
                             : const CircularProgressIndicator())
-                        : (_ytController != null)
-                            ? yt_flutter.YoutubePlayer(
-                                controller: _ytController!,
-                                showVideoProgressIndicator: true,
-                              )
-                            : const CircularProgressIndicator()
-                    : (_chewieController != null &&
+                      : (_ytController != null)
+                      ? yt_flutter.YoutubePlayer(
+                          controller: _ytController!,
+                          showVideoProgressIndicator: true,
+                        )
+                      : const CircularProgressIndicator()
+                : (_chewieController != null &&
                       _chewieController!
                           .videoPlayerController
                           .value
@@ -419,7 +432,7 @@ class _RunVideosPageState extends State<RunVideosPage> {
       leading: Container(
         margin: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.3),
+          color: Colors.black.withValues(alpha: 0.3),
           shape: BoxShape.circle,
         ),
         child: IconButton(
@@ -431,7 +444,7 @@ class _RunVideosPageState extends State<RunVideosPage> {
         Container(
           margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             shape: BoxShape.circle,
           ),
           child: IconButton(
@@ -632,7 +645,7 @@ class _RunVideosPageState extends State<RunVideosPage> {
                   itemCount: docs.length,
                   physics: const NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
-                  separatorBuilder: (_, __) => const Divider(height: 16),
+                  separatorBuilder: (_, _) => const SizedBox(height: 16),
                   itemBuilder: (context, i) {
                     final docSnap = docs[i];
                     final d = docSnap.data();
@@ -641,13 +654,16 @@ class _RunVideosPageState extends State<RunVideosPage> {
                     return ListTile(
                       contentPadding: EdgeInsets.zero,
                       leading: FutureBuilder<String?>(
-                        future: _resolvePhotoUrl((d['photoUrl'] ?? '').toString()),
+                        future: _resolvePhotoUrl(
+                          (d['photoUrl'] ?? '').toString(),
+                        ),
                         builder: (context, snap) {
                           final resolved = snap.data;
                           return CircleAvatar(
                             radius: 18,
                             backgroundColor: Colors.blueGrey.shade200,
-                            backgroundImage: (resolved != null && resolved.isNotEmpty)
+                            backgroundImage:
+                                (resolved != null && resolved.isNotEmpty)
                                 ? NetworkImage(resolved)
                                 : null,
                             child: (resolved == null || resolved.isEmpty)
@@ -681,15 +697,19 @@ class _RunVideosPageState extends State<RunVideosPage> {
                               itemBuilder: (_) {
                                 final items = <PopupMenuEntry<String>>[];
                                 if (isMine) {
-                                  items.add(const PopupMenuItem(
-                                    value: 'edit',
-                                    child: Text('تعديل'),
-                                  ));
+                                  items.add(
+                                    const PopupMenuItem(
+                                      value: 'edit',
+                                      child: Text('تعديل'),
+                                    ),
+                                  );
                                 }
-                                items.add(const PopupMenuItem(
-                                  value: 'delete',
-                                  child: Text('حذف'),
-                                ));
+                                items.add(
+                                  const PopupMenuItem(
+                                    value: 'delete',
+                                    child: Text('حذف'),
+                                  ),
+                                );
                                 return items;
                               },
                             )
@@ -706,8 +726,9 @@ class _RunVideosPageState extends State<RunVideosPage> {
   }
 
   void _openAddCommentSheet() {
+    final ctx = context; // Capture local context
     showModalBottomSheet(
-      context: context,
+      context: ctx,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
@@ -748,7 +769,7 @@ class _RunVideosPageState extends State<RunVideosPage> {
                       _videoKey,
                       text,
                     );
-                    if (mounted) Navigator.pop(context);
+                    if (ctx.mounted) Navigator.pop(ctx); // Use captured context
                     _commentCtrl.clear();
                   },
                   icon: const Icon(Icons.send),
@@ -763,8 +784,9 @@ class _RunVideosPageState extends State<RunVideosPage> {
   }
 
   void _openRatingSheet() {
+    final ctx = context; // Capture local context
     showModalBottomSheet(
-      context: context,
+      context: ctx,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -834,7 +856,9 @@ class _RunVideosPageState extends State<RunVideosPage> {
                                 _videoKey,
                                 selected,
                               );
-                              if (mounted) Navigator.pop(context);
+                              if (ctx.mounted) {
+                                Navigator.pop(ctx); // Use captured context
+                              }
                             },
                       child: const Text('حفظ التقييم'),
                     ),
@@ -852,16 +876,20 @@ class _RunVideosPageState extends State<RunVideosPage> {
     if (_ytController == null) return;
     final v = _ytController!.value;
     // Mark completed for YouTube
-    if (v.playerState == PlayerState.ended) {
+    if (v.playerState == yt_flutter.PlayerState.ended) {
       if (!_markedCompleted) {
         _markedCompleted = true;
         EngagementService.instance.markCompleted(_videoKey);
       }
     }
     // Save progress on dispose (not on web for YouTube)
-    if (!kIsWeb && v.playerState == PlayerState.paused && v.position.inSeconds > 0) {
+    if (!kIsWeb &&
+        v.playerState == yt_flutter.PlayerState.paused &&
+        v.position.inSeconds > 0) {
       final posSec = v.position.inSeconds;
-      final durSec = v.metaData.duration.inSeconds > 0 ? v.metaData.duration.inSeconds : null;
+      final durSec = v.metaData.duration.inSeconds > 0
+          ? v.metaData.duration.inSeconds
+          : null;
       if (!_markedCompleted) {
         EngagementService.instance.updateWatchProgress(
           _videoKey,
@@ -903,20 +931,27 @@ class _RunVideosPageState extends State<RunVideosPage> {
               }
               final allDocs = snapshot.data?.docs ?? [];
               // Filter by same category (by id or by name fallback) and exclude current video
-              var related = allDocs.where((d) {
-                final data = d.data();
-                final url = (data['videoUrl'] ?? '').toString();
-                if (url == widget.videoUrl) return false;
-                final cid = (data['categoryId'] ?? '').toString();
-                final cname = (data['category'] ?? '').toString();
-                final byId = _currentCategoryId != null && _currentCategoryId!.isNotEmpty
-                    ? cid == _currentCategoryId
-                    : false;
-                final byName = _currentCategoryName != null && _currentCategoryName!.isNotEmpty
-                    ? cname == _currentCategoryName
-                    : false;
-                return byId || byName;
-              }).take(10).toList();
+              var related = allDocs
+                  .where((d) {
+                    final data = d.data();
+                    final url = (data['videoUrl'] ?? '').toString();
+                    if (url == widget.videoUrl) return false;
+                    final cid = (data['categoryId'] ?? '').toString();
+                    final cname = (data['category'] ?? '').toString();
+                    final byId =
+                        _currentCategoryId != null &&
+                            _currentCategoryId!.isNotEmpty
+                        ? cid == _currentCategoryId
+                        : false;
+                    final byName =
+                        _currentCategoryName != null &&
+                            _currentCategoryName!.isNotEmpty
+                        ? cname == _currentCategoryName
+                        : false;
+                    return byId || byName;
+                  })
+                  .take(10)
+                  .toList();
 
               if (related.isEmpty) {
                 return const Padding(
@@ -933,7 +968,7 @@ class _RunVideosPageState extends State<RunVideosPage> {
                 physics: const NeverScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 itemCount: related.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                separatorBuilder: (_, _) => const SizedBox(height: 8),
                 itemBuilder: (context, i) {
                   final doc = related[i];
                   final data = doc.data();
@@ -964,7 +999,10 @@ class _RunVideosPageState extends State<RunVideosPage> {
     );
   }
 
-  Widget _relatedVideoTile({required String title, required VoidCallback onTap}) {
+  Widget _relatedVideoTile({
+    required String title,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -977,7 +1015,7 @@ class _RunVideosPageState extends State<RunVideosPage> {
           border: Border.all(color: Colors.grey.shade200, width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -989,7 +1027,7 @@ class _RunVideosPageState extends State<RunVideosPage> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: const Color(0xFF667EEA).withOpacity(0.15),
+                color: const Color(0xFF667EEA).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(Icons.play_arrow, color: Color(0xFF667EEA)),

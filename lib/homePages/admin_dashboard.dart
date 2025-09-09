@@ -10,7 +10,7 @@ import 'package:educational_platform/homePages/analytics_page.dart';
 import 'package:educational_platform/run_videos.dart';
 import 'package:educational_platform/services/engagement_service.dart';
 import 'package:educational_platform/components/shared_video_widgets.dart';
-import 'package:educational_platform/liveStreamPage.dart';
+import 'package:educational_platform/live_stream_page.dart';
 import 'package:educational_platform/components/admin_send_notification_dialog.dart';
 import 'package:educational_platform/services/settings_service.dart';
 
@@ -437,18 +437,18 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          Colors.white.withOpacity(0.3),
-                          Colors.white.withOpacity(0.1),
+                          Colors.white.withValues(alpha: 0.3),
+                          Colors.white.withValues(alpha: 0.1),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         width: 1,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -511,7 +511,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
                               ),
                               CircleAvatar(
                                 radius: avatarOuter,
-                                backgroundColor: Colors.white.withOpacity(0.3),
+                                backgroundColor: Colors.white.withValues(
+                                  alpha: 0.3,
+                                ),
                                 child: CircleAvatar(
                                   radius: avatarInner,
                                   backgroundImage:
@@ -597,13 +599,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   borderRadius: BorderRadius.circular(28),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                       spreadRadius: 0,
                     ),
                     BoxShadow(
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                       blurRadius: 8,
                       offset: const Offset(0, -2),
                       spreadRadius: 0,
@@ -916,146 +918,209 @@ class _AdminDashboardState extends State<AdminDashboard> {
     final description = (data['description'] ?? '').toString();
     final videoUrl = (data['videoUrl'] ?? '').toString();
     final thumbFromDoc = (data['thumbnailUrl'] ?? '').toString();
-    final thumb = thumbFromDoc.isNotEmpty ? thumbFromDoc : _deriveYoutubeThumbnail(videoUrl);
+    final thumb = thumbFromDoc.isNotEmpty
+        ? thumbFromDoc
+        : _deriveYoutubeThumbnail(videoUrl);
     String dateStr = '';
     final ts = data['timeAdded'];
     if (ts is Timestamp) {
       final dt = ts.toDate();
-      dateStr = '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+      dateStr =
+          '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
     }
     final videoKey = EngagementService.instance.videoKeyFromUrl(videoUrl);
 
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade200),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AspectRatio(
-            aspectRatio: 16 / 9,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                if (thumb.isNotEmpty)
-                  Image.network(
-                    thumb,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stack) => Container(
+    return InkWell(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => RunVideosPage(
+              title: title,
+              videoUrl: videoUrl,
+              description: description.isNotEmpty ? description : null,
+            ),
+          ),
+        );
+      },
+      borderRadius: BorderRadius.circular(12),
+      splashColor: const Color(0xFF667EEA).withValues(alpha: 0.15),
+      highlightColor: Colors.transparent,
+      child: Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: Colors.grey.shade200),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (thumb.isNotEmpty)
+                    Image.network(
+                      thumb,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stack) => Container(
+                        color: const Color(0xFFE5E7EB),
+                        child: const Center(
+                          child: Icon(
+                            Icons.ondemand_video_rounded,
+                            size: 48,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    Container(
                       color: const Color(0xFFE5E7EB),
                       child: const Center(
-                        child: Icon(Icons.ondemand_video_rounded, size: 48, color: Colors.grey),
+                        child: Icon(
+                          Icons.ondemand_video_rounded,
+                          size: 48,
+                          color: Colors.grey,
+                        ),
                       ),
                     ),
-                  )
-                else
-                  Container(
-                    color: const Color(0xFFE5E7EB),
-                    child: const Center(
-                      child: Icon(Icons.ondemand_video_rounded, size: 48, color: Colors.grey),
+                  Container(color: Colors.black.withValues(alpha: 0.26)),
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.play_arrow_rounded,
+                        size: 36,
+                        color: Color(0xFFEA2A33),
+                      ),
                     ),
                   ),
-                Container(color: Colors.black26),
-                Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(Icons.play_arrow_rounded, size: 36, color: Color(0xFFEA2A33)),
-                  ),
-                ),
-                // Views bottom-left
-                Positioned(
-                  left: 8,
-                  bottom: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.65),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.remove_red_eye_outlined, size: 16, color: Colors.white),
-                        const SizedBox(width: 4),
-                        StreamBuilder<int>(
-                          stream: EngagementService.instance.viewsStream(videoKey),
-                          builder: (context, snap) {
-                            final v = snap.data ?? 0;
-                            return Text('$v', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600));
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                // Date bottom-right
-                if (dateStr.isNotEmpty)
+                  // Views bottom-left
                   Positioned(
-                    right: 8,
+                    left: 8,
                     bottom: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.65),
+                        color: Colors.black.withValues(alpha: 0.65),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Icon(Icons.calendar_today, size: 14, color: Colors.white),
-                          SizedBox(width: 4),
+                        children: [
+                          const Icon(
+                            Icons.remove_red_eye_outlined,
+                            size: 16,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 4),
+                          StreamBuilder<int>(
+                            stream: EngagementService.instance.viewsStream(
+                              videoKey,
+                            ),
+                            builder: (context, snap) {
+                              final v = snap.data ?? 0;
+                              return Text(
+                                '$v',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              );
+                            },
+                          ),
                         ],
                       ),
                     ),
                   ),
-                if (dateStr.isNotEmpty)
-                  Positioned(
-                    right: 8 + 28, // leave space for the icon
-                    bottom: 8,
-                    child: Text(
-                      dateStr,
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                  // Date bottom-right
+                  if (dateStr.isNotEmpty)
+                    Positioned(
+                      right: 8,
+                      bottom: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.65),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Icon(
+                              Icons.calendar_today,
+                              size: 14,
+                              color: Colors.white,
+                            ),
+                            SizedBox(width: 4),
+                          ],
+                        ),
+                      ),
+                    ),
+                  if (dateStr.isNotEmpty)
+                    Positioned(
+                      right: 8 + 28, // leave space for the icon
+                      bottom: 8,
+                      child: Text(
+                        dateStr,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title.isEmpty ? 'بدون عنوان' : title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Color(0xFF111827),
                     ),
                   ),
-              ],
+                  const SizedBox(height: 6),
+                  Text(
+                    description.isEmpty ? 'لا يوجد وصف' : description,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title.isEmpty ? 'بدون عنوان' : title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF111827)),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  description.isEmpty ? 'لا يوجد وصف' : description,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1099,13 +1164,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
         border: Border.all(color: Colors.grey.shade200, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(.08),
+            color: Colors.black.withValues(alpha: .08),
             blurRadius: 24,
             offset: const Offset(0, 8),
             spreadRadius: 0,
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(.04),
+            color: Colors.black.withValues(alpha: .04),
             blurRadius: 8,
             offset: const Offset(0, 2),
             spreadRadius: 0,
@@ -1230,19 +1295,19 @@ class _AdminDashboardState extends State<AdminDashboard> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [bgColor, bgColor.withOpacity(.8)],
+          colors: [bgColor, bgColor.withValues(alpha: .8)],
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: iconColor.withOpacity(.1), width: 1),
+        border: Border.all(color: iconColor.withValues(alpha: .1), width: 1),
         boxShadow: [
           BoxShadow(
-            color: iconColor.withOpacity(.15),
+            color: iconColor.withValues(alpha: .15),
             blurRadius: isTiny ? 12 : 20,
             offset: const Offset(0, 8),
             spreadRadius: 0,
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(.05),
+            color: Colors.black.withValues(alpha: .05),
             blurRadius: isTiny ? 6 : 8,
             offset: const Offset(0, 2),
             spreadRadius: 0,
@@ -1258,12 +1323,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [iconColor, iconColor.withOpacity(.8)],
+                colors: [iconColor, iconColor.withValues(alpha: .8)],
               ),
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: iconColor.withOpacity(.3),
+                  color: iconColor.withValues(alpha: .3),
                   blurRadius: isTiny ? 8 : 12,
                   offset: const Offset(0, 4),
                 ),
@@ -1604,18 +1669,18 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                 ),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: color.withOpacity(0.1),
+                                  color: color.withValues(alpha: 0.1),
                                   width: 1,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: color.withOpacity(0.15),
+                                    color: color.withValues(alpha: 0.15),
                                     blurRadius: 20,
                                     offset: const Offset(0, 8),
                                     spreadRadius: 0,
                                   ),
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.05),
+                                    color: Colors.black.withValues(alpha: 0.05),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
                                     spreadRadius: 0,
@@ -1632,11 +1697,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                       gradient: LinearGradient(
                                         begin: Alignment.topLeft,
                                         end: Alignment.bottomRight,
-                                        colors: [color.withOpacity(0.8), color],
+                                        colors: [
+                                          color.withValues(alpha: 0.8),
+                                          color,
+                                        ],
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: color.withOpacity(0.3),
+                                          color: color.withValues(alpha: 0.3),
                                           blurRadius: 12,
                                           offset: const Offset(0, 4),
                                         ),
@@ -1669,8 +1737,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                                       ),
                                                     ),
                                                   ),
-                                            ),
-                                          if (thumb.isEmpty)
+                                            )
+                                          else
                                             Container(
                                               color: const Color(0xFFE5E7EB),
                                               child: const Center(
@@ -1681,14 +1749,18 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                                 ),
                                               ),
                                             ),
-                                          Container(color: Colors.black26),
+                                          Container(
+                                            color: Colors.black.withValues(
+                                              alpha: 0.26,
+                                            ),
+                                          ),
                                           Center(
                                             child: Container(
                                               width: 40,
                                               height: 40,
                                               decoration: BoxDecoration(
-                                                color: Colors.white.withOpacity(
-                                                  0.9,
+                                                color: Colors.white.withValues(
+                                                  alpha: 0.9,
                                                 ),
                                                 borderRadius:
                                                     BorderRadius.circular(20),
@@ -1712,7 +1784,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                                     ),
                                                 decoration: BoxDecoration(
                                                   color: Colors.black
-                                                      .withOpacity(0.7),
+                                                      .withValues(alpha: 0.7),
                                                   borderRadius:
                                                       BorderRadius.circular(8),
                                                 ),
@@ -1757,7 +1829,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                                     vertical: 4,
                                                   ),
                                               decoration: BoxDecoration(
-                                                color: color.withOpacity(0.1),
+                                                color: color.withValues(
+                                                  alpha: 0.1,
+                                                ),
                                                 borderRadius:
                                                     BorderRadius.circular(8),
                                               ),
@@ -1851,7 +1925,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                               BoxShadow(
                                                 color: const Color(
                                                   0xFF10B981,
-                                                ).withOpacity(0.3),
+                                                ).withValues(alpha: 0.3),
                                                 blurRadius: 8,
                                                 offset: const Offset(0, 2),
                                               ),

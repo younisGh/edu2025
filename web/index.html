@@ -17,13 +17,13 @@
   <meta name="mobile-web-app-capable" content="yes">
 
   <title>educational_platform</title>
-  <script type="application/javascript" src="packages/flutter_inappwebview_web/assets/web/web_support.js"></script>
+  <!-- In release builds, package assets are served under assets/packages/... -->
+  <script type="application/javascript" src="assets/packages/flutter_inappwebview_web/assets/web/web_support.js"></script>
 </head>
 <body>
-  <!-- Load the Agora Iris Web SDK before Flutter's bootstrap script -->
-  <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.22.2.js"></script>
+  <!-- Load the Agora Iris Web SDK before Flutter's bootstrap script (required for Flutter Agora on web) -->
   <script src="https://download.agora.io/sdk/release/iris-web-rtc_n450_w4220_0.8.6.js"></script>
-  <script src="iris-web-rtc.js"></script>
+  <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.22.2.js"></script>
   <!-- Multi-stream (camera + screen) bridge for Flutter Web -->
   <script src="agora-multi-stream.js"></script>
 

@@ -15,7 +15,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:educational_platform/homePages/recorded_videos_page.dart';
 
 const appId = "8e5303f31e2246e2b0851ad8b39979d7";
 // Token will be fetched dynamically from Firebase Function `getAgoraRtcToken`
@@ -74,14 +73,91 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
     return initials.isEmpty ? 'م' : initials;
   }
 
+  Future<void> _togglePause() async {
+    try {
+      final newStatus = _liveStatus == 'paused' ? 'live' : 'paused';
+      await FirebaseFirestore.instance
+          .collection('live_channels')
+          .doc(channel)
+          .set({'status': newStatus}, SetOptions(merge: true));
+      // Local feedback only on non-web (engine available)
+      if (!kIsWeb) {
+        final pause = newStatus == 'paused';
+        await _engine.muteLocalAudioStream(pause);
+        await _engine.enableLocalVideo(!pause);
+        if (pause) {
+          await _engine.stopPreview();
+        } else {
+          await _engine.startPreview();
+        }
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('تعذر تغيير حالة البث: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _endLive() async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('live_channels')
+          .doc(channel)
+          .set({
+            'status': 'ended',
+            'endedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+      // Leave channel gracefully where applicable
+      try {
+        await _engine.leaveChannel();
+      } catch (_) {}
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('تم إنهاء البث'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      // Navigate back to home (root)
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('تعذر إنهاء البث: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _logAuthState([String context = '']) {
+    final u = FirebaseAuth.instance.currentUser;
+    debugPrint(
+      '[AUTH${context.isNotEmpty ? ' $context' : ''}] user=${u?.uid ?? 'null'}',
+    );
+  }
+
   // Fetch token for a specific uid (used for screen share client)
   Future<String> _fetchAgoraTokenFor({
     required String role,
     required int uid,
   }) async {
-    final callable = FirebaseFunctions.instance.httpsCallable(
-      'getAgoraRtcToken',
-    );
+    _logAuthState('before _fetchAgoraTokenFor');
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('يجب تسجيل الدخول قبل طلب التوكن');
+    }
+    // Ensure fresh ID token before calling callable
+    await user.getIdToken(true);
+    debugPrint('[CALLABLE] getAgoraRtcToken (for uid=$uid, role=$role)');
+    final callable = FirebaseFunctions.instanceFor(
+      region: 'us-central1',
+    ).httpsCallable('getAgoraRtcToken');
     final res = await callable.call({
       'channel': channel,
       'uid': uid,
@@ -91,6 +167,7 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
     final data = res.data as Map;
     final tok = (data['token'] ?? '').toString();
     if (tok.isEmpty) throw Exception('Returned empty token for uid');
+    debugPrint('[CALLABLE] getAgoraRtcToken success (uid=$uid)');
     return tok;
   }
 
@@ -98,6 +175,7 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
   Future<void> _startScreenShareWeb() async {
     if (!kIsWeb) return;
     try {
+      final ctx = context;
       _screenShare ??= ScreenShareBridge();
       // Use a dedicated uid for the screen client (must be different from camera uid)
       const int screenUid = 1001;
@@ -112,15 +190,18 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
         tokenScreen: token,
       );
       await _screenShare!.start();
-      if (mounted) setState(() => _isScreenSharing = true);
-      ScaffoldMessenger.of(context).showSnackBar(
+      if (ctx.mounted) setState(() => _isScreenSharing = true);
+      if (!ctx.mounted) return;
+      ScaffoldMessenger.of(ctx).showSnackBar(
         const SnackBar(
           content: Text('بدأت مشاركة الشاشة (ويب)'),
           backgroundColor: Colors.green,
         ),
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      final ctx = context;
+      if (!ctx.mounted) return;
+      ScaffoldMessenger.of(ctx).showSnackBar(
         SnackBar(
           content: Text('تعذر بدء مشاركة الشاشة: $e'),
           backgroundColor: Colors.red,
@@ -132,18 +213,22 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
   Future<void> _stopScreenShareWeb() async {
     if (!kIsWeb) return;
     try {
+      final ctx = context;
       if (_screenShare != null) {
         await _screenShare!.stop();
       }
-      if (mounted) setState(() => _isScreenSharing = false);
-      ScaffoldMessenger.of(context).showSnackBar(
+      if (ctx.mounted) setState(() => _isScreenSharing = false);
+      if (!ctx.mounted) return;
+      ScaffoldMessenger.of(ctx).showSnackBar(
         const SnackBar(
           content: Text('تم إيقاف مشاركة الشاشة'),
           backgroundColor: Colors.orange,
         ),
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      final ctx = context;
+      if (!ctx.mounted) return;
+      ScaffoldMessenger.of(ctx).showSnackBar(
         SnackBar(
           content: Text('تعذر إيقاف مشاركة الشاشة: $e'),
           backgroundColor: Colors.red,
@@ -188,16 +273,24 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
 
   Future<void> _guardAndInit() async {
     try {
+      _logAuthState('enter _guardAndInit');
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         _denyAccess('يجب تسجيل الدخول للوصول إلى صفحة البث.');
         return;
       }
-      final snap = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
-      final data = snap.data();
+      Map<String, dynamic>? data;
+      try {
+        final snap = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+        data = snap.data();
+      } catch (e, st) {
+        debugPrint('[GUARD] failed to load user doc: $e\n$st');
+        _denyAccess('تعذر تحميل صلاحيات المستخدم: $e');
+        return;
+      }
       final roleVal = (data?['role'] ?? '').toString();
       final isAdminVal = data?['isAdmin'] == true;
       final isAdmin = isAdminVal || roleVal == 'Admin';
@@ -206,6 +299,7 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
         _isAdmin = isAdmin;
         _isCheckingAdmin = false;
       });
+      debugPrint('[ROLE] isAdmin=$isAdmin');
       // Listen to live status
       _statusSub = FirebaseFirestore.instance
           .collection('live_channels')
@@ -235,7 +329,13 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
               }
             }
           });
-      await initAgora();
+      try {
+        await initAgora();
+      } catch (e, st) {
+        debugPrint('[INIT_AGORA] failed: $e\n$st');
+        _denyAccess('تعذر تهيئة البث (Agora): $e');
+        return;
+      }
     } catch (e) {
       _denyAccess('تعذر التحقق من الصلاحيات: $e');
     }
@@ -246,22 +346,34 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
-    Navigator.of(context).pop();
+    // On web keep the page to allow reading console/logs; mobile pops back
+    if (!kIsWeb) {
+      Navigator.of(context).pop();
+    }
   }
 
   Future<void> initAgora() async {
     // Request permissions only if broadcasting
     if (_isAdmin) {
-      await [Permission.microphone, Permission.camera].request();
+      // On web, permission_handler is not supported and will throw. Browsers
+      // prompt for mic/cam access automatically when Agora starts publishing.
+      if (!kIsWeb) {
+        await [Permission.microphone, Permission.camera].request();
+      }
     }
 
-    _engine = createAgoraRtcEngine();
-    await _engine.initialize(
-      const RtcEngineContext(
-        appId: appId,
-        channelProfile: ChannelProfileType.channelProfileLiveBroadcasting,
-      ),
-    );
+    try {
+      _engine = createAgoraRtcEngine();
+      await _engine.initialize(
+        const RtcEngineContext(
+          appId: appId,
+          channelProfile: ChannelProfileType.channelProfileLiveBroadcasting,
+        ),
+      );
+    } catch (e, st) {
+      debugPrint('[AGORA_INIT] Engine init error: $e\n$st');
+      rethrow;
+    }
 
     _engine.registerEventHandler(
       RtcEngineEventHandler(
@@ -351,9 +463,16 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
   }
 
   Future<String> _fetchAgoraToken({required String role}) async {
-    final callable = FirebaseFunctions.instance.httpsCallable(
-      'getAgoraRtcToken',
-    );
+    _logAuthState('before _fetchAgoraToken');
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('يجب تسجيل الدخول قبل طلب التوكن');
+    }
+    await user.getIdToken(true);
+    debugPrint('[CALLABLE] getAgoraRtcToken (role=$role)');
+    final callable = FirebaseFunctions.instanceFor(
+      region: 'us-central1',
+    ).httpsCallable('getAgoraRtcToken');
     final res = await callable.call({
       'channel': channel,
       'uid': 0,
@@ -363,6 +482,7 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
     final data = res.data as Map;
     final tok = (data['token'] ?? '').toString();
     if (tok.isEmpty) throw Exception('Returned empty token');
+    debugPrint('[CALLABLE] getAgoraRtcToken success');
     return tok;
   }
 
@@ -473,7 +593,7 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
                               color: Colors.black54,
                               borderRadius: BorderRadius.circular(12.0),
                               border: Border.all(
-                                color: Colors.white.withOpacity(0.2),
+                                color: Colors.white.withValues(alpha: 0.2),
                               ),
                             ),
                             child: const Center(
@@ -548,7 +668,7 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.6),
+            color: Colors.black.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(12.0),
           ),
           child: const Text(
@@ -569,7 +689,7 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.6),
+            color: Colors.black.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(12.0),
           ),
           child: const Text(
@@ -634,7 +754,7 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.55),
+                color: Colors.black.withValues(alpha: 0.55),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: Colors.white24),
               ),
@@ -678,8 +798,8 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: _isMicMuted
-                        ? Colors.white.withOpacity(0.3)
-                        : Colors.black.withOpacity(0.4),
+                        ? Colors.white.withValues(alpha: 0.3)
+                        : Colors.black.withValues(alpha: 0.4),
                   ),
                   child: Icon(
                     _isMicMuted ? Icons.mic_off : Icons.mic,
@@ -699,8 +819,8 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: _isLocalRecording
-                        ? Colors.red.withOpacity(0.9)
-                        : Colors.black.withOpacity(0.4),
+                        ? Colors.red.withValues(alpha: 0.9)
+                        : Colors.black.withValues(alpha: 0.4),
                   ),
                   child: Icon(
                     _isLocalRecording
@@ -820,10 +940,12 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
 
   Future<void> _startLocalRecording() async {
     try {
+      final ctx = context;
       if (kIsWeb) {
         _webRecorder ??= WebLocalRecorder();
         if (!_webRecorder!.isSupported) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          if (!ctx.mounted) return;
+          ScaffoldMessenger.of(ctx).showSnackBar(
             const SnackBar(
               content: Text('التسجيل عبر المتصفح غير مدعوم'),
               backgroundColor: Colors.red,
@@ -835,7 +957,8 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
         setState(() {
           _isLocalRecording = true;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
+        if (!ctx.mounted) return;
+        ScaffoldMessenger.of(ctx).showSnackBar(
           const SnackBar(
             content: Text('بدأ التسجيل المحلي (ويب)'),
             backgroundColor: Colors.green,
@@ -846,7 +969,8 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
         // Request mic permission explicitly
         final mic = await Permission.microphone.request();
         if (!mic.isGranted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          if (!ctx.mounted) return;
+          ScaffoldMessenger.of(ctx).showSnackBar(
             const SnackBar(
               content: Text('يتطلب التسجيل إذن الميكروفون'),
               backgroundColor: Colors.red,
@@ -859,7 +983,8 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
             await _localRecChannel.invokeMethod<bool>('startLocalRecording') ??
             false;
         if (!ok) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          if (!ctx.mounted) return;
+          ScaffoldMessenger.of(ctx).showSnackBar(
             const SnackBar(
               content: Text('تعذر بدء التسجيل المحلي'),
               backgroundColor: Colors.red,
@@ -870,7 +995,8 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
         setState(() {
           _isLocalRecording = true;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
+        if (!ctx.mounted) return;
+        ScaffoldMessenger.of(ctx).showSnackBar(
           const SnackBar(
             content: Text('بدأ التسجيل المحلي'),
             backgroundColor: Colors.green,
@@ -878,7 +1004,9 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      final ctx = context;
+      if (!ctx.mounted) return;
+      ScaffoldMessenger.of(ctx).showSnackBar(
         SnackBar(
           content: Text('خطأ عند بدء التسجيل: $e'),
           backgroundColor: Colors.red,
@@ -889,16 +1017,17 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
 
   Future<void> _stopLocalRecording() async {
     try {
+      final ctx = context;
       if (kIsWeb) {
         if (_webRecorder == null) return;
         final data = await _webRecorder!.stop();
         setState(() {
           _isLocalRecording = false;
         });
-        if (!mounted) return;
+        if (!ctx.mounted) return;
         // Ask user: save to disk or upload
         await showModalBottomSheet(
-          context: context,
+          context: ctx,
           backgroundColor: Colors.grey[900],
           builder: (ctx) {
             return SafeArea(
@@ -918,8 +1047,8 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
                         Navigator.pop(ctx);
                         try {
                           await _webRecorder!.saveToDisk(data);
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
+                          if (ctx.mounted) {
+                            ScaffoldMessenger.of(ctx).showSnackBar(
                               const SnackBar(
                                 content: Text('تم حفظ الملف على جهازك'),
                                 backgroundColor: Colors.green,
@@ -927,8 +1056,8 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
                             );
                           }
                         } catch (e) {
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
+                          if (ctx.mounted) {
+                            ScaffoldMessenger.of(ctx).showSnackBar(
                               SnackBar(
                                 content: Text('فشل الحفظ المحلي: $e'),
                                 backgroundColor: Colors.red,
@@ -963,7 +1092,8 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
           _isLocalRecording = false;
         });
         if (path == null || path.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          if (!ctx.mounted) return;
+          ScaffoldMessenger.of(ctx).showSnackBar(
             const SnackBar(
               content: Text('لم يتم إنشاء ملف التسجيل'),
               backgroundColor: Colors.orange,
@@ -974,7 +1104,8 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
         // Upload to Firebase Storage
         final file = File(path);
         if (!await file.exists()) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          if (!ctx.mounted) return;
+          ScaffoldMessenger.of(ctx).showSnackBar(
             const SnackBar(
               content: Text('فشل العثور على ملف التسجيل'),
               backgroundColor: Colors.red,
@@ -1010,8 +1141,8 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
             'downloadUrl': downloadUrl,
           },
         });
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
+        if (!ctx.mounted) return;
+        ScaffoldMessenger.of(ctx).showSnackBar(
           const SnackBar(
             content: Text('تم حفظ التسجيل ورفعه إلى التخزين'),
             backgroundColor: Colors.green,
@@ -1019,8 +1150,9 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
         );
       }
     } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
+      final ctx = context;
+      if (!ctx.mounted) return;
+      ScaffoldMessenger.of(ctx).showSnackBar(
         SnackBar(
           content: Text('فشل إيقاف/رفع التسجيل: $e'),
           backgroundColor: Colors.red,
@@ -1029,10 +1161,10 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
     }
   }
 
-  // Intentionally removed upload-to-storage for web for now (future enhancement).
-
   Future<void> _startNewLive() async {
     try {
+      final ctx = context;
+      // Update live status
       await FirebaseFirestore.instance
           .collection('live_channels')
           .doc(channel)
@@ -1041,170 +1173,36 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
             'startedAt': FieldValue.serverTimestamp(),
             'endedAt': null,
           }, SetOptions(merge: true));
-      // Join channel as broadcaster now (no auto-join on page load)
-      try {
-        final newToken = await _fetchAgoraToken(role: 'broadcaster');
-        await _engine.joinChannel(
-          token: newToken,
-          channelId: channel,
-          uid: 0,
-          options: const ChannelMediaOptions(),
-        );
-        _hasJoined = true;
-        await _engine.startPreview();
-      } catch (e) {
-        debugPrint('Failed to join/start preview: $e');
-      }
-      // Start cloud recording on server
-      try {
-        final callable = FirebaseFunctions.instance.httpsCallable(
-          'startAgoraRecording',
-        );
-        final res = await callable.call({'channel': channel, 'uid': 1});
-        debugPrint('Recording started: ${res.data}');
-      } catch (e) {
-        debugPrint('Failed to start recording: $e');
-        // Non-fatal for the live session
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
+
+      // Ensure camera/video enabled before publishing (Iris requirement)
+      _isCameraDisabled = false;
+      await _engine.enableVideo();
+      await _engine.enableLocalVideo(true);
+      await _engine.startPreview();
+
+      // Join as broadcaster
+      final newToken = await _fetchAgoraToken(role: 'broadcaster');
+      await _engine.joinChannel(
+        token: newToken,
+        channelId: channel,
+        uid: 0,
+        options: const ChannelMediaOptions(),
+      );
+      _hasJoined = true;
+
+      if (!ctx.mounted) return;
+      ScaffoldMessenger.of(ctx).showSnackBar(
         const SnackBar(
           content: Text('تم بدء البث'),
           backgroundColor: Colors.green,
         ),
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      final ctx = context;
+      if (!ctx.mounted) return;
+      ScaffoldMessenger.of(ctx).showSnackBar(
         SnackBar(
           content: Text('تعذر بدء البث: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
-  Future<void> _togglePause() async {
-    try {
-      final newStatus = _liveStatus == 'paused' ? 'live' : 'paused';
-      await FirebaseFirestore.instance
-          .collection('live_channels')
-          .doc(channel)
-          .set({'status': newStatus}, SetOptions(merge: true));
-      // Locally mute/unmute as feedback
-      final pause = newStatus == 'paused';
-      await _engine.muteLocalAudioStream(pause);
-      await _engine.enableLocalVideo(!pause);
-      if (pause) {
-        await _engine.stopPreview();
-      } else {
-        await _engine.startPreview();
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('تعذر تغيير حالة البث: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
-  Future<void> _endLive() async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.grey[900],
-        title: const Text('إنهاء البث', style: TextStyle(color: Colors.white)),
-        content: const Text(
-          'هل تريد إنهاء البث الآن؟ لن يظهر للمستخدمين، وسيتم تحويله كفيديو لاحقًا.',
-          style: TextStyle(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('إلغاء'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              'إنهاء',
-              style: TextStyle(color: Colors.redAccent),
-            ),
-          ),
-        ],
-      ),
-    );
-    if (confirm != true) return;
-    try {
-      // Stop cloud recording if active (reads resourceId/sid from Firestore)
-      try {
-        final doc = await FirebaseFirestore.instance
-            .collection('live_channels')
-            .doc(channel)
-            .get();
-        final rec = (doc.data()?['recording'] ?? {}) as Map<String, dynamic>;
-        final resourceId = (rec['resourceId'] ?? '').toString();
-        final sid = (rec['sid'] ?? '').toString();
-        if (resourceId.isNotEmpty && sid.isNotEmpty) {
-          final callable = FirebaseFunctions.instance.httpsCallable(
-            'stopAgoraRecording',
-          );
-          final res = await callable.call({
-            'channel': channel,
-            'resourceId': resourceId,
-            'sid': sid,
-            'title': 'بث مباشر مسجل',
-            'description': '',
-            'uid': 1,
-          });
-          debugPrint('Recording stopped: ${res.data}');
-        }
-      } catch (e) {
-        debugPrint('Failed to stop recording: $e');
-      }
-
-      // Delete all comments under this channel
-      try {
-        final col = FirebaseFirestore.instance
-            .collection('live_channels')
-            .doc(channel)
-            .collection('comments');
-        final snap = await col.get();
-        final batch = FirebaseFirestore.instance.batch();
-        for (final doc in snap.docs) {
-          batch.delete(doc.reference);
-        }
-        await batch.commit();
-      } catch (e) {
-        debugPrint('Failed to delete comments: $e');
-      }
-
-      // Update status to ended
-      await FirebaseFirestore.instance
-          .collection('live_channels')
-          .doc(channel)
-          .set({
-            'status': 'ended',
-            'endedAt': FieldValue.serverTimestamp(),
-          }, SetOptions(merge: true));
-
-      await _engine.leaveChannel();
-      await _engine.stopPreview();
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('تم إنهاء البث'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      // Go to Recorded Videos page to view the newly created recording
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const RecordedVideosPage()),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('تعذر إنهاء البث: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -1222,11 +1220,11 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
         ),
         padding: const EdgeInsets.all(12.0),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.75),
+          color: Colors.black.withValues(alpha: 0.75),
           borderRadius: BorderRadius.circular(10.0),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 5.0,
               spreadRadius: 2.0,
             ),
@@ -1299,7 +1297,7 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
       child: Container(
         padding: const EdgeInsets.all(10.0),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.6),
+          color: Colors.black.withValues(alpha: 0.6),
           borderRadius: BorderRadius.circular(12.0),
           border: Border.all(color: Colors.white24),
         ),
@@ -1364,7 +1362,7 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
                 ),
                 margin: const EdgeInsets.only(bottom: 6),
                 decoration: BoxDecoration(
-                  color: Colors.blueGrey.withOpacity(0.3),
+                  color: Colors.blueGrey.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -1482,7 +1480,7 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
                       hintText: 'اكتب تعليقًا...',
                       hintStyle: const TextStyle(color: Colors.white70),
                       filled: true,
-                      fillColor: Colors.black.withOpacity(0.4),
+                      fillColor: Colors.black.withValues(alpha: 0.4),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20),
                         borderSide: BorderSide.none,

@@ -39,19 +39,25 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
     }
     setState(() => _isImporting = true);
     try {
-      final callable = FirebaseFunctions.instance.httpsCallable('listYouTubeChannelVideos');
-      final res = await callable.call({ 'channelId': channelId });
+      final callable = FirebaseFunctions.instance.httpsCallable(
+        'listYouTubeChannelVideos',
+      );
+      final res = await callable.call({'channelId': channelId});
       if (!mounted) return;
-      final data = (res.data as Map? ) ?? {};
-      final List items = (data['items'] as List? ) ?? [];
-      final videos = items.map<Map<String, dynamic>>((e) => {
-        'videoId': e['videoId']?.toString() ?? '',
-        'title': e['title']?.toString() ?? '',
-        'description': e['description']?.toString() ?? '',
-        'videoUrl': e['videoUrl']?.toString() ?? '',
-        'thumbnailUrl': e['thumbnailUrl']?.toString() ?? '',
-        'publishedAt': e['publishedAt'],
-      }).toList();
+      final data = (res.data as Map?) ?? {};
+      final List items = (data['items'] as List?) ?? [];
+      final videos = items
+          .map<Map<String, dynamic>>(
+            (e) => {
+              'videoId': e['videoId']?.toString() ?? '',
+              'title': e['title']?.toString() ?? '',
+              'description': e['description']?.toString() ?? '',
+              'videoUrl': e['videoUrl']?.toString() ?? '',
+              'thumbnailUrl': e['thumbnailUrl']?.toString() ?? '',
+              'publishedAt': e['publishedAt'],
+            },
+          )
+          .toList();
 
       // Open selection dialog
       final selected = await showDialog<List<int>>(
@@ -81,19 +87,24 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                             ),
                             isDense: true,
                           ),
-                          onChanged: (v) => setS(() => filter = v.trim().toLowerCase()),
+                          onChanged: (v) =>
+                              setS(() => filter = v.trim().toLowerCase()),
                         ),
                         const SizedBox(height: 8),
                         // Hint: use "اختيار" to fill, check for bulk import
                         const Text(
                           'ملاحظة: استخدم زر "اختيار" لتعبئة الحقول مباشرة، أو حدِّد بعلامات الاختيار للاستيراد الجماعي.',
-                          style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF6B7280),
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Expanded(
                           child: ListView.separated(
                             itemCount: videos.length,
-                            separatorBuilder: (_, __) => const Divider(height: 1),
+                            separatorBuilder: (_, _) =>
+                                const Divider(height: 1),
                             itemBuilder: (ctx, i) {
                               final v = videos[i];
                               final title = (v['title']?.toString() ?? '');
@@ -121,24 +132,44 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                                       child: SizedBox(
                                         width: 56,
                                         height: 32,
-                                        child: (v['thumbnailUrl']?.toString().isNotEmpty == true)
+                                        child:
+                                            (v['thumbnailUrl']
+                                                    ?.toString()
+                                                    .isNotEmpty ==
+                                                true)
                                             ? Image.network(
                                                 v['thumbnailUrl'],
                                                 fit: BoxFit.cover,
-                                                errorBuilder: (_, __, ___) => Container(
-                                                  color: const Color(0xFFE5E7EB),
-                                                  child: const Icon(Icons.ondemand_video_rounded, size: 18, color: Colors.grey),
-                                                ),
+                                                errorBuilder: (_, _, _) =>
+                                                    Container(
+                                                      color: const Color(
+                                                        0xFFE5E7EB,
+                                                      ),
+                                                      child: const Icon(
+                                                        Icons
+                                                            .ondemand_video_rounded,
+                                                        size: 18,
+                                                        color: Colors.grey,
+                                                      ),
+                                                    ),
                                               )
                                             : Container(
                                                 color: const Color(0xFFE5E7EB),
-                                                child: const Icon(Icons.ondemand_video_rounded, size: 18, color: Colors.grey),
+                                                child: const Icon(
+                                                  Icons.ondemand_video_rounded,
+                                                  size: 18,
+                                                  color: Colors.grey,
+                                                ),
                                               ),
                                       ),
                                     ),
                                   ],
                                 ),
-                                title: Text(title.isEmpty == true ? (v['videoId'] ?? '') : title),
+                                title: Text(
+                                  title.isEmpty == true
+                                      ? (v['videoId'] ?? '')
+                                      : title,
+                                ),
                                 subtitle: Text(
                                   v['videoUrl'] ?? '',
                                   maxLines: 1,
@@ -148,9 +179,14 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                                   spacing: 8,
                                   crossAxisAlignment: WrapCrossAlignment.center,
                                   children: [
-                                    if (sel.contains(i)) const Icon(Icons.check_circle, color: Colors.green),
+                                    if (sel.contains(i))
+                                      const Icon(
+                                        Icons.check_circle,
+                                        color: Colors.green,
+                                      ),
                                     OutlinedButton(
-                                      onPressed: () => Navigator.of(ctx).pop(<int>[i, -1]),
+                                      onPressed: () =>
+                                          Navigator.of(ctx).pop(<int>[i, -1]),
                                       child: const Text('اختيار'),
                                     ),
                                   ],
@@ -168,13 +204,15 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                               child: const Text('إلغاء'),
                             ),
                             ElevatedButton.icon(
-                              onPressed: sel.isEmpty ? null : () => Navigator.of(ctx).pop(sel.toList()),
+                              onPressed: sel.isEmpty
+                                  ? null
+                                  : () => Navigator.of(ctx).pop(sel.toList()),
                               icon: const Icon(Icons.download_rounded),
                               label: const Text('استيراد المحدد'),
                             ),
                             // Single-fill is now done by tapping the item directly
                           ],
-                        )
+                        ),
                       ],
                     ),
                   ),
@@ -208,7 +246,9 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
       }
 
       // Bulk import selected
-      final selIdx = selected.where((i) => i >= 0 && i < videos.length).toList();
+      final selIdx = selected
+          .where((i) => i >= 0 && i < videos.length)
+          .toList();
       if (selIdx.isEmpty) return;
       int ok = 0, fail = 0;
       for (final i in selIdx) {
@@ -229,13 +269,16 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
         }
       }
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('تم استيراد $ok، فشل $fail')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('تم استيراد $ok، فشل $fail')));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('تعذر جلب مقاطع القناة: $e'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text('تعذر جلب مقاطع القناة: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     } finally {
       if (mounted) setState(() => _isImporting = false);
@@ -334,9 +377,14 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                                     ? const SizedBox(
                                         width: 14,
                                         height: 14,
-                                        child: CircularProgressIndicator(strokeWidth: 2),
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
                                       )
-                                    : const Icon(Icons.download_rounded, size: 18),
+                                    : const Icon(
+                                        Icons.download_rounded,
+                                        size: 18,
+                                      ),
                                 label: const Text('استيراد'),
                               ),
                             ],
@@ -842,6 +890,8 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                     setState(() {
                       _isLoading = true;
                     });
+                    // Capture context to avoid using State.context across async gaps
+                    final ctx = context;
 
                     try {
                       await _videoService.addVideo(
@@ -854,11 +904,11 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                         categoryName: _selectedCategoryName,
                       );
 
-                      if (!mounted) return;
+                      if (!ctx.mounted) return;
 
                       // Ask to send notification to users
                       final send = await showDialog<bool>(
-                        context: context,
+                        context: ctx,
                         builder: (context) => AlertDialog(
                           title: const Text('إرسال إشعار؟'),
                           content: const Text(
@@ -866,11 +916,11 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                           ),
                           actions: [
                             TextButton(
-                              onPressed: () => Navigator.of(context).pop(false),
+                              onPressed: () => Navigator.of(ctx).pop(false),
                               child: const Text('لا'),
                             ),
                             ElevatedButton(
-                              onPressed: () => Navigator.of(context).pop(true),
+                              onPressed: () => Navigator.of(ctx).pop(true),
                               child: const Text('نعم'),
                             ),
                           ],
@@ -881,24 +931,23 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                         try {
                           // Lazy import to avoid top-level dependency in this file
                           // ignore: avoid_dynamic_calls
-                          await NotificationService.instance.sendAdminNotification(
-                            title: 'فيديو جديد: ${_titleController.text}',
-                            body: _descriptionController.text.trim().isEmpty
-                                ? 'تمت إضافة فيديو جديد'
-                                : _descriptionController.text.trim(),
-                            broadcast: true,
-                          );
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('تم إرسال الإشعار'),
-                              ),
+                          await NotificationService.instance
+                              .sendAdminNotification(
+                                title: 'فيديو جديد: ${_titleController.text}',
+                                body: _descriptionController.text.trim().isEmpty
+                                    ? 'تمت إضافة فيديو جديد'
+                                    : _descriptionController.text.trim(),
+                                broadcast: true,
+                              );
+                          if (ctx.mounted) {
+                            ScaffoldMessenger.of(ctx).showSnackBar(
+                              const SnackBar(content: Text('تم إرسال الإشعار')),
                             );
                           }
                         } catch (_) {
                           // Ignore sending error but inform admin
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
+                          if (ctx.mounted) {
+                            ScaffoldMessenger.of(ctx).showSnackBar(
                               const SnackBar(
                                 content: Text('تعذر إرسال الإشعار'),
                                 backgroundColor: Colors.orange,
@@ -908,18 +957,18 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                         }
                       }
 
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                      if (ctx.mounted) {
+                        ScaffoldMessenger.of(ctx).showSnackBar(
                           const SnackBar(
                             content: Text('تمت إضافة الفيديو بنجاح!'),
                             backgroundColor: Colors.green,
                           ),
                         );
-                        Navigator.of(context).pop();
+                        Navigator.of(ctx).pop();
                       }
                     } catch (e) {
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                      if (ctx.mounted) {
+                        ScaffoldMessenger.of(ctx).showSnackBar(
                           SnackBar(
                             content: Text('حدث خطأ: $e'),
                             backgroundColor: Colors.red,
@@ -927,7 +976,7 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                         );
                       }
                     } finally {
-                      if (mounted) {
+                      if (ctx.mounted) {
                         setState(() {
                           _isLoading = false;
                         });

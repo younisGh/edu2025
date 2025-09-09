@@ -10,7 +10,8 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixin {
+class _LoginPageState extends State<LoginPage>
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -37,7 +38,10 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       vsync: this,
       duration: const Duration(milliseconds: 450),
     );
-    _fade = CurvedAnimation(parent: _fadeController, curve: Curves.easeOutCubic);
+    _fade = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOutCubic,
+    );
     _scale = Tween<double>(begin: 0.95, end: 1.0).animate(
       CurvedAnimation(parent: _fadeController, curve: Curves.easeOutBack),
     );
@@ -104,7 +108,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     } catch (e) {
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(
-        context,
+        mounted ? context : context,
       ).showSnackBar(SnackBar(content: Text('حدث خطأ: ${e.toString()}')));
     }
   }
@@ -173,7 +177,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
               } catch (e) {
                 if (!mounted) return;
                 ScaffoldMessenger.of(
-                  context,
+                  mounted ? context : context,
                 ).showSnackBar(const SnackBar(content: Text('الرمز غير صحيح')));
               }
             },
@@ -246,14 +250,16 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                   await user.updatePassword(newPassword);
                   if (!mounted) return;
 
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  Navigator.pop(mounted ? context : context);
+                  ScaffoldMessenger.of(
+                    mounted ? context : context,
+                  ).showSnackBar(
                     const SnackBar(content: Text('تم تحديث كلمة المرور بنجاح')),
                   );
                 }
               } catch (e) {
                 if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
+                ScaffoldMessenger.of(mounted ? context : context).showSnackBar(
                   SnackBar(content: Text('حدث خطأ: ${e.toString()}')),
                 );
               }
@@ -277,11 +283,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     final email = '$phone@eduApp.com';
     final password = _passwordController.text
         .trim(); // Trimmed password as discussed
-
-    // Print statements for debugging
-    print('Attempting login with Email: $email');
-    print('Attempting login with Password: $password');
-
     try {
       // Don't initialize Firebase again - it's already initialized in main()
       final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -314,7 +315,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         ).pushNamedAndRemoveUntil(newRoute, (route) => false);
       } else {
         // If user document doesn't exist, default to user dashboard and log it.
-        print(
+        debugPrint(
           'Warning: User document not found in Firestore for UID: ${user.uid}',
         );
         Navigator.of(
@@ -322,7 +323,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         ).pushNamedAndRemoveUntil('/users_dashboard', (route) => false);
       }
     } on FirebaseAuthException catch (e) {
-      print(
+      debugPrint(
         'Firebase Auth Exception: ${e.code} - ${e.message}',
       ); // Detailed Firebase error
       String message = 'فشل تسجيل الدخول';
@@ -342,7 +343,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       }
     } catch (e) {
       // Catch any other unexpected errors
-      print('Generic Exception: ${e.toString()}');
+      debugPrint('Generic Exception: ${e.toString()}');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('حدث خطأ غير متوقع: ${e.toString()}')),
@@ -592,20 +593,17 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                 spacing: 8,
                                 runSpacing: 4,
                                 children: [
-                                  Text(
-                                    'ليس لديك حساب؟',
-                                    style: infoStyle,
-                                  ),
+                                  Text('ليس لديك حساب؟', style: infoStyle),
                                   TextButton(
                                     onPressed: _isLoading
                                         ? null
                                         : () => Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    const SignUpPage(),
-                                              ),
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const SignUpPage(),
                                             ),
+                                          ),
                                     child: Text(
                                       'إنشاء حساب جديد',
                                       style: labelStyle,

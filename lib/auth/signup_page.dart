@@ -244,7 +244,7 @@ class _SignUpPageState extends State<SignUpPage>
                   duration: const Duration(seconds: 5),
                 ),
               );
-              print('Phone verification failed: ${e.code} - ${e.message}');
+              debugPrint('Phone verification failed: ${e.code} - ${e.message}');
             }
           },
           codeSent: (String verificationId, int? resendToken) {
@@ -255,11 +255,11 @@ class _SignUpPageState extends State<SignUpPage>
             });
             _startResendTimer();
             _showOtpDialog();
-            print('SMS sent successfully to: $fullPhoneNumber');
+            debugPrint('SMS sent successfully to: $fullPhoneNumber');
           },
           codeAutoRetrievalTimeout: (String verificationId) {
             _verificationId = verificationId;
-            print('Code auto-retrieval timeout for: $fullPhoneNumber');
+            debugPrint('Code auto-retrieval timeout for: $fullPhoneNumber');
           },
           timeout: const Duration(seconds: 120), // Increased timeout
           forceResendingToken: _resendToken,

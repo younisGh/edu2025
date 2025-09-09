@@ -88,7 +88,7 @@ class _ProfilePageState extends State<ProfilePage> {
         return pictureUrl;
       }
     } catch (e) {
-      print('Failed to get download URL: $e');
+      debugPrint('Failed to get download URL: $e');
       return null;
     }
   }
@@ -172,9 +172,11 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white.withOpacity(0.3)),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: const Icon(
                   Icons.arrow_forward_ios,
@@ -202,6 +204,7 @@ class _ProfilePageState extends State<ProfilePage> {
     });
 
     try {
+      final ctx = context;
       final ref = FirebaseStorage.instance.ref(
         'profile_pictures/${_user!.uid}',
       );
@@ -224,14 +227,17 @@ class _ProfilePageState extends State<ProfilePage> {
         _photoUrlFuture = Future.value(downloadUrl);
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      if (!ctx.mounted) return;
+      ScaffoldMessenger.of(ctx).showSnackBar(
         const SnackBar(
           content: Text('تم تحديث الصورة بنجاح!', textAlign: TextAlign.center),
           backgroundColor: Colors.green,
         ),
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      final ctx = context;
+      if (!ctx.mounted) return;
+      ScaffoldMessenger.of(ctx).showSnackBar(
         SnackBar(
           content: Text(
             'حدث خطأ أثناء رفع الصورة: $e',
@@ -241,9 +247,11 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
       );
     } finally {
-      setState(() {
-        _isUploading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isUploading = false;
+        });
+      }
     }
   }
 
@@ -258,7 +266,7 @@ class _ProfilePageState extends State<ProfilePage> {
             border: Border.all(color: Colors.white, width: 4),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
+                color: Colors.black.withValues(alpha: 0.15),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -296,7 +304,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   width: 140,
                   height: 140,
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
+                    color: Colors.black.withValues(alpha: 0.5),
                     shape: BoxShape.circle,
                   ),
                   child: const Center(
@@ -336,7 +344,7 @@ class _ProfilePageState extends State<ProfilePage> {
         borderRadius: BorderRadius.circular(24.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -478,8 +486,9 @@ class _ProfilePageState extends State<ProfilePage> {
             .text, // Note: Changing email in Auth requires a different process
         'address': _addressController.text,
       });
-
-      ScaffoldMessenger.of(context).showSnackBar(
+      final ctx = context;
+      if (!ctx.mounted) return;
+      ScaffoldMessenger.of(ctx).showSnackBar(
         const SnackBar(
           content: Text('تم حفظ التغييرات بنجاح!', textAlign: TextAlign.center),
           backgroundColor: Colors.green,
@@ -487,7 +496,9 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      final ctx = context;
+      if (!ctx.mounted) return;
+      ScaffoldMessenger.of(ctx).showSnackBar(
         SnackBar(
           content: Text(
             'حدث خطأ أثناء حفظ التغييرات: $e',
@@ -536,7 +547,7 @@ class _ProfilePageState extends State<ProfilePage> {
         color: cardBackgroundColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
         ],
       ),
       child: Material(

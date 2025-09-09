@@ -268,13 +268,13 @@ class _GuestDashboardState extends State<GuestDashboard> {
                   borderRadius: BorderRadius.circular(28),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                       spreadRadius: 0,
                     ),
                     BoxShadow(
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                       blurRadius: 8,
                       offset: const Offset(0, -2),
                       spreadRadius: 0,
@@ -470,8 +470,10 @@ class _GuestDashboardState extends State<GuestDashboard> {
                         boxShadow: [
                           BoxShadow(
                             color: isActive
-                                ? const Color(0xFF667EEA).withOpacity(0.25)
-                                : Colors.black.withOpacity(0.06),
+                                ? const Color(
+                                    0xFF667EEA,
+                                  ).withValues(alpha: 0.25)
+                                : Colors.black.withValues(alpha: 0.06),
                             blurRadius: isActive ? 16 : 8,
                             offset: Offset(0, isActive ? 6 : 2),
                           ),
@@ -589,7 +591,7 @@ class _GuestDashboardState extends State<GuestDashboard> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -622,13 +624,15 @@ class _GuestDashboardState extends State<GuestDashboard> {
                                 width: isTiny ? 40 : (isMobile ? 48 : 64),
                                 height: isTiny ? 40 : (isMobile ? 48 : 64),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.9),
+                                  color: Colors.white.withValues(alpha: 0.9),
                                   borderRadius: BorderRadius.circular(
                                     isTiny ? 20 : (isMobile ? 24 : 32),
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.2),
+                                      color: Colors.black.withValues(
+                                        alpha: 0.2,
+                                      ),
                                       blurRadius: 12,
                                       offset: const Offset(0, 4),
                                     ),

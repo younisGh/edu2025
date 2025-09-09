@@ -29,10 +29,7 @@ class NotificationBell extends StatelessWidget {
               itemBuilder: (context) => [
                 PopupMenuItem<_MenuAction>(
                   enabled: false,
-                  child: SizedBox(
-                    width: 320,
-                    child: _UnreadList(limit: 8),
-                  ),
+                  child: SizedBox(width: 320, child: _UnreadList(limit: 8)),
                 ),
                 const PopupMenuDivider(),
                 const PopupMenuItem<_MenuAction>(
@@ -46,14 +43,21 @@ class NotificationBell extends StatelessWidget {
                 right: -2,
                 top: -2,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.redAccent,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     count > 99 ? '99+' : '$count',
-                    style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
@@ -94,7 +98,7 @@ class _UnreadList extends StatelessWidget {
           child: ListView.separated(
             shrinkWrap: true,
             itemCount: docs.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
+            separatorBuilder: (_, _) => const Divider(height: 1),
             itemBuilder: (context, i) {
               final d = docs[i].data();
               final id = docs[i].id;
@@ -103,9 +107,17 @@ class _UnreadList extends StatelessWidget {
               return ListTile(
                 dense: true,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                leading: const Icon(Icons.notifications_active, color: Colors.amber),
-                title: Text(title.isEmpty ? 'إشعار' : title, overflow: TextOverflow.ellipsis),
-                subtitle: body.isNotEmpty ? Text(body, maxLines: 2, overflow: TextOverflow.ellipsis) : null,
+                leading: const Icon(
+                  Icons.notifications_active,
+                  color: Colors.amber,
+                ),
+                title: Text(
+                  title.isEmpty ? 'إشعار' : title,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: body.isNotEmpty
+                    ? Text(body, maxLines: 2, overflow: TextOverflow.ellipsis)
+                    : null,
                 trailing: TextButton(
                   onPressed: () => NotificationService.instance.markAsRead(id),
                   child: const Text('تعليم كمقروء'),
