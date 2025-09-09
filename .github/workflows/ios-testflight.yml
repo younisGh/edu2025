@@ -78,13 +78,27 @@ jobs:
             --output_directory "./build" \
             --output_name "Runner.ipa"
 
-      - name: Upload IPA to TestFlight
-        uses: apple-actions/upload-testflight@v1
-        with:
-          app-path: ios/build/Runner.ipa
-          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
-          api-key-id: ${{ secrets.APPSTORE_KEY_ID }}
-          api-private-key: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+      - name: Create App Store Connect API key file
+        run: |
+          cat > api_key.json <<'JSON'
+          {
+            "key_id": "${{ secrets.APPSTORE_KEY_ID }}",
+            "issuer_id": "${{ secrets.APPSTORE_ISSUER_ID }}",
+            "key": "${{ secrets.APPSTORE_PRIVATE_KEY }}"
+          }
+          JSON
+
+      - name: Upload IPA to TestFlight via Fastlane deliver
+        working-directory: .
+        run: |
+          cd ios
+          bundle exec fastlane deliver \
+            --ipa ./build/Runner.ipa \
+            --skip_metadata \
+            --skip_screenshots \
+            --skip_app_version_update true \
+            --api_key_path ../api_key.json \
+            --force
 
       - name: Upload IPA as artifact (optional)
         uses: actions/upload-artifact@v4
