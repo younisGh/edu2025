@@ -39,10 +39,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
       _lastDoc = snap.docs.isNotEmpty ? snap.docs.last : null;
       _hasMore = snap.docs.length == _pageSize;
     } finally {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _isLoading = false;
         });
+      }
     }
   }
 
@@ -61,10 +62,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
       }
       _hasMore = snap.docs.length == _pageSize;
     } finally {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _isLoading = false;
         });
+      }
     }
   }
 
@@ -84,7 +86,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
             LayoutBuilder(
               builder: (context, constraints) {
                 final width = MediaQuery.of(context).size.width;
-                final isNarrow = width < 360; // collapse text on very small widths
+                final isNarrow =
+                    width < 360; // collapse text on very small widths
                 if (isNarrow) {
                   return IconButton(
                     tooltip: 'تعليم الكل كمقروء',
@@ -112,14 +115,18 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     context: context,
                     builder: (context) => AlertDialog(
                       title: const Text('تأكيد الحذف'),
-                      content: const Text('هل تريد حذف جميع الإشعارات المقروءة؟ لا يمكن التراجع.'),
+                      content: const Text(
+                        'هل تريد حذف جميع الإشعارات المقروءة؟ لا يمكن التراجع.',
+                      ),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(false),
                           child: const Text('إلغاء'),
                         ),
                         ElevatedButton(
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                          ),
                           onPressed: () => Navigator.of(context).pop(true),
                           child: const Text('حذف'),
                         ),
@@ -235,11 +242,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (body.isNotEmpty)
-                            Text(
-                              body,
-                              softWrap: true,
-                            ),
+                          if (body.isNotEmpty) Text(body, softWrap: true),
                           if (createdAt != null)
                             Text(
                               _formatTime(createdAt),
@@ -265,15 +268,21 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                 context: context,
                                 builder: (context) => AlertDialog(
                                   title: const Text('حذف الإشعار'),
-                                  content: const Text('هل تريد حذف هذا الإشعار؟'),
+                                  content: const Text(
+                                    'هل تريد حذف هذا الإشعار؟',
+                                  ),
                                   actions: [
                                     TextButton(
-                                      onPressed: () => Navigator.of(context).pop(false),
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(false),
                                       child: const Text('إلغاء'),
                                     ),
                                     ElevatedButton(
-                                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                                      onPressed: () => Navigator.of(context).pop(true),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.red,
+                                      ),
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(true),
                                       child: const Text('حذف'),
                                     ),
                                   ],

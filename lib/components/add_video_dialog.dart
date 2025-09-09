@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:educational_platform/services/settings_service.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 
 class AddVideoDialog extends StatefulWidget {
   const AddVideoDialog({super.key});
@@ -24,6 +25,222 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
   bool _isUploadMode = false; // false: link mode (YouTube), true: upload mode
   String? _selectedCategoryId;
   String? _selectedCategoryName;
+  bool _isImporting = false;
+
+  Future<void> _openImportPicker() async {
+    final settings = await SettingsService.instance.getOnce();
+    final channelId = (settings.channelId).trim();
+    if (channelId.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('لم يتم تعيين معرف القناة بعد')),
+      );
+      return;
+    }
+    setState(() => _isImporting = true);
+    try {
+      final callable = FirebaseFunctions.instance.httpsCallable('listYouTubeChannelVideos');
+      final res = await callable.call({ 'channelId': channelId });
+      if (!mounted) return;
+      final data = (res.data as Map? ) ?? {};
+      final List items = (data['items'] as List? ) ?? [];
+      final videos = items.map<Map<String, dynamic>>((e) => {
+        'videoId': e['videoId']?.toString() ?? '',
+        'title': e['title']?.toString() ?? '',
+        'description': e['description']?.toString() ?? '',
+        'videoUrl': e['videoUrl']?.toString() ?? '',
+        'thumbnailUrl': e['thumbnailUrl']?.toString() ?? '',
+        'publishedAt': e['publishedAt'],
+      }).toList();
+
+      // Open selection dialog
+      final selected = await showDialog<List<int>>(
+        context: context,
+        builder: (ctx) {
+          final Set<int> sel = {};
+          String filter = '';
+          return StatefulBuilder(
+            builder: (ctx, setS) {
+              return Directionality(
+                textDirection: TextDirection.rtl,
+                child: AlertDialog(
+                  title: const Text('اختر مقاطع للاستيراد أو لملء الحقول'),
+                  content: SizedBox(
+                    width: 520,
+                    height: 420,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Search box
+                        TextField(
+                          decoration: InputDecoration(
+                            hintText: 'ابحث بعنوان الفيديو...',
+                            prefixIcon: const Icon(Icons.search),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            isDense: true,
+                          ),
+                          onChanged: (v) => setS(() => filter = v.trim().toLowerCase()),
+                        ),
+                        const SizedBox(height: 8),
+                        // Hint: use "اختيار" to fill, check for bulk import
+                        const Text(
+                          'ملاحظة: استخدم زر "اختيار" لتعبئة الحقول مباشرة، أو حدِّد بعلامات الاختيار للاستيراد الجماعي.',
+                          style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                        ),
+                        const SizedBox(height: 8),
+                        Expanded(
+                          child: ListView.separated(
+                            itemCount: videos.length,
+                            separatorBuilder: (_, __) => const Divider(height: 1),
+                            itemBuilder: (ctx, i) {
+                              final v = videos[i];
+                              final title = (v['title']?.toString() ?? '');
+                              if (filter.isNotEmpty &&
+                                  !title.toLowerCase().contains(filter)) {
+                                return const SizedBox.shrink();
+                              }
+                              final checked = sel.contains(i);
+                              return ListTile(
+                                leading: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Checkbox(
+                                      value: checked,
+                                      onChanged: (_) => setS(() {
+                                        if (checked) {
+                                          sel.remove(i);
+                                        } else {
+                                          sel.add(i);
+                                        }
+                                      }),
+                                    ),
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(6),
+                                      child: SizedBox(
+                                        width: 56,
+                                        height: 32,
+                                        child: (v['thumbnailUrl']?.toString().isNotEmpty == true)
+                                            ? Image.network(
+                                                v['thumbnailUrl'],
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (_, __, ___) => Container(
+                                                  color: const Color(0xFFE5E7EB),
+                                                  child: const Icon(Icons.ondemand_video_rounded, size: 18, color: Colors.grey),
+                                                ),
+                                              )
+                                            : Container(
+                                                color: const Color(0xFFE5E7EB),
+                                                child: const Icon(Icons.ondemand_video_rounded, size: 18, color: Colors.grey),
+                                              ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                title: Text(title.isEmpty == true ? (v['videoId'] ?? '') : title),
+                                subtitle: Text(
+                                  v['videoUrl'] ?? '',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                trailing: Wrap(
+                                  spacing: 8,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  children: [
+                                    if (sel.contains(i)) const Icon(Icons.check_circle, color: Colors.green),
+                                    OutlinedButton(
+                                      onPressed: () => Navigator.of(ctx).pop(<int>[i, -1]),
+                                      child: const Text('اختيار'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          children: [
+                            TextButton(
+                              onPressed: () => Navigator.of(ctx).pop(<int>[]),
+                              child: const Text('إلغاء'),
+                            ),
+                            ElevatedButton.icon(
+                              onPressed: sel.isEmpty ? null : () => Navigator.of(ctx).pop(sel.toList()),
+                              icon: const Icon(Icons.download_rounded),
+                              label: const Text('استيراد المحدد'),
+                            ),
+                            // Single-fill is now done by tapping the item directly
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      );
+
+      if (!mounted) return;
+      // Handle result
+      if (selected == null) return; // canceled
+      if (selected.isEmpty) return; // canceled via button
+
+      // If second element is -1 => single fill
+      if (selected.length == 2 && selected[1] == -1) {
+        final idx = selected.first;
+        if (idx >= 0 && idx < videos.length) {
+          final v = videos[idx];
+          setState(() {
+            _titleController.text = (v['title'] ?? '').toString();
+            _videoUrlController.text = (v['videoUrl'] ?? '').toString();
+            _descriptionController.text = (v['description'] ?? '').toString();
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('تم تعبئة الحقول من المقطع المحدد')),
+          );
+        }
+        return;
+      }
+
+      // Bulk import selected
+      final selIdx = selected.where((i) => i >= 0 && i < videos.length).toList();
+      if (selIdx.isEmpty) return;
+      int ok = 0, fail = 0;
+      for (final i in selIdx) {
+        final v = videos[i];
+        try {
+          await _videoService.addVideo(
+            name: (v['title'] ?? '').toString(),
+            description: (v['description'] ?? '').toString(),
+            videoUrl: (v['videoUrl'] ?? '').toString(),
+            pdfFile: null,
+            videoFile: null,
+            categoryId: _selectedCategoryId,
+            categoryName: _selectedCategoryName,
+          );
+          ok++;
+        } catch (_) {
+          fail++;
+        }
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('تم استيراد $ok، فشل $fail')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('تعذر جلب مقاطع القناة: $e'), backgroundColor: Colors.red),
+      );
+    } finally {
+      if (mounted) setState(() => _isImporting = false);
+    }
+  }
 
   Future<void> _pickPdfFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -110,13 +327,16 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                               ),
                               const SizedBox(width: 8),
                               TextButton.icon(
-                                onPressed: channelId.isEmpty
+                                onPressed: (channelId.isEmpty || _isImporting)
                                     ? null
-                                    : () {
-                                        final url = 'https://www.youtube.com/channel/$channelId';
-                                        _videoUrlController.text = url;
-                                      },
-                                icon: const Icon(Icons.download_rounded, size: 18),
+                                    : _openImportPicker,
+                                icon: _isImporting
+                                    ? const SizedBox(
+                                        width: 14,
+                                        height: 14,
+                                        child: CircularProgressIndicator(strokeWidth: 2),
+                                      )
+                                    : const Icon(Icons.download_rounded, size: 18),
                                 label: const Text('استيراد'),
                               ),
                             ],

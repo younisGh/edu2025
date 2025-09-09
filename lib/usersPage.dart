@@ -14,7 +14,8 @@ class _UsersPageState extends State<UsersPage> {
   int currentPage = 1;
   final int itemsPerPage = 5;
   String? _hoveredUserId; // for desktop hover actions
-  Stream<List<UserData>>? _usersStreamCached; // cached to avoid resubscribe on rebuild
+  Stream<List<UserData>>?
+  _usersStreamCached; // cached to avoid resubscribe on rebuild
 
   // سيتم جلب المستخدمين فعليًا من Firestore عبر Stream
   // القائمة التالية لم تعد مستخدمة كمصدر للعرض
@@ -430,18 +431,24 @@ class _UsersPageState extends State<UsersPage> {
                   final filtered = q.isEmpty
                       ? data
                       : data
-                          .where(
-                            (u) =>
-                                u.name.contains(q) ||
-                                u.phone.contains(q) ||
-                                u.role.contains(q),
-                          )
-                          .toList();
+                            .where(
+                              (u) =>
+                                  u.name.contains(q) ||
+                                  u.phone.contains(q) ||
+                                  u.role.contains(q),
+                            )
+                            .toList();
 
                   final total = filtered.length;
-                  final totalPages = (total / itemsPerPage).ceil().clamp(1, 9999);
+                  final totalPages = (total / itemsPerPage).ceil().clamp(
+                    1,
+                    9999,
+                  );
                   if (currentPage > totalPages) currentPage = totalPages;
-                  final start = ((currentPage - 1) * itemsPerPage).clamp(0, total);
+                  final start = ((currentPage - 1) * itemsPerPage).clamp(
+                    0,
+                    total,
+                  );
                   final end = (start + itemsPerPage).clamp(0, total);
                   final visible = filtered.sublist(start, end);
 
@@ -475,18 +482,14 @@ class _UsersPageState extends State<UsersPage> {
 
     if (isMobile) {
       // Mobile: name + actions only
-      return Column(
-        children: [
-          ...users.map((u) => _buildMobileUserItem(u)).toList(),
-        ],
-      );
+      return Column(children: [...users.map((u) => _buildMobileUserItem(u))]);
     } else {
       // Desktop: 4 columns header and rows; actions appear on hover
       return Column(
         children: [
           _buildDesktopHeader(),
           const Divider(height: 1, color: Color(0xFFE5E7EB)),
-          ...users.map((u) => _buildDesktopRow(u)).toList(),
+          ...users.map((u) => _buildDesktopRow(u)),
         ],
       );
     }
@@ -562,9 +565,7 @@ class _UsersPageState extends State<UsersPage> {
         curve: Curves.easeOut,
         decoration: BoxDecoration(
           color: hovered ? const Color(0xFFF9FAFB) : Colors.white,
-          border: const Border(
-            bottom: BorderSide(color: Color(0xFFF3F4F6)),
-          ),
+          border: const Border(bottom: BorderSide(color: Color(0xFFF3F4F6))),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
@@ -592,35 +593,56 @@ class _UsersPageState extends State<UsersPage> {
                         // Do nothing here; parent row MouseRegion will handle exit when truly leaving the row
                       },
                       child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          onPressed: () => _viewUser(user),
-                          icon: const Icon(Icons.visibility_outlined, color: Color(0xFF4B5563), size: 16),
-                          visualDensity: VisualDensity.compact,
-                          padding: const EdgeInsets.all(2),
-                          constraints: const BoxConstraints.tightFor(width: 32, height: 32),
-                          tooltip: 'تفاصيل',
-                        ),
-                        IconButton(
-                          onPressed: () => _editUser(user),
-                          icon: const Icon(Icons.edit_outlined, color: Color(0xFF4B5563), size: 16),
-                          visualDensity: VisualDensity.compact,
-                          padding: const EdgeInsets.all(2),
-                          constraints: const BoxConstraints.tightFor(width: 32, height: 32),
-                          tooltip: 'تعديل',
-                        ),
-                        IconButton(
-                          onPressed: () => _deleteUser(user),
-                          icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 16),
-                          visualDensity: VisualDensity.compact,
-                          padding: const EdgeInsets.all(2),
-                          constraints: const BoxConstraints.tightFor(width: 32, height: 32),
-                          tooltip: 'حذف',
-                        ),
-                      ],
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            onPressed: () => _viewUser(user),
+                            icon: const Icon(
+                              Icons.visibility_outlined,
+                              color: Color(0xFF4B5563),
+                              size: 16,
+                            ),
+                            visualDensity: VisualDensity.compact,
+                            padding: const EdgeInsets.all(2),
+                            constraints: const BoxConstraints.tightFor(
+                              width: 32,
+                              height: 32,
+                            ),
+                            tooltip: 'تفاصيل',
+                          ),
+                          IconButton(
+                            onPressed: () => _editUser(user),
+                            icon: const Icon(
+                              Icons.edit_outlined,
+                              color: Color(0xFF4B5563),
+                              size: 16,
+                            ),
+                            visualDensity: VisualDensity.compact,
+                            padding: const EdgeInsets.all(2),
+                            constraints: const BoxConstraints.tightFor(
+                              width: 32,
+                              height: 32,
+                            ),
+                            tooltip: 'تعديل',
+                          ),
+                          IconButton(
+                            onPressed: () => _deleteUser(user),
+                            icon: const Icon(
+                              Icons.delete_outline,
+                              color: Color(0xFFEF4444),
+                              size: 16,
+                            ),
+                            visualDensity: VisualDensity.compact,
+                            padding: const EdgeInsets.all(2),
+                            constraints: const BoxConstraints.tightFor(
+                              width: 32,
+                              height: 32,
+                            ),
+                            tooltip: 'حذف',
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
                   ),
                 ),
               ),
@@ -633,40 +655,40 @@ class _UsersPageState extends State<UsersPage> {
 
   Widget _buildUserCell(UserData user) {
     return Row(
-        children: [
-          CircleAvatar(
-            radius: 22,
-            backgroundImage: NetworkImage(user.avatar),
-            backgroundColor: const Color(0xFFF3F4F6),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  user.name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1F2937),
-                    fontSize: 14,
-                  ),
+      children: [
+        CircleAvatar(
+          radius: 22,
+          backgroundImage: NetworkImage(user.avatar),
+          backgroundColor: const Color(0xFFF3F4F6),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                user.name,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1F2937),
+                  fontSize: 14,
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  user.isBanned
-                      ? 'حساب محظور'
-                      : (user.isActive ? 'مستخدم نشط' : 'مستخدم غير نشط'),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: user.isBanned ? Colors.red : const Color(0xFF6B7280),
-                  ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                user.isBanned
+                    ? 'حساب محظور'
+                    : (user.isActive ? 'مستخدم نشط' : 'مستخدم غير نشط'),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: user.isBanned ? Colors.red : const Color(0xFF6B7280),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      );
+        ),
+      ],
+    );
   }
 
   Widget _buildPhoneCell(String phone) {

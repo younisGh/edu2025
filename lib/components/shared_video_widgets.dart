@@ -33,10 +33,7 @@ class CategoryTabsWithSort extends StatelessWidget {
           final cats = <Map<String, String>>[
             {'id': 'all', 'name': 'الكل'},
             ...((snapshot.data?.docs ?? []).map(
-              (d) => {
-                'id': d.id,
-                'name': (d.data()['name'] ?? '').toString(),
-              },
+              (d) => {'id': d.id, 'name': (d.data()['name'] ?? '').toString()},
             )),
           ];
           return _buildRow(context, cats);
@@ -63,7 +60,7 @@ class CategoryTabsWithSort extends StatelessWidget {
         children: [
           Expanded(
             child: DropdownButtonFormField<String>(
-              value: activeTab.isEmpty ? 'all' : activeTab,
+              initialValue: activeTab.isEmpty ? 'all' : activeTab,
               style: TextStyle(fontSize: isTiny ? 12 : 14),
               iconSize: isTiny ? 18 : 24,
               decoration: InputDecoration(
@@ -94,10 +91,7 @@ class CategoryTabsWithSort extends StatelessWidget {
             ),
           ),
           SizedBox(width: isTiny ? 8 : 12),
-          _SortButton(
-            sortOption: sortOption,
-            onSelected: onSortSelected,
-          ),
+          _SortButton(sortOption: sortOption, onSelected: onSortSelected),
         ],
       );
     }
@@ -134,7 +128,10 @@ class CategoryTabsWithSort extends StatelessWidget {
                           decoration: BoxDecoration(
                             gradient: isActive
                                 ? const LinearGradient(
-                                    colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+                                    colors: [
+                                      Color(0xFF667EEA),
+                                      Color(0xFF764BA2),
+                                    ],
                                   )
                                 : null,
                             color: isActive ? null : Colors.white,
@@ -148,7 +145,9 @@ class CategoryTabsWithSort extends StatelessWidget {
                             ],
                             border: isActive
                                 ? Border.all(
-                                    color: const Color(0xFF667EEA).withOpacity(0.3),
+                                    color: const Color(
+                                      0xFF667EEA,
+                                    ).withOpacity(0.3),
                                   )
                                 : Border.all(color: Colors.grey.shade200),
                           ),
@@ -158,7 +157,9 @@ class CategoryTabsWithSort extends StatelessWidget {
                               color: isActive
                                   ? Colors.white
                                   : const Color(0xFF6B7280),
-                              fontWeight: isActive ? FontWeight.bold : FontWeight.w600,
+                              fontWeight: isActive
+                                  ? FontWeight.bold
+                                  : FontWeight.w600,
                               fontSize: 16,
                             ),
                             child: Text(category['name'] ?? ''),
@@ -173,10 +174,7 @@ class CategoryTabsWithSort extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 12),
-        _SortButton(
-          sortOption: sortOption,
-          onSelected: onSortSelected,
-        ),
+        _SortButton(sortOption: sortOption, onSelected: onSortSelected),
       ],
     );
   }
@@ -186,10 +184,7 @@ class _SortButton extends StatelessWidget {
   final String sortOption;
   final ValueChanged<String> onSelected;
 
-  const _SortButton({
-    required this.sortOption,
-    required this.onSelected,
-  });
+  const _SortButton({required this.sortOption, required this.onSelected});
 
   @override
   Widget build(BuildContext context) {
@@ -229,7 +224,11 @@ class _SortButton extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.sort_rounded, color: Colors.white, size: isTiny ? 18 : 24),
+            Icon(
+              Icons.sort_rounded,
+              color: Colors.white,
+              size: isTiny ? 18 : 24,
+            ),
             SizedBox(width: isTiny ? 4 : 8),
             Text(
               'ترتيب الفيديوهات',
@@ -274,10 +273,10 @@ class ResponsiveVideoGrid extends StatelessWidget {
     final crossAxisCount = isMobile
         ? 1
         : width > 1200
-            ? 4
-            : width > 800
-                ? 3
-                : 2;
+        ? 4
+        : width > 800
+        ? 3
+        : 2;
 
     return GridView.builder(
       shrinkWrap: true,

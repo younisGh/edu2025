@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:educational_platform/homePages/profile_page.dart';
-import 'package:educational_platform/homePages/manage_videos_page.dart';
 import 'package:educational_platform/homePages/settings_page.dart';
 import 'package:educational_platform/homePages/analytics_page.dart';
 import 'package:educational_platform/run_videos.dart';
@@ -13,7 +12,6 @@ import 'package:educational_platform/services/engagement_service.dart';
 import 'package:educational_platform/components/shared_video_widgets.dart';
 import 'package:educational_platform/liveStreamPage.dart';
 import 'package:educational_platform/components/admin_send_notification_dialog.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:educational_platform/services/settings_service.dart';
 
 class AdminDashboard extends StatefulWidget {
@@ -101,9 +99,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     Navigator.of(context).pop(); // Close the drawer first
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => const ManageVideosPage()),
-        );
+        Navigator.of(context).pushNamed('/manage_videos');
       }
     });
   }
@@ -918,271 +914,148 @@ class _AdminDashboardState extends State<AdminDashboard> {
     final data = doc.data();
     final title = (data['name'] ?? '').toString();
     final description = (data['description'] ?? '').toString();
-    // Truncate for grid display: title -> 6 words, description -> 10 words
-    final truncatedTitle = (() {
-      final words = title.trim().split(RegExp(r'\s+'));
-      if (words.length <= 6) return title;
-      return words.sublist(0, 6).join(' ') + '…';
-    })();
-    final truncatedDesc = (() {
-      final words = description.trim().split(RegExp(r'\s+'));
-      if (words.length <= 10) return description;
-      return words.sublist(0, 10).join(' ') + '…';
-    })();
-    final views = (data['views'] is int)
-        ? data['views'] as int
-        : int.tryParse('${data['views']}') ?? 0;
     final videoUrl = (data['videoUrl'] ?? '').toString();
     final thumbFromDoc = (data['thumbnailUrl'] ?? '').toString();
-    final thumb = thumbFromDoc.isNotEmpty
-        ? thumbFromDoc
-        : _deriveYoutubeThumbnail(videoUrl);
-    // Prepare favorite key and formatted date string
-    final service = EngagementService.instance;
-    final videoKey = service.videoKeyFromUrl(videoUrl);
+    final thumb = thumbFromDoc.isNotEmpty ? thumbFromDoc : _deriveYoutubeThumbnail(videoUrl);
     String dateStr = '';
     final ts = data['timeAdded'];
     if (ts is Timestamp) {
       final dt = ts.toDate();
-      dateStr =
-          '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+      dateStr = '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
     }
+    final videoKey = EngagementService.instance.videoKeyFromUrl(videoUrl);
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => RunVideosPage(
-              title: (title.isEmpty ? 'بدون عنوان' : title),
-              videoUrl: videoUrl,
-              description: description.isEmpty ? null : description,
-            ),
-          ),
-        );
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.white, Colors.grey.shade50],
-          ),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-              spreadRadius: 0,
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Thumbnail: with play overlay
-            AspectRatio(
-              aspectRatio: 16 / 9,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(20),
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AspectRatio(
+            aspectRatio: 16 / 9,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                if (thumb.isNotEmpty)
+                  Image.network(
+                    thumb,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stack) => Container(
+                      color: const Color(0xFFE5E7EB),
+                      child: const Center(
+                        child: Icon(Icons.ondemand_video_rounded, size: 48, color: Colors.grey),
+                      ),
+                    ),
+                  )
+                else
+                  Container(
+                    color: const Color(0xFFE5E7EB),
+                    child: const Center(
+                      child: Icon(Icons.ondemand_video_rounded, size: 48, color: Colors.grey),
+                    ),
+                  ),
+                Container(color: Colors.black26),
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.9),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.play_arrow_rounded, size: 36, color: Color(0xFFEA2A33)),
+                  ),
                 ),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    thumb.isNotEmpty
-                        ? CachedNetworkImage(
-                            imageUrl: thumb,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(
-                              color: const Color(0xFFE5E7EB),
-                              child: const Center(
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              ),
-                            ),
-                            errorWidget: (context, url, error) => Container(
-                              color: const Color(0xFFE5E7EB),
-                              child: const Center(
-                                child: Icon(
-                                  Icons.ondemand_video_rounded,
-                                  size: 48,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ),
-                          )
-                        : Container(
-                            color: const Color(0xFFE5E7EB),
-                            child: const Center(
-                              child: Icon(
-                                Icons.ondemand_video_rounded,
-                                size: 48,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ),
-                    Container(color: Colors.black26),
-                    Builder(
-                      builder: (context) {
-                        final w = MediaQuery.of(context).size.width;
-                        final isMobile = w < 600;
-                        final isTiny = w < 345;
-                        final pad = isTiny ? 8.0 : (isMobile ? 10.0 : 12.0);
-                        final iconSize = isTiny
-                            ? 24.0
-                            : (isMobile ? 30.0 : 36.0);
-                        return Center(
-                          child: Container(
-                            padding: EdgeInsets.all(pad),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.95),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                            child: Icon(
-                              Icons.play_arrow_rounded,
-                              size: iconSize,
-                              color: const Color(0xFFEA2A33),
-                            ),
-                          ),
-                        );
-                      },
+                // Views bottom-left
+                Positioned(
+                  left: 8,
+                  bottom: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.65),
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    // Favorite toggle (top-left)
-                    Positioned(
-                      left: 12,
-                      top: 12,
-                      child: FutureBuilder<bool>(
-                        future: service.isFavorite(videoKey),
-                        builder: (context, snap) {
-                          final isFav = snap.data == true;
-                          return Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(16),
-                              onTap: () async {
-                                await service.toggleFavorite(videoKey);
-                                if (mounted) setState(() {});
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.35),
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(
-                                        alpha: 0.15,
-                                      ),
-                                      blurRadius: 6,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Icon(
-                                  isFav
-                                      ? Icons.favorite
-                                      : Icons.favorite_border,
-                                  color: isFav
-                                      ? const Color(0xFFEC4899)
-                                      : Colors.white,
-                                  size: 18,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      (truncatedTitle.isEmpty ? 'بدون عنوان' : truncatedTitle),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF111827),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      (truncatedDesc.isEmpty ? 'لا يوجد وصف' : truncatedDesc),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF6B7280),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
-                          Icons.calendar_today,
-                          size: 13,
-                          color: Color(0xFF9CA3AF),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          dateStr,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey.shade600,
-                            height: 1.1,
-                          ),
-                        ),
-                        const Spacer(),
-                        const Icon(
-                          Icons.visibility_rounded,
-                          size: 13,
-                          color: Color(0xFF9CA3AF),
-                        ),
+                        const Icon(Icons.remove_red_eye_outlined, size: 16, color: Colors.white),
                         const SizedBox(width: 4),
                         StreamBuilder<int>(
-                          stream: EngagementService.instance.viewsStream(
-                            videoKey,
-                          ),
+                          stream: EngagementService.instance.viewsStream(videoKey),
                           builder: (context, snap) {
-                            final live = snap.data ?? views;
-                            final color = live > 0
-                                ? const Color(0xFF10B981)
-                                : Colors.grey.shade600;
-                            return Text(
-                              live.toString(),
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: color,
-                                height: 1.1,
-                              ),
-                            );
+                            final v = snap.data ?? 0;
+                            return Text('$v', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600));
                           },
                         ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
+                // Date bottom-right
+                if (dateStr.isNotEmpty)
+                  Positioned(
+                    right: 8,
+                    bottom: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.65),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.calendar_today, size: 14, color: Colors.white),
+                          SizedBox(width: 4),
+                        ],
+                      ),
+                    ),
+                  ),
+                if (dateStr.isNotEmpty)
+                  Positioned(
+                    right: 8 + 28, // leave space for the icon
+                    bottom: 8,
+                    child: Text(
+                      dateStr,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+              ],
             ),
-          ],
-        ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title.isEmpty ? 'بدون عنوان' : title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF111827)),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  description.isEmpty ? 'لا يوجد وصف' : description,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

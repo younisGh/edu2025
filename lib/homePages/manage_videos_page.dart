@@ -1,13 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:educational_platform/components/add_video_dialog.dart';
 import 'package:educational_platform/services/video_service.dart';
-import 'package:educational_platform/services/notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:educational_platform/run_videos.dart';
 import 'package:educational_platform/homePages/admin_video_details_page.dart';
 import 'dart:async';
+import 'package:educational_platform/components/shared_video_widgets.dart';
+import 'package:educational_platform/components/arrow_scroll.dart';
+import 'package:educational_platform/services/engagement_service.dart';
 
 class ManageVideosPage extends StatefulWidget {
   const ManageVideosPage({super.key});
@@ -21,7 +22,7 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
   String _activeTab = 'all';
   String?
   _activeCategoryName; // human-readable name for filtering by 'category'
-  static const String _defaultChannelId = 'UCJxQByGJHN-6TB9oiIVlGCw';
+  final ScrollController _scrollController = ScrollController();
 
   final VideoService _videoService = VideoService();
 
@@ -32,53 +33,6 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
 
   // Legacy hardcoded categories removed in favor of Firestore-driven categories
 
-  // Shows a dialog to get the YouTube Channel ID from the user
-  Future<void> _showImportYouTubeDialog() async {
-    final channelIdController = TextEditingController(text: _defaultChannelId);
-
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('استيراد من قناة يوتيوب'),
-          content: TextField(
-            controller: channelIdController,
-            decoration: const InputDecoration(
-              labelText: 'معرف القناة (Channel ID)',
-              hintText: 'UC...',
-            ),
-            textDirection: TextDirection.ltr,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('إلغاء'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final channelId = channelIdController.text.trim();
-                final isValidUC = RegExp(r'^UC[\w-]{20,}$').hasMatch(channelId);
-                if (!isValidUC) {
-                  // Show error and keep the dialog open
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('الرجاء إدخال Channel ID صحيح يبدأ بـ UC'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                  return;
-                }
-                Navigator.of(context).pop(); // Close dialog first
-                _startYouTubeImport(channelId); // Start the import
-              },
-              child: const Text('استيراد'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   void _showAddVideoDialog() {
     showDialog(
       context: context,
@@ -88,126 +42,7 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
     );
   }
 
-  // Starts the Cloud Function to import videos from the given channel ID
-  Future<void> _startYouTubeImport(String channelId) async {
-    if (channelId.isEmpty) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('معرف القناة لا يمكن أن يكون فارغاً')),
-      );
-      return;
-    }
-
-    try {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('بدء الاستيراد من يوتيوب...')),
-      );
-      final functions = FirebaseFunctions.instanceFor(region: 'us-central1');
-      final callable = functions.httpsCallable('importYouTubeChannel');
-      final result = await callable.call(<String, dynamic>{
-        'channelId': channelId,
-        'importAll': true,
-        // Optional flags you can support in your Function: 'excludeShorts': true
-      });
-      final data = result.data;
-      String msg;
-      int importedCount = 0;
-      List<String> importedTitles = const [];
-      if (data is Map) {
-        if (data['imported'] != null) {
-          final v = data['imported'];
-          importedCount = v is int ? v : int.tryParse('$v') ?? 0;
-        }
-        if (data['titles'] is List) {
-          importedTitles = List<String>.from((data['titles'] as List).map((e) => '$e'));
-        }
-      }
-      msg = importedCount > 0 ? 'تم استيراد $importedCount فيديو.' : 'تم تنفيذ الاستيراد.';
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-
-      // Ask admin to send a notification with titles only
-      final send = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('إرسال إشعار؟'),
-          content: Text(
-            importedCount > 0
-                ? 'هل تريد إرسال إشعار للمستخدمين بأسماء $importedCount مقطع تم استيرادها؟'
-                : 'هل تريد إرسال إشعار للمستخدمين عن عملية الاستيراد؟',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('لا'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('نعم'),
-            ),
-          ],
-        ),
-      );
-      if (send == true) {
-        // Build titles-only body
-        List<String> titles = importedTitles;
-        if (titles.isEmpty && importedCount > 0) {
-          // Try to query recent videos as a fallback
-          try {
-            final qs = await FirebaseFirestore.instance
-                .collection('videos')
-                .orderBy('timeAdded', descending: true)
-                .limit(importedCount)
-                .get();
-            titles = qs.docs
-                .map((d) => (d.data()['name'] ?? '').toString())
-                .where((t) => t.isNotEmpty)
-                .toList();
-          } catch (_) {}
-        }
-        final maxShow = 5;
-        final display = titles.take(maxShow).toList();
-        final remaining = titles.length - display.length;
-        final body = display.isEmpty
-            ? 'تم استيراد مقاطع جديدة.'
-            : (display.join('، ') + (remaining > 0 ? ' +$remaining أخرى' : ''));
-        try {
-          await NotificationService.instance.sendAdminNotification(
-            title: 'تم استيراد مقاطع جديدة',
-            body: body,
-            broadcast: true,
-          );
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('تم إرسال الإشعار')),
-            );
-          }
-        } catch (_) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('تعذر إرسال الإشعار'),
-                backgroundColor: Colors.orange,
-              ),
-            );
-          }
-        }
-      }
-    } on FirebaseFunctionsException catch (ex) {
-      if (!mounted) return;
-      final details = ex.details?.toString() ?? '';
-      final msg =
-          'فشل الاستيراد (${ex.code}): ${ex.message ?? ''} ${details.isNotEmpty ? '\n$details' : ''}'
-              .trim();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-    } catch (e) {
-      if (!mounted) return;
-      final errText = e.toString();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('فشل الاستيراد: $errText')));
-    }
-  }
+  // ملاحظة: تمت إزالة وظيفة الاستيراد من يوتيوب حسب الطلب
 
   Future<void> _showEditVideoDialog(
     String docId,
@@ -354,7 +189,7 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
                     categoryId: selectedCategoryId,
                     categoryName: selectedCategoryName,
                   );
-                  if (!mounted) return;
+                  if (!context.mounted) return;
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('تم تحديث الفيديو بنجاح')),
@@ -436,6 +271,7 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
   void dispose() {
     _debounce?.cancel();
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -476,88 +312,79 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: const Color(0xFFFFFFFF),
-        appBar: AppBar(
-          backgroundColor: Colors.white.withOpacity(0.8),
-          elevation: 1,
-          title: Row(
-            children: [
-              Icon(
-                Icons.play_circle_fill_rounded,
-                color: const Color(0xFFEA2A33),
-                size: 32,
+    return ArrowScroll(
+      scrollController: _scrollController,
+      child: Directionality(
+        textDirection: TextDirection.rtl,
+        child: Scaffold(
+          backgroundColor: const Color(0xFFFFFFFF),
+          appBar: AppBar(
+            backgroundColor: Colors.white.withOpacity(0.8),
+            elevation: 1,
+            title: Row(
+              children: [
+                const Icon(
+                  Icons.play_circle_fill_rounded,
+                  color: Color(0xFFEA2A33),
+                  size: 32,
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'إدارة الفيديوهات',
+                  style: TextStyle(
+                    color: Color(0xFF111827),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: ElevatedButton.icon(
+                  onPressed: _showAddVideoDialog,
+                  icon: const Icon(Icons.add, color: Colors.white),
+                  label: const Text(
+                    'إضافة فيديو جديد',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFEA2A33),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
               ),
-              const SizedBox(width: 8),
-              const Text(
-                'إدارة الفيديوهات',
-                style: TextStyle(
-                  color: Color(0xFF111827),
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
+              Padding(
+                padding: const EdgeInsetsDirectional.only(end: 24.0),
+                child: CircleAvatar(
+                  backgroundColor: Colors.grey[200],
+                  backgroundImage: _userPhotoUrl != null
+                      ? NetworkImage(_userPhotoUrl!)
+                      : null,
+                  child: _userPhotoUrl == null
+                      ? const Icon(Icons.person, color: Colors.grey)
+                      : null,
                 ),
               ),
             ],
           ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: ElevatedButton.icon(
-                onPressed: _showAddVideoDialog,
-                icon: const Icon(Icons.add, color: Colors.white),
-                label: const Text(
-                  'إضافة فيديو جديد',
-                  style: TextStyle(color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFEA2A33),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
+          body: SingleChildScrollView(
+            controller: _scrollController,
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(),
+                  const SizedBox(height: 32),
+                  _buildCategoryTabs(),
+                  const SizedBox(height: 24),
+                  _buildFirestoreVideosGrid(),
+                ],
               ),
-            ),
-            Padding(
-              padding: const EdgeInsetsDirectional.only(end: 8.0),
-              child: OutlinedButton.icon(
-                onPressed: _showImportYouTubeDialog,
-                icon: const Icon(
-                  Icons.cloud_download,
-                  color: Color(0xFFEA2A33),
-                ),
-                label: const Text('استيراد من يوتيوب'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFEA2A33),
-                  side: const BorderSide(color: Color(0xFFEA2A33)),
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            CircleAvatar(
-              backgroundColor: Colors.grey[200],
-              backgroundImage: _userPhotoUrl != null
-                  ? NetworkImage(_userPhotoUrl!)
-                  : null,
-              child: _userPhotoUrl == null
-                  ? const Icon(Icons.person, color: Colors.grey)
-                  : null,
-            ),
-          ],
-        ),
-        body: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(),
-                const SizedBox(height: 32),
-                _buildCategoryTabs(),
-                const SizedBox(height: 24),
-                _buildFirestoreVideosGrid(),
-              ],
             ),
           ),
         ),
@@ -752,16 +579,10 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
           );
         }
 
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 4,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 0.75,
-          ),
+        return ResponsiveVideoGrid(
           itemCount: displayDocs.length,
+          // Make items taller by reducing aspect ratio (width/height)
+          childAspectRatio: 0.95,
           itemBuilder: (context, index) {
             final doc = displayDocs[index];
             return _buildFirestoreVideoCard(doc);
@@ -777,14 +598,16 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
     final data = doc.data();
     final String title = (data['name'] ?? '').toString();
     final String description = (data['description'] ?? '').toString();
-    final int views = (data['views'] is int)
-        ? data['views'] as int
-        : int.tryParse('${data['views']}') ?? 0;
     final String videoUrl = (data['videoUrl'] ?? '').toString();
     final String thumbnailFromDoc = (data['thumbnailUrl'] ?? '').toString();
     final String thumbnailUrl = thumbnailFromDoc.isNotEmpty
         ? thumbnailFromDoc
         : _deriveYoutubeThumbnail(videoUrl);
+    final String videoKey = EngagementService.instance.videoKeyFromUrl(
+      videoUrl,
+    );
+    final width = MediaQuery.of(context).size.width;
+    final isMobile = width < 600;
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
@@ -839,16 +662,16 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
                             ),
                           ),
                         ),
-                  Container(color: Colors.black26),
+                  Container(color: Colors.black.withValues(alpha: 0.26)),
                   Center(
                     child: Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withValues(alpha: 0.2),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -861,15 +684,60 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
                       ),
                     ),
                   ),
+                  // Views badge bottom-left
+                  Positioned(
+                    left: 8,
+                    bottom: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.65),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.remove_red_eye_outlined,
+                            size: 16,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 4),
+                          StreamBuilder<int>(
+                            stream: EngagementService.instance.viewsStream(
+                              videoKey,
+                            ),
+                            builder: (context, snap) {
+                              final v = snap.data ?? 0;
+                              return Text(
+                                '$v',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(12.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12.0,
+                  vertical: 8.0,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -890,54 +758,92 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
                             color: Colors.grey.shade600,
                             fontSize: 14,
                           ),
-                          maxLines: 2,
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.visibility,
-                              size: 16,
-                              color: Colors.grey,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              views.toString(),
-                              style: const TextStyle(color: Color(0xFF6B7280)),
-                            ),
-                          ],
-                        ),
                       ],
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildActionButton('تفاصيل', Colors.blue, () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => AdminVideoDetailsPage(
-                                title: title.isEmpty ? 'بدون عنوان' : title,
-                                videoUrl: videoUrl,
-                                description: description.isEmpty
-                                    ? null
-                                    : description,
+                    isMobile
+                        ? FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerRight,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  tooltip: 'تفاصيل',
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => AdminVideoDetailsPage(
+                                          title: title.isEmpty
+                                              ? 'بدون عنوان'
+                                              : title,
+                                          videoUrl: videoUrl,
+                                          description: description.isEmpty
+                                              ? null
+                                              : description,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.info_outline,
+                                    color: Colors.blue,
+                                  ),
+                                ),
+                                IconButton(
+                                  tooltip: 'تعديل',
+                                  onPressed: () =>
+                                      _showEditVideoDialog(doc.id, data),
+                                  icon: const Icon(
+                                    Icons.edit,
+                                    color: Colors.amber,
+                                  ),
+                                ),
+                                IconButton(
+                                  tooltip: 'حذف',
+                                  onPressed: () =>
+                                      _confirmDeleteVideo(doc.id, title),
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              _buildActionButton('تفاصيل', Colors.blue, () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => AdminVideoDetailsPage(
+                                      title: title.isEmpty
+                                          ? 'بدون عنوان'
+                                          : title,
+                                      videoUrl: videoUrl,
+                                      description: description.isEmpty
+                                          ? null
+                                          : description,
+                                    ),
+                                  ),
+                                );
+                              }),
+                              _buildActionButton(
+                                'تعديل',
+                                Colors.amber,
+                                () => _showEditVideoDialog(doc.id, data),
                               ),
-                            ),
-                          );
-                        }),
-                        _buildActionButton(
-                          'تعديل',
-                          Colors.amber,
-                          () => _showEditVideoDialog(doc.id, data),
-                        ),
-                        _buildActionButton(
-                          'حذف',
-                          Colors.red,
-                          () => _confirmDeleteVideo(doc.id, title),
-                        ),
-                      ],
-                    ),
+                              _buildActionButton(
+                                'حذف',
+                                Colors.red,
+                                () => _confirmDeleteVideo(doc.id, title),
+                              ),
+                            ],
+                          ),
                   ],
                 ),
               ),

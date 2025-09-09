@@ -127,13 +127,13 @@ class _UsersDashboardState extends State<UsersDashboard>
           border: Border.all(color: Colors.grey.shade200, width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 24,
               offset: const Offset(0, 8),
               spreadRadius: 0,
             ),
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 8,
               offset: const Offset(0, 2),
               spreadRadius: 0,
@@ -180,6 +180,73 @@ class _UsersDashboardState extends State<UsersDashboard>
                   ),
                   // Dark overlay to improve foreground contrast (matches admin)
                   Container(color: Colors.black26),
+                  // Bottom-left: views badge (live from EngagementService)
+                  Positioned(
+                    left: 8,
+                    bottom: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.65),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.remove_red_eye_outlined,
+                            size: 16,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 4),
+                          StreamBuilder<int>(
+                            stream: service.viewsStream(videoKey),
+                            builder: (context, snap) {
+                              final v = snap.data ?? 0;
+                              return Text(
+                                '$v',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Bottom-right: date badge
+                  if (dateStr.isNotEmpty)
+                    Positioned(
+                      right: 8,
+                      bottom: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.65),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Icon(
+                              Icons.calendar_today,
+                              size: 14,
+                              color: Colors.white,
+                            ),
+                            SizedBox(width: 4),
+                            // Text below set outside const due to dynamic dateStr; replaced below
+                          ],
+                        ),
+                      ),
+                    ),
                   Positioned(
                     left: 12,
                     top: 12,
@@ -198,11 +265,11 @@ class _UsersDashboardState extends State<UsersDashboard>
                             child: Container(
                               padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.35),
+                                color: Colors.black.withValues(alpha: 0.35),
                                 borderRadius: BorderRadius.circular(12),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.15),
+                                    color: Colors.black.withValues(alpha: 0.15),
                                     blurRadius: 6,
                                     offset: const Offset(0, 2),
                                   ),
@@ -236,11 +303,11 @@ class _UsersDashboardState extends State<UsersDashboard>
                           child: Container(
                             padding: EdgeInsets.all(pad),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.95),
+                              color: Colors.white.withValues(alpha: 0.95),
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
+                                  color: Colors.black.withValues(alpha: 0.2),
                                   blurRadius: 10,
                                   offset: const Offset(0, 3),
                                 ),
@@ -256,16 +323,36 @@ class _UsersDashboardState extends State<UsersDashboard>
                       },
                     ),
                   ),
+                  // Inject date text next to the calendar icon (non-const)
+                  if (dateStr.isNotEmpty)
+                    Positioned(
+                      right: 8,
+                      bottom: 8,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(
+                            width: 28,
+                          ), // occupy icon+spacing width
+                          Text(
+                            dateStr,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                 ],
               ),
             ),
-            // Texts
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+            // Texts (no Expanded to avoid forcing extra empty space)
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                     Text(
                       truncatedTitle.isEmpty ? 'بدون عنوان' : truncatedTitle,
                       maxLines: 1,
@@ -286,52 +373,7 @@ class _UsersDashboardState extends State<UsersDashboard>
                         color: const Color(0xFF6B7280),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.calendar_today,
-                          size: 13,
-                          color: Color(0xFF9CA3AF),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          dateStr,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey.shade600,
-                            height: 1.1,
-                          ),
-                        ),
-                        const Spacer(),
-                        const Icon(
-                          Icons.visibility_rounded,
-                          size: 13,
-                          color: Color(0xFF9CA3AF),
-                        ),
-                        const SizedBox(width: 4),
-                        StreamBuilder<int>(
-                          stream: service.viewsStream(videoKey),
-                          initialData: 0,
-                          builder: (context, snap) {
-                            final v = snap.data ?? 0;
-                            final color = v > 0
-                                ? const Color(0xFF10B981)
-                                : Colors.grey.shade600;
-                            return Text(
-                              v.toString(),
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: color,
-                                height: 1.1,
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                ],
               ),
             ),
           ],

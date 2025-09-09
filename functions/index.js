@@ -116,10 +116,44 @@ async function* iteratePlaylistItems(playlistId, apiKey) {
   }
 }
 
+// Callable Function: list channel videos (metadata only, no writes)
+exports.listYouTubeChannelVideos = onCall({ secrets: [YOUTUBE_API_KEY], timeoutSeconds: 300, region: 'us-central1', cors: true }, async (request) => {
+  try {
+    if (!request.auth) throw new HttpsError('unauthenticated', 'The function must be called while authenticated.');
+    const channelId = (request.data && String(request.data.channelId || '').trim());
+    if (!channelId) throw new HttpsError('invalid-argument', "Missing 'channelId'.");
+    const apiKey = YOUTUBE_API_KEY.value();
+    if (!apiKey) throw new HttpsError('failed-precondition', 'The YouTube API key is not configured.');
+
+    const uploadsPlaylistId = await getUploadsPlaylistId(channelId, apiKey);
+    const items = [];
+    for await (const item of iteratePlaylistItems(uploadsPlaylistId, apiKey)) {
+      const sn = item.snippet;
+      if (!sn) continue;
+      const videoId = sn.resourceId && sn.resourceId.videoId;
+      if (!videoId) continue;
+      const title = sn.title || '';
+      const description = sn.description || '';
+      const publishedAt = sn.publishedAt || null;
+      const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+      const thumbs = sn.thumbnails || {};
+      const thumbnailUrl = (thumbs.maxres && thumbs.maxres.url) ||
+                           (thumbs.high && thumbs.high.url) ||
+                           (thumbs.medium && thumbs.medium.url) ||
+                           (thumbs.default && thumbs.default.url) ||
+                           `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+      items.push({ videoId, title, description, videoUrl, thumbnailUrl, publishedAt });
+    }
+    return { ok: true, items };
+  } catch (error) {
+    if (error instanceof HttpsError) throw error;
+    logger.error('listYouTubeChannelVideos error', error);
+    throw new HttpsError('internal', 'Failed to list channel videos');
+  }
+});
+
 // Callable Function: تُستدعى من Flutter عبر httpsCallable
-exports.importYouTubeChannel = onCall(
-    {secrets: [YOUTUBE_API_KEY], timeoutSeconds: 540, region: "us-central1"},
-    async (request) => {
+exports.importYouTubeChannel = onCall({ secrets: [YOUTUBE_API_KEY], timeoutSeconds: 540, region: "us-central1", cors: true }, async (request) => {
         try {
         // تشترط مصادقة المستخدم
         if (!request.auth) {

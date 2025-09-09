@@ -1,5 +1,5 @@
-import 'package:educational_platform/auth/auth_wrapper.dart';
 import 'package:educational_platform/homePages/admin_dashboard.dart';
+import 'package:educational_platform/homePages/manage_videos_page.dart';
 import 'package:educational_platform/homePages/profile_page.dart';
 import 'package:educational_platform/usersPage.dart';
 import 'package:educational_platform/run_videos.dart';
@@ -46,7 +46,8 @@ class MyApp extends StatelessWidget {
       stream: SettingsService.instance.stream(),
       builder: (context, snapshot) {
         final settings = snapshot.data;
-        final platformTitle = (settings != null && settings.platformTitle.isNotEmpty)
+        final platformTitle =
+            (settings != null && settings.platformTitle.isNotEmpty)
             ? settings.platformTitle
             : 'المنصة التعليمية';
 
@@ -66,12 +67,15 @@ class MyApp extends StatelessWidget {
           ],
           // إجبار الاتجاه RTL لجميع الصفحات
           builder: (context, child) {
-            return Directionality(textDirection: TextDirection.rtl, child: child!);
+            return Directionality(
+              textDirection: TextDirection.rtl,
+              child: child!,
+            );
           },
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
             useMaterial3: true,
-            // تكوين الخط العربي باستخدام Google Fonts (Noto Kufi Arabic)
+            // إعادة الخط السابق Noto Kufi Arabic لكل الموقع
             fontFamily: GoogleFonts.notoKufiArabic().fontFamily,
             textTheme: GoogleFonts.notoKufiArabicTextTheme(
               Theme.of(context).textTheme,
@@ -84,6 +88,7 @@ class MyApp extends StatelessWidget {
             '/guest_dashboard': (context) => const GuestDashboard(),
             '/users_dashboard': (context) => const UsersDashboard(),
             '/admin_dashboard': (context) => const AdminDashboard(),
+            '/manage_videos': (context) => const ManageVideosPage(),
             '/users_page': (context) => const UsersPage(),
             '/run_videos': (context) => const RunVideosPage(
               title: 'فيديو افتراضي',
