@@ -1,0 +1,776 @@
+extend type Mutation {
+  """
+  ✨ Insert a single `Resource` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  resource_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Resource_Data!
+  ): Resource_KeyOutput! @fdc_generated(from: "Resource", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Review` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  review_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Review_Data!
+  ): Review_KeyOutput! @fdc_generated(from: "Review", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Session` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  session_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Session_Data!
+  ): Session_KeyOutput! @fdc_generated(from: "Session", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Subject` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  subject_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Subject_Data!
+  ): Subject_KeyOutput! @fdc_generated(from: "Subject", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `TutorProfile` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  tutorProfile_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: TutorProfile_Data!
+  ): TutorProfile_KeyOutput! @fdc_generated(from: "TutorProfile", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `TutorSubject` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  tutorSubject_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: TutorSubject_Data!
+  ): TutorSubject_KeyOutput! @fdc_generated(from: "TutorSubject", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `User` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  user_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: User_Data!
+  ): User_KeyOutput! @fdc_generated(from: "User", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert `Resource` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  resource_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Resource_Data!]!
+  ): [Resource_KeyOutput!]! @fdc_generated(from: "Resource", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Review` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  review_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Review_Data!]!
+  ): [Review_KeyOutput!]! @fdc_generated(from: "Review", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Session` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  session_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Session_Data!]!
+  ): [Session_KeyOutput!]! @fdc_generated(from: "Session", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Subject` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  subject_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Subject_Data!]!
+  ): [Subject_KeyOutput!]! @fdc_generated(from: "Subject", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `TutorProfile` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  tutorProfile_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [TutorProfile_Data!]!
+  ): [TutorProfile_KeyOutput!]! @fdc_generated(from: "TutorProfile", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `TutorSubject` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  tutorSubject_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [TutorSubject_Data!]!
+  ): [TutorSubject_KeyOutput!]! @fdc_generated(from: "TutorSubject", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `User` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  user_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [User_Data!]!
+  ): [User_KeyOutput!]! @fdc_generated(from: "User", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert or update a single `Resource` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Resource`.
+  """
+  resource_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Resource_Data!
+  ): Resource_KeyOutput! @fdc_generated(from: "Resource", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Review` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Review`.
+  """
+  review_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Review_Data!
+  ): Review_KeyOutput! @fdc_generated(from: "Review", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Session` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Session`.
+  """
+  session_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Session_Data!
+  ): Session_KeyOutput! @fdc_generated(from: "Session", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Subject` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Subject`.
+  """
+  subject_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Subject_Data!
+  ): Subject_KeyOutput! @fdc_generated(from: "Subject", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `TutorProfile` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `TutorProfile`.
+  """
+  tutorProfile_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: TutorProfile_Data!
+  ): TutorProfile_KeyOutput! @fdc_generated(from: "TutorProfile", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `TutorSubject` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `TutorSubject`.
+  """
+  tutorSubject_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: TutorSubject_Data!
+  ): TutorSubject_KeyOutput! @fdc_generated(from: "TutorSubject", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `User` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `User`.
+  """
+  user_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: User_Data!
+  ): User_KeyOutput! @fdc_generated(from: "User", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update `Resource` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Resource`.
+  """
+  resource_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Resource_Data!]!
+  ): [Resource_KeyOutput!]! @fdc_generated(from: "Resource", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Review` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Review`.
+  """
+  review_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Review_Data!]!
+  ): [Review_KeyOutput!]! @fdc_generated(from: "Review", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Session` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Session`.
+  """
+  session_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Session_Data!]!
+  ): [Session_KeyOutput!]! @fdc_generated(from: "Session", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Subject` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Subject`.
+  """
+  subject_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Subject_Data!]!
+  ): [Subject_KeyOutput!]! @fdc_generated(from: "Subject", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `TutorProfile` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `TutorProfile`.
+  """
+  tutorProfile_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [TutorProfile_Data!]!
+  ): [TutorProfile_KeyOutput!]! @fdc_generated(from: "TutorProfile", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `TutorSubject` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `TutorSubject`.
+  """
+  tutorSubject_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [TutorSubject_Data!]!
+  ): [TutorSubject_KeyOutput!]! @fdc_generated(from: "TutorSubject", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `User` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `User`.
+  """
+  user_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [User_Data!]!
+  ): [User_KeyOutput!]! @fdc_generated(from: "User", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Update a single `Resource` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Resource` or `null` if not found.
+  """
+  resource_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Resource_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Resource_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Resource_Data!
+  ): Resource_KeyOutput @fdc_generated(from: "Resource", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Review` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Review` or `null` if not found.
+  """
+  review_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Review_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Review_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Review_Data!
+  ): Review_KeyOutput @fdc_generated(from: "Review", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Session` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Session` or `null` if not found.
+  """
+  session_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Session_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Session_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Session_Data!
+  ): Session_KeyOutput @fdc_generated(from: "Session", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Subject` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Subject` or `null` if not found.
+  """
+  subject_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Subject_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Subject_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Subject_Data!
+  ): Subject_KeyOutput @fdc_generated(from: "Subject", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `TutorProfile` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `TutorProfile` or `null` if not found.
+  """
+  tutorProfile_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: TutorProfile_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: TutorProfile_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: TutorProfile_Data!
+  ): TutorProfile_KeyOutput @fdc_generated(from: "TutorProfile", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `TutorSubject` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `TutorSubject` or `null` if not found.
+  """
+  tutorSubject_update(
+    """
+    The key used to identify the object.
+    """
+    key: TutorSubject_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: TutorSubject_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: TutorSubject_Data!
+  ): TutorSubject_KeyOutput @fdc_generated(from: "TutorSubject", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `User` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `User` or `null` if not found.
+  """
+  user_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: User_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: User_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: User_Data!
+  ): User_KeyOutput @fdc_generated(from: "User", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update `Resource` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  resource_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Resource_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Resource_Data!
+  ): Int! @fdc_generated(from: "Resource", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Review` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  review_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Review_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Review_Data!
+  ): Int! @fdc_generated(from: "Review", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Session` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  session_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Session_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Session_Data!
+  ): Int! @fdc_generated(from: "Session", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Subject` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  subject_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Subject_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Subject_Data!
+  ): Int! @fdc_generated(from: "Subject", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `TutorProfile` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  tutorProfile_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: TutorProfile_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: TutorProfile_Data!
+  ): Int! @fdc_generated(from: "TutorProfile", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `TutorSubject` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  tutorSubject_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: TutorSubject_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: TutorSubject_Data!
+  ): Int! @fdc_generated(from: "TutorSubject", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `User` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  user_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: User_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: User_Data!
+  ): Int! @fdc_generated(from: "User", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Delete a single `Resource` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  resource_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Resource_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Resource_FirstRow
+  ): Resource_KeyOutput @fdc_generated(from: "Resource", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Review` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  review_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Review_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Review_FirstRow
+  ): Review_KeyOutput @fdc_generated(from: "Review", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Session` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  session_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Session_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Session_FirstRow
+  ): Session_KeyOutput @fdc_generated(from: "Session", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Subject` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  subject_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Subject_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Subject_FirstRow
+  ): Subject_KeyOutput @fdc_generated(from: "Subject", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `TutorProfile` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  tutorProfile_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: TutorProfile_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: TutorProfile_FirstRow
+  ): TutorProfile_KeyOutput @fdc_generated(from: "TutorProfile", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `TutorSubject` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  tutorSubject_delete(
+    """
+    The key used to identify the object.
+    """
+    key: TutorSubject_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: TutorSubject_FirstRow
+  ): TutorSubject_KeyOutput @fdc_generated(from: "TutorSubject", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `User` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  user_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: User_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: User_FirstRow
+  ): User_KeyOutput @fdc_generated(from: "User", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete `Resource` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  resource_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Resource_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Resource", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Review` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  review_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Review_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Review", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Session` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  session_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Session_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Session", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Subject` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  subject_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Subject_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Subject", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `TutorProfile` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  tutorProfile_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: TutorProfile_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "TutorProfile", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `TutorSubject` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  tutorSubject_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: TutorSubject_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "TutorSubject", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `User` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  user_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: User_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "User", purpose: DELETE_MULTIPLE)
+}

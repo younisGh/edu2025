@@ -1,0 +1,1155 @@
+extend type Resource {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Resource", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `Resource` table.
+  """
+  _count: Int! @fdc_generated(from: "Resource", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Resource` table where the `createdAt` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  createdAt_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Resource.createdAt", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Resource` table where the `description` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  description_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Resource.description", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Resource` table where the `fileUrl` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  fileUrl_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Resource.fileUrl", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Resource` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Resource.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Resource` table where the `resourceType` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  resourceType_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Resource.resourceType", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Resource` table where the `subjectId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  subjectId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Resource.subjectId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Resource` table where the `title` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  title_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Resource.title", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Resource` table where the `uploaderId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  uploaderId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Resource.uploaderId", purpose: QUERY_COUNT)
+  """
+  ✨ Minimum of the `createdAt` field in the `Resource` table.
+  """
+  createdAt_min: Timestamp @fdc_generated(from: "Resource.createdAt", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `createdAt` field in the `Resource` table.
+  """
+  createdAt_max: Timestamp @fdc_generated(from: "Resource.createdAt", purpose: QUERY_MAX)
+}
+extend type Review {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Review", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `Review` table.
+  """
+  _count: Int! @fdc_generated(from: "Review", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Review` table where the `createdAt` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  createdAt_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Review.createdAt", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Review` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Review.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Review` table where the `rating` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  rating_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Review.rating", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Review` table where the `reviewText` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  reviewText_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Review.reviewText", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Review` table where the `sessionId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  sessionId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Review.sessionId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Review` table where the `studentId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  studentId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Review.studentId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Review` table where the `tutorId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  tutorId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Review.tutorId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Review` table where the `updatedAt` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  updatedAt_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Review.updatedAt", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `rating` field in the `Review` table.
+  """
+  rating_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Review.rating", purpose: QUERY_SUM)
+  """
+  ✨ Average the `rating` field in the `Review` table.
+  """
+  rating_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Review.rating", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `createdAt` field in the `Review` table.
+  """
+  createdAt_min: Timestamp @fdc_generated(from: "Review.createdAt", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `rating` field in the `Review` table.
+  """
+  rating_min: Int @fdc_generated(from: "Review.rating", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `updatedAt` field in the `Review` table.
+  """
+  updatedAt_min: Timestamp @fdc_generated(from: "Review.updatedAt", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `createdAt` field in the `Review` table.
+  """
+  createdAt_max: Timestamp @fdc_generated(from: "Review.createdAt", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `rating` field in the `Review` table.
+  """
+  rating_max: Int @fdc_generated(from: "Review.rating", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `updatedAt` field in the `Review` table.
+  """
+  updatedAt_max: Timestamp @fdc_generated(from: "Review.updatedAt", purpose: QUERY_MAX)
+}
+extend type Session {
+  """
+  ✨ List `Review` objects in a one-to-many relationship (where `Review`.`session` is this object).
+  """
+  reviews_on_session(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Review_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Review_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Review_Having
+  ): [Review!]! @fdc_generated(from: "Review.session", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Session", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `Session` table.
+  """
+  _count: Int! @fdc_generated(from: "Session", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Session` table where the `createdAt` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  createdAt_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Session.createdAt", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Session` table where the `durationMinutes` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  durationMinutes_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Session.durationMinutes", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Session` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Session.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Session` table where the `notes` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  notes_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Session.notes", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Session` table where the `sessionDateTime` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  sessionDateTime_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Session.sessionDateTime", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Session` table where the `status` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  status_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Session.status", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Session` table where the `studentFeedback` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  studentFeedback_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Session.studentFeedback", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Session` table where the `studentId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  studentId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Session.studentId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Session` table where the `subjectId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  subjectId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Session.subjectId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Session` table where the `tutorId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  tutorId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Session.tutorId", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `durationMinutes` field in the `Session` table.
+  """
+  durationMinutes_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "Session.durationMinutes", purpose: QUERY_SUM)
+  """
+  ✨ Average the `durationMinutes` field in the `Session` table.
+  """
+  durationMinutes_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Session.durationMinutes", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `createdAt` field in the `Session` table.
+  """
+  createdAt_min: Timestamp @fdc_generated(from: "Session.createdAt", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `durationMinutes` field in the `Session` table.
+  """
+  durationMinutes_min: Int @fdc_generated(from: "Session.durationMinutes", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `sessionDateTime` field in the `Session` table.
+  """
+  sessionDateTime_min: Timestamp @fdc_generated(from: "Session.sessionDateTime", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `createdAt` field in the `Session` table.
+  """
+  createdAt_max: Timestamp @fdc_generated(from: "Session.createdAt", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `durationMinutes` field in the `Session` table.
+  """
+  durationMinutes_max: Int @fdc_generated(from: "Session.durationMinutes", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `sessionDateTime` field in the `Session` table.
+  """
+  sessionDateTime_max: Timestamp @fdc_generated(from: "Session.sessionDateTime", purpose: QUERY_MAX)
+}
+extend type Subject {
+  """
+  ✨ List `Resource` objects in a one-to-many relationship (where `Resource`.`subject` is this object).
+  """
+  resources_on_subject(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Resource_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Resource_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Resource_Having
+  ): [Resource!]! @fdc_generated(from: "Resource.subject", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Session` objects in a one-to-many relationship (where `Session`.`subject` is this object).
+  """
+  sessions_on_subject(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Session_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Session_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Session_Having
+  ): [Session!]! @fdc_generated(from: "Session.subject", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `TutorSubject` objects in a one-to-many relationship (where `TutorSubject`.`subject` is this object).
+  """
+  tutorSubjects_on_subject(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: TutorSubject_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [TutorSubject_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: TutorSubject_Having
+  ): [TutorSubject!]! @fdc_generated(from: "TutorSubject.subject", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `TutorProfile` objects using `TutorSubject` as the join table (a `TutorSubject` object exists where its `subject` is this and its `tutorProfile` is that).
+  """
+  tutorProfiles_via_TutorSubject(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: TutorSubject_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [TutorSubject_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: TutorSubject_Having
+  ): [TutorProfile!]! @fdc_generated(from: "TutorSubject", purpose: QUERY_MULTIPLE_MANY_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Subject", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `Subject` table.
+  """
+  _count: Int! @fdc_generated(from: "Subject", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Subject` table where the `createdAt` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  createdAt_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Subject.createdAt", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Subject` table where the `description` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  description_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Subject.description", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Subject` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Subject.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Subject` table where the `name` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  name_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Subject.name", purpose: QUERY_COUNT)
+  """
+  ✨ Minimum of the `createdAt` field in the `Subject` table.
+  """
+  createdAt_min: Timestamp @fdc_generated(from: "Subject.createdAt", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `createdAt` field in the `Subject` table.
+  """
+  createdAt_max: Timestamp @fdc_generated(from: "Subject.createdAt", purpose: QUERY_MAX)
+}
+extend type TutorProfile {
+  """
+  ✨ List `TutorSubject` objects in a one-to-many relationship (where `TutorSubject`.`tutorProfile` is this object).
+  """
+  tutorSubjects_on_tutorProfile(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: TutorSubject_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [TutorSubject_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: TutorSubject_Having
+  ): [TutorSubject!]! @fdc_generated(from: "TutorSubject.tutorProfile", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Subject` objects using `TutorSubject` as the join table (a `TutorSubject` object exists where its `tutorProfile` is this and its `subject` is that).
+  """
+  subjects_via_TutorSubject(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: TutorSubject_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [TutorSubject_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: TutorSubject_Having
+  ): [Subject!]! @fdc_generated(from: "TutorSubject", purpose: QUERY_MULTIPLE_MANY_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "TutorProfile", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `TutorProfile` table.
+  """
+  _count: Int! @fdc_generated(from: "TutorProfile", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TutorProfile` table where the `averageRating` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  averageRating_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TutorProfile.averageRating", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TutorProfile` table where the `bio` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  bio_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TutorProfile.bio", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TutorProfile` table where the `createdAt` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  createdAt_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TutorProfile.createdAt", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TutorProfile` table where the `experienceYears` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  experienceYears_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TutorProfile.experienceYears", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TutorProfile` table where the `hourlyRate` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  hourlyRate_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TutorProfile.hourlyRate", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TutorProfile` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TutorProfile.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TutorProfile` table where the `qualifications` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  qualifications_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TutorProfile.qualifications", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TutorProfile` table where the `userId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  userId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TutorProfile.userId", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `averageRating` field in the `TutorProfile` table.
+  """
+  averageRating_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "TutorProfile.averageRating", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `experienceYears` field in the `TutorProfile` table.
+  """
+  experienceYears_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "TutorProfile.experienceYears", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `hourlyRate` field in the `TutorProfile` table.
+  """
+  hourlyRate_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "TutorProfile.hourlyRate", purpose: QUERY_SUM)
+  """
+  ✨ Average the `averageRating` field in the `TutorProfile` table.
+  """
+  averageRating_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "TutorProfile.averageRating", purpose: QUERY_AVG)
+  """
+  ✨ Average the `experienceYears` field in the `TutorProfile` table.
+  """
+  experienceYears_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "TutorProfile.experienceYears", purpose: QUERY_AVG)
+  """
+  ✨ Average the `hourlyRate` field in the `TutorProfile` table.
+  """
+  hourlyRate_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "TutorProfile.hourlyRate", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `averageRating` field in the `TutorProfile` table.
+  """
+  averageRating_min: Float @fdc_generated(from: "TutorProfile.averageRating", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `createdAt` field in the `TutorProfile` table.
+  """
+  createdAt_min: Timestamp @fdc_generated(from: "TutorProfile.createdAt", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `experienceYears` field in the `TutorProfile` table.
+  """
+  experienceYears_min: Int @fdc_generated(from: "TutorProfile.experienceYears", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `hourlyRate` field in the `TutorProfile` table.
+  """
+  hourlyRate_min: Float @fdc_generated(from: "TutorProfile.hourlyRate", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `averageRating` field in the `TutorProfile` table.
+  """
+  averageRating_max: Float @fdc_generated(from: "TutorProfile.averageRating", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `createdAt` field in the `TutorProfile` table.
+  """
+  createdAt_max: Timestamp @fdc_generated(from: "TutorProfile.createdAt", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `experienceYears` field in the `TutorProfile` table.
+  """
+  experienceYears_max: Int @fdc_generated(from: "TutorProfile.experienceYears", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `hourlyRate` field in the `TutorProfile` table.
+  """
+  hourlyRate_max: Float @fdc_generated(from: "TutorProfile.hourlyRate", purpose: QUERY_MAX)
+}
+extend type TutorSubject {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "TutorSubject", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `TutorSubject` table.
+  """
+  _count: Int! @fdc_generated(from: "TutorSubject", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TutorSubject` table where the `createdAt` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  createdAt_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TutorSubject.createdAt", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TutorSubject` table where the `subjectId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  subjectId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TutorSubject.subjectId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TutorSubject` table where the `tutorProfileId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  tutorProfileId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TutorSubject.tutorProfileId", purpose: QUERY_COUNT)
+  """
+  ✨ Minimum of the `createdAt` field in the `TutorSubject` table.
+  """
+  createdAt_min: Timestamp @fdc_generated(from: "TutorSubject.createdAt", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `createdAt` field in the `TutorSubject` table.
+  """
+  createdAt_max: Timestamp @fdc_generated(from: "TutorSubject.createdAt", purpose: QUERY_MAX)
+}
+extend type User {
+  """
+  ✨ List `Resource` objects in a one-to-many relationship (where `Resource`.`uploader` is this object).
+  """
+  resources_on_uploader(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Resource_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Resource_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Resource_Having
+  ): [Resource!]! @fdc_generated(from: "Resource.uploader", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Review` objects in a one-to-many relationship (where `Review`.`student` is this object).
+  """
+  reviews_on_student(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Review_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Review_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Review_Having
+  ): [Review!]! @fdc_generated(from: "Review.student", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Review` objects in a one-to-many relationship (where `Review`.`tutor` is this object).
+  """
+  reviews_on_tutor(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Review_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Review_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Review_Having
+  ): [Review!]! @fdc_generated(from: "Review.tutor", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Session` objects in a one-to-many relationship (where `Session`.`student` is this object).
+  """
+  sessions_on_student(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Session_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Session_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Session_Having
+  ): [Session!]! @fdc_generated(from: "Session.student", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Session` objects in a one-to-many relationship (where `Session`.`tutor` is this object).
+  """
+  sessions_on_tutor(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Session_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Session_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Session_Having
+  ): [Session!]! @fdc_generated(from: "Session.tutor", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `TutorProfile` objects in a one-to-many relationship (where `TutorProfile`.`user` is this object).
+  """
+  tutorProfiles_on_user(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: TutorProfile_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [TutorProfile_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: TutorProfile_Having
+  ): [TutorProfile!]! @fdc_generated(from: "TutorProfile.user", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "User", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `User` table.
+  """
+  _count: Int! @fdc_generated(from: "User", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `bio` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  bio_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.bio", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `contactInfo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  contactInfo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.contactInfo", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `createdAt` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  createdAt_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.createdAt", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `displayName` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  displayName_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.displayName", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `email` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  email_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.email", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `photoUrl` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  photoUrl_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.photoUrl", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `userType` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  userType_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.userType", purpose: QUERY_COUNT)
+  """
+  ✨ Minimum of the `createdAt` field in the `User` table.
+  """
+  createdAt_min: Timestamp @fdc_generated(from: "User.createdAt", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `createdAt` field in the `User` table.
+  """
+  createdAt_max: Timestamp @fdc_generated(from: "User.createdAt", purpose: QUERY_MAX)
+}

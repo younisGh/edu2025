@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "101585046920",
+    "project_id": "educational-platform-16729",
+    "storage_bucket": "educational-platform-16729.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:101585046920:android:f12e5cd8827ff23e7cbe3d",
+        "android_client_info": {
+          "package_name": "com.example.educational_platform"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDtX1vxQsXUC6YOagd2HlSSGeJKJKigc8c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

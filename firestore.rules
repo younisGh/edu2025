@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Allow users to read and write their own data
+    match /users/{userId} {
+      // DEV: allow all authenticated users to read the users collection so admin UI can list users
+      allow read: if request.auth != null;
+      // keep writes restricted to the owner
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Allow anyone to read videos, but only authenticated users to create them.
+    // For update/delete, you would typically add a check for the video owner.
+    match /videos/{videoId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      // allow update, delete: if request.auth != null && resource.data.uploaderId == request.auth.uid;
+    }
+
+    // Video meta and engagement
+    match /video_meta/{videoKey} {
+      // Allow reading video meta (e.g., to display titles/thumbnails)
+      allow read: if true;
+
+      // Favorites subcollection: users can read/write their own favorite doc
+      match /favorites/{userId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Comments: public read, only owner can write/update/delete their comment
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+        allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      }
+
+      // Ratings: users can read list, and set/update their own rating doc (id == uid)
+      match /ratings/{userId} {
+        allow read: if true;
+        allow write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Watch progress: users can read/write their own progress doc
+      match /progress/{userId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}

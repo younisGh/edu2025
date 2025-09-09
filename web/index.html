@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- Favicon -->
+  <link rel="apple-touch-icon" href="/edu.png">
+  <link rel="icon" href="/edu.png">
+  <link rel="manifest" href="manifest.json">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A new Flutter project.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="educational_platform">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <title>educational_platform</title>
+  <script type="application/javascript" src="packages/flutter_inappwebview_web/assets/web/web_support.js"></script>
+</head>
+<body>
+  <!-- Load the Agora Iris Web SDK before Flutter's bootstrap script -->
+  <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.22.2.js"></script>
+  <script src="https://download.agora.io/sdk/release/iris-web-rtc_n450_w4220_0.8.6.js"></script>
+  <script src="iris-web-rtc.js"></script>
+  <!-- Multi-stream (camera + screen) bridge for Flutter Web -->
+  <script src="agora-multi-stream.js"></script>
+
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

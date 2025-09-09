@@ -1,0 +1,82 @@
+extend type Resource {
+  """
+  ✨ Implicit primary key field. It's a UUID column default to a generated new value. See `@table` for how to customize it.
+  """
+  id: UUID! @default(expr: "uuidV4()") @fdc_generated(from: "Resource", purpose: IMPLICIT_KEY_FIELD)
+  """
+  ✨ Implicit foreign key field based on `Resource`.`subject`. It must match the value of `Subject`.`id`. See `@ref` for how to customize it.
+  """
+  subjectId: UUID! @fdc_generated(from: "Resource.subject", purpose: IMPLICIT_REF_FIELD)
+  """
+  ✨ Implicit foreign key field based on `Resource`.`uploader`. It must match the value of `User`.`id`. See `@ref` for how to customize it.
+  """
+  uploaderId: UUID! @fdc_generated(from: "Resource.uploader", purpose: IMPLICIT_REF_FIELD)
+}
+extend type Review {
+  """
+  ✨ Implicit primary key field. It's a UUID column default to a generated new value. See `@table` for how to customize it.
+  """
+  id: UUID! @default(expr: "uuidV4()") @fdc_generated(from: "Review", purpose: IMPLICIT_KEY_FIELD)
+  """
+  ✨ Implicit foreign key field based on `Review`.`session`. It must match the value of `Session`.`id`. See `@ref` for how to customize it.
+  """
+  sessionId: UUID! @fdc_generated(from: "Review.session", purpose: IMPLICIT_REF_FIELD)
+  """
+  ✨ Implicit foreign key field based on `Review`.`student`. It must match the value of `User`.`id`. See `@ref` for how to customize it.
+  """
+  studentId: UUID! @fdc_generated(from: "Review.student", purpose: IMPLICIT_REF_FIELD)
+  """
+  ✨ Implicit foreign key field based on `Review`.`tutor`. It must match the value of `User`.`id`. See `@ref` for how to customize it.
+  """
+  tutorId: UUID! @fdc_generated(from: "Review.tutor", purpose: IMPLICIT_REF_FIELD)
+}
+extend type Session {
+  """
+  ✨ Implicit primary key field. It's a UUID column default to a generated new value. See `@table` for how to customize it.
+  """
+  id: UUID! @default(expr: "uuidV4()") @fdc_generated(from: "Session", purpose: IMPLICIT_KEY_FIELD)
+  """
+  ✨ Implicit foreign key field based on `Session`.`student`. It must match the value of `User`.`id`. See `@ref` for how to customize it.
+  """
+  studentId: UUID! @fdc_generated(from: "Session.student", purpose: IMPLICIT_REF_FIELD)
+  """
+  ✨ Implicit foreign key field based on `Session`.`subject`. It must match the value of `Subject`.`id`. See `@ref` for how to customize it.
+  """
+  subjectId: UUID! @fdc_generated(from: "Session.subject", purpose: IMPLICIT_REF_FIELD)
+  """
+  ✨ Implicit foreign key field based on `Session`.`tutor`. It must match the value of `User`.`id`. See `@ref` for how to customize it.
+  """
+  tutorId: UUID! @fdc_generated(from: "Session.tutor", purpose: IMPLICIT_REF_FIELD)
+}
+extend type Subject {
+  """
+  ✨ Implicit primary key field. It's a UUID column default to a generated new value. See `@table` for how to customize it.
+  """
+  id: UUID! @default(expr: "uuidV4()") @fdc_generated(from: "Subject", purpose: IMPLICIT_KEY_FIELD)
+}
+extend type TutorProfile {
+  """
+  ✨ Implicit primary key field. It's a UUID column default to a generated new value. See `@table` for how to customize it.
+  """
+  id: UUID! @default(expr: "uuidV4()") @fdc_generated(from: "TutorProfile", purpose: IMPLICIT_KEY_FIELD)
+  """
+  ✨ Implicit foreign key field based on `TutorProfile`.`user`. It must match the value of `User`.`id`. See `@ref` for how to customize it.
+  """
+  userId: UUID! @fdc_generated(from: "TutorProfile.user", purpose: IMPLICIT_REF_FIELD)
+}
+extend type TutorSubject {
+  """
+  ✨ Implicit foreign key field based on `TutorSubject`.`tutorProfile`. It must match the value of `TutorProfile`.`id`. See `@ref` for how to customize it.
+  """
+  tutorProfileId: UUID! @fdc_generated(from: "TutorSubject.tutorProfile", purpose: IMPLICIT_REF_FIELD)
+  """
+  ✨ Implicit foreign key field based on `TutorSubject`.`subject`. It must match the value of `Subject`.`id`. See `@ref` for how to customize it.
+  """
+  subjectId: UUID! @fdc_generated(from: "TutorSubject.subject", purpose: IMPLICIT_REF_FIELD)
+}
+extend type User {
+  """
+  ✨ Implicit primary key field. It's a UUID column default to a generated new value. See `@table` for how to customize it.
+  """
+  id: UUID! @default(expr: "uuidV4()") @fdc_generated(from: "User", purpose: IMPLICIT_KEY_FIELD)
+}
