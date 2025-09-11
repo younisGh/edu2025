@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:educational_platform/utils/typography.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -124,7 +125,44 @@ class _SettingsPageState extends State<SettingsPage> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        appBar: AppBar(title: const Text('الإعدادات')),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          toolbarHeight: 80,
+          centerTitle: false,
+          titleSpacing: 16,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'الإعدادات',
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: sf(context, 22),
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'تهيئة المنصة وإدارة الأصناف',
+                style: TextStyle(
+                  fontSize: sf(context, 13),
+                  color: const Color(0xFFE5E7EB),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+              ),
+            ),
+          ),
+        ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () => _showCategoryDialog(),
           icon: const Icon(Icons.add),
@@ -159,10 +197,10 @@ class _SettingsPageState extends State<SettingsPage> {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'إعدادات عامة',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: sf(context, 18),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -220,10 +258,10 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'الأصناف',
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: sf(context, 18),
                           fontWeight: FontWeight.bold,
                         ),
                       ),

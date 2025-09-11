@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:educational_platform/utils/typography.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// A reusable row that shows horizontal category tabs and a sort popup button.
@@ -61,19 +62,20 @@ class CategoryTabsWithSort extends StatelessWidget {
           Expanded(
             child: DropdownButtonFormField<String>(
               initialValue: activeTab.isEmpty ? 'all' : activeTab,
-              style: TextStyle(fontSize: isTiny ? 12 : 14),
-              iconSize: isTiny ? 18 : 24,
+              // Keep font sizing via style, color handled by GradientText
+              style: TextStyle(fontSize: sf(context, isTiny ? 12 : 14)),
+              iconSize: sd(context, isTiny ? 18 : 24),
               decoration: InputDecoration(
                 contentPadding: EdgeInsets.symmetric(
-                  horizontal: isTiny ? 8 : 12,
-                  vertical: isTiny ? 6 : 10,
+                  horizontal: sd(context, isTiny ? 8 : 12),
+                  vertical: sd(context, isTiny ? 6 : 10),
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(isTiny ? 8 : 12),
+                  borderRadius: BorderRadius.circular(sd(context, isTiny ? 8 : 12)),
                   borderSide: BorderSide(color: Colors.grey.shade300),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(isTiny ? 8 : 12),
+                  borderRadius: BorderRadius.circular(sd(context, isTiny ? 8 : 12)),
                   borderSide: BorderSide(color: Colors.grey.shade300),
                 ),
               ),
@@ -82,9 +84,40 @@ class CategoryTabsWithSort extends StatelessWidget {
                 final name = c['name'] ?? '';
                 return DropdownMenuItem<String>(
                   value: id,
-                  child: Text(name, overflow: TextOverflow.ellipsis),
+                  child: GradientText(
+                    name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: sf(context, isTiny ? 12 : 14),
+                      fontWeight: FontWeight.w600,
+                    ),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+                    ),
+                  ),
                 );
               }).toList(),
+              selectedItemBuilder: (context) {
+                return cats.map((c) {
+                  final name = c['name'] ?? '';
+                  return Align(
+                    alignment: Alignment.centerRight,
+                    child: GradientText(
+                      name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: sf(context, isTiny ? 12 : 14),
+                        fontWeight: FontWeight.w700,
+                      ),
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+                      ),
+                    ),
+                  );
+                }).toList();
+              },
               onChanged: (val) {
                 if (val != null) onTabSelected(val);
               },
@@ -160,7 +193,7 @@ class CategoryTabsWithSort extends StatelessWidget {
                               fontWeight: isActive
                                   ? FontWeight.bold
                                   : FontWeight.w600,
-                              fontSize: 16,
+                              fontSize: sf(context, 16),
                             ),
                             child: Text(category['name'] ?? ''),
                           ),
@@ -180,6 +213,44 @@ class CategoryTabsWithSort extends StatelessWidget {
   }
 }
 
+/// Simple gradient text widget using ShaderMask to render a linear gradient
+/// over the glyphs. Useful when default widgets don't support gradient color.
+class GradientText extends StatelessWidget {
+  final String text;
+  final TextStyle? style;
+  final Gradient gradient;
+  final int? maxLines;
+  final TextOverflow? overflow;
+
+  const GradientText(
+    this.text, {
+    super.key,
+    this.style,
+    required this.gradient,
+    this.maxLines,
+    this.overflow,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final baseStyle = style ?? const TextStyle();
+    return ShaderMask(
+      shaderCallback: (bounds) {
+        return gradient.createShader(
+          Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+        );
+      },
+      blendMode: BlendMode.srcIn,
+      child: Text(
+        text,
+        maxLines: maxLines,
+        overflow: overflow,
+        style: baseStyle.copyWith(color: Colors.white),
+      ),
+    );
+  }
+}
+
 class _SortButton extends StatelessWidget {
   final String sortOption;
   final ValueChanged<String> onSelected;
@@ -195,24 +266,24 @@ class _SortButton extends StatelessWidget {
       tooltip: 'ترتيب الفيديوهات',
       onSelected: onSelected,
       position: PopupMenuPosition.under,
-      itemBuilder: (context) => const [
-        PopupMenuItem(value: 'latest', child: Text('الأحدث')),
-        PopupMenuItem(value: 'oldest', child: Text('الأقدم')),
-        PopupMenuItem(value: 'most_viewed', child: Text('الأكثر مشاهدة')),
-        PopupMenuItem(value: 'least_viewed', child: Text('الأقل مشاهدة')),
+      itemBuilder: (context) => [
+        const PopupMenuItem(value: 'latest', child: Text('الأحدث')),
+        const PopupMenuItem(value: 'oldest', child: Text('الأقدم')),
+        const PopupMenuItem(value: 'most_viewed', child: Text('الأكثر مشاهدة')),
+        const PopupMenuItem(value: 'least_viewed', child: Text('الأقل مشاهدة')),
       ],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       offset: const Offset(0, 8),
       child: Container(
         padding: EdgeInsets.symmetric(
-          horizontal: isTiny ? 8 : 12,
-          vertical: isTiny ? 6 : 10,
+          horizontal: sd(context, isTiny ? 8 : 12),
+          vertical: sd(context, isTiny ? 6 : 10),
         ),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
           ),
-          borderRadius: BorderRadius.circular(isTiny ? 8 : 12),
+          borderRadius: BorderRadius.circular(sd(context, isTiny ? 8 : 12)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.08),
@@ -227,15 +298,15 @@ class _SortButton extends StatelessWidget {
             Icon(
               Icons.sort_rounded,
               color: Colors.white,
-              size: isTiny ? 18 : 24,
+              size: sd(context, isTiny ? 18 : 24),
             ),
-            SizedBox(width: isTiny ? 4 : 8),
+            SizedBox(width: sd(context, isTiny ? 4 : 8)),
             Text(
               'ترتيب الفيديوهات',
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
-                fontSize: isTiny ? 12 : 14,
+                fontSize: sf(context, isTiny ? 12 : 14),
               ),
             ),
           ],

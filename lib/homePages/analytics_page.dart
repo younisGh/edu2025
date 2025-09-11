@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:educational_platform/utils/typography.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:educational_platform/services/engagement_service.dart';
 
@@ -68,21 +69,21 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           titleSpacing: 16,
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
+            children: [
               Text(
                 'لوحة التحليلات',
                 style: TextStyle(
                   fontWeight: FontWeight.w800,
-                  fontSize: 22,
+                  fontSize: sf(context, 22),
                   color: Colors.white,
                 ),
               ),
-              SizedBox(height: 6),
+              const SizedBox(height: 6),
               Text(
                 'نظرة عامة على الأداء والمشاركة',
                 style: TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFFE5E7EB),
+                  fontSize: sf(context, 13),
+                  color: const Color(0xFFE5E7EB),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -100,7 +101,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         ),
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(sp(context, 24)),
             physics: const BouncingScrollPhysics(),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,9 +131,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                       Expanded(
                         child: Text(
                           _rangeLabel(_range),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF111827),
+                            color: const Color(0xFF111827),
+                            fontSize: sf(context, 14),
                           ),
                         ),
                       ),
@@ -140,9 +142,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF667EEA),
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: sd(context, 16),
+                            vertical: sd(context, 12),
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -155,13 +157,13 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: sp(context, 24)),
                 const _KpiSection(),
-                SizedBox(height: 24),
+                SizedBox(height: sp(context, 24)),
                 const _TopVideosByViewsSection(),
-                SizedBox(height: 24),
+                SizedBox(height: sp(context, 24)),
                 _VideosAddedTrendSection(dateRange: _range),
-                SizedBox(height: 24),
+                SizedBox(height: sp(context, 24)),
                 const _FavoriteVideosSection(),
               ],
             ),
@@ -214,7 +216,7 @@ class _KpiSection extends StatelessWidget {
         final isWide = constraints.maxWidth > 900;
         final crossAxisCount = isWide ? 3 : 1;
         return Container(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(sp(context, 20)),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
@@ -294,7 +296,7 @@ class _KpiCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(sp(context, 16)),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -303,8 +305,8 @@ class _KpiCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 52,
-            height: 52,
+            width: sd(context, 52),
+            height: sd(context, 52),
             decoration: BoxDecoration(
               gradient: gradient,
               borderRadius: BorderRadius.circular(14),
@@ -316,46 +318,46 @@ class _KpiCard extends StatelessWidget {
                 ),
               ],
             ),
-            child: Icon(icon, color: Colors.white, size: 26),
+            child: Icon(icon, color: Colors.white, size: sd(context, 26)),
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Color(0xFF6B7280),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
+          SizedBox(width: sp(context, 14)),
+          FutureBuilder<int>(
+            future: future,
+            builder: (context, snap) {
+              if (snap.connectionState == ConnectionState.waiting) {
+                return const SizedBox(
+                  width: 60,
+                  child: LinearProgressIndicator(minHeight: 6),
+                );
+              }
+              final value = (snap.data ?? 0).toDouble();
+              return TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0, end: value),
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.easeOutCubic,
+                builder: (context, v, _) => Text(
+                  formatter(v),
+                  style: TextStyle(
+                    fontSize: sf(context, 22),
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF111827),
+                    letterSpacing: 0.2,
                   ),
                 ),
-                const SizedBox(height: 6),
-                FutureBuilder<int>(
-                  future: future,
-                  builder: (context, snap) {
-                    if (snap.connectionState == ConnectionState.waiting) {
-                      return const LinearProgressIndicator(minHeight: 6);
-                    }
-                    final value = (snap.data ?? 0).toDouble();
-                    return TweenAnimationBuilder<double>(
-                      tween: Tween(begin: 0, end: value),
-                      duration: const Duration(milliseconds: 600),
-                      curve: Curves.easeOutCubic,
-                      builder: (context, v, _) => Text(
-                        formatter(v),
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF111827),
-                          letterSpacing: 0.2,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ],
+              );
+            },
+          ),
+          SizedBox(width: sp(context, 10)),
+          Expanded(
+            child: Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: const Color(0xFF6B7280),
+                fontSize: sf(context, 13),
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
@@ -416,24 +418,29 @@ class _TopVideosByViewsSection extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.leaderboard_rounded,
                   color: Colors.white,
-                  size: 24,
+                  size: sd(context, 24),
                 ),
               ),
-              const SizedBox(width: 16),
-              const Text(
-                'أعلى 5 فيديوهات حسب المشاهدات',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1F2937),
+              SizedBox(width: sp(context, 16)),
+              Expanded(
+                child: Text(
+                  'أعلى 5 فيديوهات حسب المشاهدات',
+                  style: TextStyle(
+                    fontSize: sf(context, 16),
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF1F2937),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  softWrap: false,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: sp(context, 16)),
           StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
             stream: FirebaseFirestore.instance
                 .collection('videos')
@@ -538,10 +545,10 @@ class _TopVideosByViewsSection extends StatelessWidget {
                                 title.isEmpty ? 'بدون عنوان' : title,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 16,
+                                style: TextStyle(
+                                  fontSize: sf(context, 16),
                                   fontWeight: FontWeight.w700,
-                                  color: Color(0xFF111827),
+                                  color: const Color(0xFF111827),
                                 ),
                               ),
                             ),
@@ -559,9 +566,10 @@ class _TopVideosByViewsSection extends StatelessWidget {
                                 final realViews = snap.data ?? 0;
                                 return Text(
                                   realViews.toString(),
-                                  style: const TextStyle(
-                                    color: Color(0xFF8B5CF6),
+                                  style: TextStyle(
+                                    color: const Color(0xFF8B5CF6),
                                     fontWeight: FontWeight.bold,
+                                    fontSize: sf(context, 14),
                                   ),
                                 );
                               },
@@ -634,24 +642,29 @@ class _VideosAddedTrendSection extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.trending_up_rounded,
                   color: Colors.white,
-                  size: 24,
+                  size: sd(context, 24),
                 ),
               ),
-              const SizedBox(width: 16),
-              const Text(
-                'اتجاه الفيديوهات المضافة',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1F2937),
+              SizedBox(width: sp(context, 16)),
+              Expanded(
+                child: Text(
+                  'اتجاه الفيديوهات المضافة',
+                  style: TextStyle(
+                    fontSize: sf(context, 18),
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF1F2937),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  softWrap: false,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: sp(context, 16)),
           StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
             stream: FirebaseFirestore.instance
                 .collection('videos')
@@ -865,18 +878,23 @@ class _FavoriteVideosSection extends StatelessWidget {
                   size: 24,
                 ),
               ),
-              const SizedBox(width: 16),
-              const Text(
-                'الفيديوهات المفضلة',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1F2937),
+              SizedBox(width: sp(context, 16)),
+              Expanded(
+                child: Text(
+                  'الفيديوهات المفضلة',
+                  style: TextStyle(
+                    fontSize: sf(context, 16),
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF1F2937),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  softWrap: false,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: sp(context, 16)),
           // Aggregate favorites using collectionGroup
           StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
             stream: FirebaseFirestore.instance

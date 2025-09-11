@@ -12,6 +12,7 @@ import 'package:educational_platform/services/engagement_service.dart';
 import 'package:educational_platform/components/shared_video_widgets.dart';
 import 'package:educational_platform/live_stream_page.dart'; // Added import
 import 'package:educational_platform/components/notification_bell.dart';
+import 'package:educational_platform/utils/typography.dart';
 
 class UsersDashboard extends StatefulWidget {
   const UsersDashboard({super.key});
@@ -148,10 +149,10 @@ class _UsersDashboardState extends State<UsersDashboard>
                   else
                     Container(
                       color: const Color(0xFFE5E7EB),
-                      child: const Center(
+                      child: Center(
                         child: Icon(
                           Icons.ondemand_video_rounded,
-                          size: 48,
+                          size: sd(context, 48),
                           color: Colors.grey,
                         ),
                       ),
@@ -340,7 +341,7 @@ class _UsersDashboardState extends State<UsersDashboard>
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: isMobile ? 14 : 16,
+                          fontSize: sf(context, isMobile ? 14 : 16),
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF111827),
                         ),
@@ -351,7 +352,7 @@ class _UsersDashboardState extends State<UsersDashboard>
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: isMobile ? 12 : 13,
+                          fontSize: sf(context, isMobile ? 12 : 13),
                           color: const Color(0xFF6B7280),
                         ),
                       ),
@@ -615,8 +616,21 @@ class _UsersDashboardState extends State<UsersDashboard>
         currentRoute == null ||
         currentRoute == '/users_dashboard'; // Adjust as per your named routes
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    double sidebarWidth;
+    if (screenWidth < 360) {
+      sidebarWidth = screenWidth * 0.85; // very small phones
+    } else if (screenWidth < 600) {
+      sidebarWidth = screenWidth * 0.72; // small phones
+    } else if (screenWidth < 900) {
+      sidebarWidth = 320; // tablets / small desktops
+    } else {
+      sidebarWidth = 360; // large desktops
+    }
+    sidebarWidth = sidebarWidth.clamp(240.0, 420.0);
+
     return Container(
-      width: 320,
+      width: sidebarWidth,
       height: double.infinity,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -654,12 +668,12 @@ class _UsersDashboardState extends State<UsersDashboard>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'القائمة',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: sf(context, 24),
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF6D28D9),
+                    color: const Color(0xFF6D28D9),
                   ),
                 ),
                 IconButton(
@@ -816,7 +830,7 @@ class _UsersDashboardState extends State<UsersDashboard>
             ),
             child: Row(
               children: [
-                Icon(icon, color: iconColor, size: 20),
+                Icon(icon, color: iconColor, size: sd(context, 20)),
                 const SizedBox(width: 16),
                 Text(
                   title,

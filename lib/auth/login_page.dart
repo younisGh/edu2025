@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:educational_platform/auth/signup_page.dart';
 import 'package:flutter/material.dart';
+import 'package:educational_platform/utils/typography.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginPage extends StatefulWidget {
@@ -397,24 +398,24 @@ class _LoginPageState extends State<LoginPage>
                           ),
                         ),
                         const SizedBox(height: 16),
-                        const Text(
+                        Text(
                           'تسجيل الدخول',
                           style: TextStyle(
-                            fontSize: 28,
+                            fontSize: sf(context, 28),
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF430DD6),
+                            color: const Color(0xFF430DD6),
                           ),
                         ),
                         const SizedBox(height: 32),
 
                         // Phone Number Field
-                        const Align(
+                        Align(
                           alignment: Alignment.centerRight,
                           child: Text(
                             'رقم الهاتف',
                             style: TextStyle(
-                              fontSize: 16,
-                              color: Color(0xFF1E1E1E),
+                              fontSize: sf(context, 16),
+                              color: const Color(0xFF1E1E1E),
                             ),
                           ),
                         ),
@@ -423,14 +424,14 @@ class _LoginPageState extends State<LoginPage>
                           builder: (context, constraints) {
                             final isNarrow = constraints.maxWidth < 360;
                             final fieldFont = TextStyle(
-                              fontSize: isNarrow ? 14 : 16,
+                              fontSize: sf(context, isNarrow ? 14 : 16),
                             );
                             final hintFont = TextStyle(
-                              fontSize: isNarrow ? 13 : 14,
+                              fontSize: sf(context, isNarrow ? 13 : 14),
                               color: Colors.black45,
                             );
                             final codeFont = TextStyle(
-                              fontSize: isNarrow ? 12 : 14,
+                              fontSize: sf(context, isNarrow ? 12 : 14),
                               color: Colors.black54,
                             );
                             return TextFormField(
@@ -469,13 +470,13 @@ class _LoginPageState extends State<LoginPage>
                         const SizedBox(height: 20),
 
                         // Password Field
-                        const Align(
+                        Align(
                           alignment: Alignment.centerRight,
                           child: Text(
                             'كلمة المرور',
                             style: TextStyle(
-                              fontSize: 16,
-                              color: Color(0xFF1E1E1E),
+                              fontSize: sf(context, 16),
+                              color: const Color(0xFF1E1E1E),
                             ),
                           ),
                         ),
@@ -489,6 +490,10 @@ class _LoginPageState extends State<LoginPage>
                               : null,
                           decoration: InputDecoration(
                             hintText: 'ادخل كلمة المرور',
+                            hintStyle: TextStyle(
+                              color: Colors.grey[400],
+                              fontSize: sf(context, 16),
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                               borderSide: const BorderSide(
@@ -538,11 +543,11 @@ class _LoginPageState extends State<LoginPage>
                                       strokeWidth: 2,
                                     ),
                                   )
-                                : const Text(
+                                : Text(
                                     'دخول',
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 16,
+                                      fontSize: sf(context, 16),
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -561,11 +566,11 @@ class _LoginPageState extends State<LoginPage>
                                     strokeWidth: 2,
                                   ),
                                 )
-                              : const Text(
+                              : Text(
                                   'نسيت كلمة المرور؟',
                                   style: TextStyle(
-                                    color: Color(0xFF1E88E5),
-                                    fontSize: 14,
+                                    color: const Color(0xFF1E88E5),
+                                    fontSize: sf(context, 14),
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -579,11 +584,11 @@ class _LoginPageState extends State<LoginPage>
                             final labelStyle = TextStyle(
                               color: const Color(0xFF6200EE),
                               fontWeight: FontWeight.bold,
-                              fontSize: isNarrow ? 13 : 14,
+                              fontSize: sf(context, isNarrow ? 13 : 14),
                             );
                             final infoStyle = TextStyle(
                               color: Colors.grey,
-                              fontSize: isNarrow ? 13 : 14,
+                              fontSize: sf(context, isNarrow ? 13 : 14),
                             );
                             return Directionality(
                               textDirection: TextDirection.rtl,

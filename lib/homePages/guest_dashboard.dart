@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:educational_platform/components/video_player_page.dart';
 import 'package:educational_platform/services/settings_service.dart';
+import 'package:educational_platform/utils/typography.dart';
 
 class GuestDashboard extends StatefulWidget {
   const GuestDashboard({super.key});
@@ -137,75 +138,115 @@ class _GuestDashboardState extends State<GuestDashboard> {
 
                       // Login/Signup Buttons (use Wrap on mobile to avoid overflow)
                       Flexible(
-                        child: Directionality(
-                          textDirection: TextDirection.rtl,
-                          child: Wrap(
-                            alignment: WrapAlignment.end,
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: [
-                              ElevatedButton.icon(
-                                onPressed: () =>
-                                    Navigator.pushNamed(context, '/login'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: const Color(0xFF6D28D9),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
+                        child: Builder(
+                          builder: (context) {
+                            final width = MediaQuery.of(context).size.width;
+                            final isUltraSmall = width < 360; // special tweak
+                            final horizontalPad = isUltraSmall
+                                ? 8.0
+                                : (isMobile ? 12.0 : 20.0);
+                            final verticalPad = isUltraSmall
+                                ? 6.0
+                                : (isMobile ? 8.0 : 10.0);
+                            final minHeight = isUltraSmall
+                                ? 30.0
+                                : (isMobile ? 36.0 : 44.0);
+                            final fontSize = isUltraSmall
+                                ? 12.0
+                                : (isMobile ? 13.0 : 14.0);
+                            final iconSize = isUltraSmall ? 16.0 : 18.0;
+
+                            final buttons = Directionality(
+                              textDirection: TextDirection.rtl,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  ElevatedButton.icon(
+                                    onPressed: () =>
+                                        Navigator.pushNamed(context, '/login'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.white,
+                                      foregroundColor: const Color(0xFF6D28D9),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: horizontalPad,
+                                        vertical: verticalPad,
+                                      ),
+                                      minimumSize: Size(0, minHeight),
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                      visualDensity: VisualDensity.compact,
+                                    ),
+                                    icon: Icon(
+                                      Icons.login_rounded,
+                                      size: iconSize,
+                                    ),
+                                    label: Text(
+                                      'تسجيل الدخول',
+                                      style: TextStyle(
+                                        fontSize: fontSize,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                                   ),
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: isMobile ? 12 : 20,
-                                    vertical: isMobile ? 8 : 10,
+                                  const SizedBox(width: 8),
+                                  OutlinedButton.icon(
+                                    onPressed: () =>
+                                        Navigator.pushNamed(context, '/signup'),
+                                    style: OutlinedButton.styleFrom(
+                                      side: const BorderSide(
+                                        color: Colors.white,
+                                        width: 1.5,
+                                      ),
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: horizontalPad,
+                                        vertical: verticalPad,
+                                      ),
+                                      minimumSize: Size(0, minHeight),
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                      visualDensity: VisualDensity.compact,
+                                    ),
+                                    icon: Icon(
+                                      Icons.person_add_alt_1,
+                                      size: iconSize,
+                                    ),
+                                    label: Text(
+                                      'إنشاء حساب',
+                                      style: TextStyle(
+                                        fontSize: fontSize,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                                   ),
-                                  minimumSize: Size(
-                                    isMobile ? 0 : 100,
-                                    isMobile ? 36 : 44,
-                                  ),
-                                ),
-                                icon: const Icon(Icons.login_rounded, size: 18),
-                                label: Text(
-                                  'تسجيل الدخول',
-                                  style: TextStyle(
-                                    fontSize: isMobile ? 13 : 14,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
+                                ],
                               ),
-                              OutlinedButton.icon(
-                                onPressed: () =>
-                                    Navigator.pushNamed(context, '/signup'),
-                                style: OutlinedButton.styleFrom(
-                                  side: const BorderSide(
-                                    color: Colors.white,
-                                    width: 1.5,
-                                  ),
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: isMobile ? 12 : 20,
-                                    vertical: isMobile ? 8 : 10,
-                                  ),
-                                  minimumSize: Size(
-                                    isMobile ? 0 : 100,
-                                    isMobile ? 36 : 44,
-                                  ),
+                            );
+
+                            if (isUltraSmall) {
+                              // Ensure both buttons stay on one line by scaling if needed
+                              return Align(
+                                alignment: Alignment.centerRight,
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerRight,
+                                  child: buttons,
                                 ),
-                                icon: const Icon(
-                                  Icons.person_add_alt_1,
-                                  size: 18,
-                                ),
-                                label: Text(
-                                  'إنشاء حساب',
-                                  style: TextStyle(
-                                    fontSize: isMobile ? 13 : 14,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                              );
+                            }
+
+                            // Default behavior (no scaling) on wider screens
+                            return Align(
+                              alignment: Alignment.centerRight,
+                              child: buttons,
+                            );
+                          },
                         ),
                       ),
                     ],
@@ -238,7 +279,7 @@ class _GuestDashboardState extends State<GuestDashboard> {
                                 title,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  fontSize: isMobile ? 24 : 32,
+                                  fontSize: sf(context, isMobile ? 24 : 32),
                                   fontWeight: FontWeight.w800,
                                   color: Colors.white,
                                 ),
@@ -248,7 +289,7 @@ class _GuestDashboardState extends State<GuestDashboard> {
                                 desc,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  fontSize: isMobile ? 14 : 16,
+                                  fontSize: sf(context, isMobile ? 14 : 16),
                                   color: Colors.white70,
                                   fontWeight: FontWeight.w300,
                                 ),
@@ -284,20 +325,20 @@ class _GuestDashboardState extends State<GuestDashboard> {
                 child: TextField(
                   textAlign: TextAlign.right,
                   textDirection: TextDirection.rtl,
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: TextStyle(
+                    fontSize: sf(context, 16),
                     color: Color(0xFF1F2937),
                   ),
                   decoration: InputDecoration(
                     hintText: 'ابحث عن الدروس والمحتوى التعليمي...',
                     hintStyle: TextStyle(
                       color: Colors.grey.shade500,
-                      fontSize: 16,
+                      fontSize: sf(context, 14),
                     ),
                     suffixIcon: Container(
                       margin: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
+                        gradient: LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
@@ -410,7 +451,9 @@ class _GuestDashboardState extends State<GuestDashboard> {
                       child: Text(
                         name,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: isTiny ? 13 : 14),
+                        style: TextStyle(
+                          fontSize: sf(context, isTiny ? 13 : 14),
+                        ),
                       ),
                     );
                   }).toList(),
@@ -488,7 +531,7 @@ class _GuestDashboardState extends State<GuestDashboard> {
                           fontWeight: isActive
                               ? FontWeight.bold
                               : FontWeight.w600,
-                          fontSize: 16,
+                          fontSize: sf(context, 16),
                         ),
                         child: Text(category['name'] ?? ''),
                       ),
@@ -663,7 +706,7 @@ class _GuestDashboardState extends State<GuestDashboard> {
                                 child: Text(
                                   title,
                                   style: TextStyle(
-                                    fontSize: isTiny ? 13 : 14,
+                                    fontSize: sf(context, isTiny ? 13 : 14),
                                     fontWeight: FontWeight.bold,
                                     color: const Color(0xFF1F2937),
                                   ),
@@ -677,7 +720,7 @@ class _GuestDashboardState extends State<GuestDashboard> {
                           Text(
                             desc,
                             style: TextStyle(
-                              fontSize: isTiny ? 11 : 12,
+                              fontSize: sf(context, isTiny ? 11 : 12),
                               color: const Color(0xFF6B7280),
                               height: 1.35,
                             ),

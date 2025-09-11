@@ -15,6 +15,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:educational_platform/utils/typography.dart';
 
 const appId = "8e5303f31e2246e2b0851ad8b39979d7";
 // Token will be fetched dynamically from Firebase Function `getAgoraRtcToken`
@@ -671,12 +672,12 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
             color: Colors.black.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(12.0),
           ),
-          child: const Text(
+          child: Text(
             'البث متوقف مؤقتًا',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.white,
-              fontSize: 18.0,
+              fontSize: sf(context, 18.0),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -692,12 +693,12 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
             color: Colors.black.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(12.0),
           ),
-          child: const Text(
+          child: Text(
             'في انتظار انضمام المشاركين إلى البث...',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.white,
-              fontSize: 16.0,
+              fontSize: sf(context, 16.0),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -761,7 +762,7 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.person, color: Colors.white, size: 16),
+                  Icon(Icons.person, color: Colors.white, size: sd(context, 16)),
                   const SizedBox(width: 6),
                   Text(
                     name,
@@ -862,7 +863,7 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
                   child: Icon(
                     _isCameraDisabled ? Icons.videocam_off : Icons.videocam,
                     color: _isCameraDisabled ? Colors.grey[400] : Colors.white,
-                    size: 28.0,
+                    size: sd(context, 28.0),
                   ),
                 ),
               ),
@@ -1264,10 +1265,10 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
                       padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.person,
                             color: Colors.white70,
-                            size: 18,
+                            size: sd(context, 18),
                           ),
                           const SizedBox(width: 6),
                           Expanded(

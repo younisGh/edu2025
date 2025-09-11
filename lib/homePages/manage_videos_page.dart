@@ -7,6 +7,7 @@ import 'package:educational_platform/run_videos.dart';
 import 'package:educational_platform/homePages/admin_video_details_page.dart';
 import 'dart:async';
 import 'package:educational_platform/components/shared_video_widgets.dart';
+import 'package:educational_platform/utils/typography.dart';
 import 'package:educational_platform/components/arrow_scroll.dart';
 import 'package:educational_platform/services/engagement_service.dart';
 
@@ -319,53 +320,76 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
         child: Scaffold(
           backgroundColor: const Color(0xFFFFFFFF),
           appBar: AppBar(
-            backgroundColor: Colors.white.withValues(alpha: 0.8),
-            elevation: 1,
-            title: Row(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            toolbarHeight: 80,
+            centerTitle: false,
+            titleSpacing: 16,
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(
-                  Icons.play_circle_fill_rounded,
-                  color: Color(0xFFEA2A33),
-                  size: 32,
-                ),
-                const SizedBox(width: 8),
-                const Text(
+                Text(
                   'إدارة الفيديوهات',
                   style: TextStyle(
-                    color: Color(0xFF111827),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    fontSize: sf(context, 22),
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'تنظيم وإضافة وتحرير مقاطع الفيديو',
+                  style: TextStyle(
+                    fontSize: sf(context, 13),
+                    color: const Color(0xFFE5E7EB),
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
+            ),
+            flexibleSpace: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+                ),
+              ),
             ),
             actions: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: ElevatedButton.icon(
                   onPressed: _showAddVideoDialog,
-                  icon: const Icon(Icons.add, color: Colors.white),
-                  label: const Text(
+                  icon: Icon(Icons.add, color: Colors.white),
+                  label: Text(
                     'إضافة فيديو جديد',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: sf(context, 14),
+                    ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFEA2A33),
+                    backgroundColor: const Color.fromARGB(49, 41, 125, 243),
                     shape: RoundedRectangleBorder(
+                      side: const BorderSide(
+                        color: Color.fromARGB(255, 237, 239, 241),
+                      ),
                       borderRadius: BorderRadius.circular(8),
                     ),
+                    foregroundColor: Colors.white,
                   ),
                 ),
               ),
               Padding(
                 padding: const EdgeInsetsDirectional.only(end: 24.0),
                 child: CircleAvatar(
-                  backgroundColor: Colors.grey[200],
+                  backgroundColor: Colors.white.withValues(alpha: 0.25),
                   backgroundImage: _userPhotoUrl != null
                       ? NetworkImage(_userPhotoUrl!)
                       : null,
                   child: _userPhotoUrl == null
-                      ? const Icon(Icons.person, color: Colors.grey)
+                      ? const Icon(Icons.person, color: Colors.white)
                       : null,
                 ),
               ),
@@ -393,26 +417,9 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
   }
 
   Widget _buildHeader() {
-    final width = MediaQuery.of(context).size.width;
-    final isTiny = width < 360;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'إدارة مقاطع الفيديو',
-          style: TextStyle(
-            fontSize: isTiny ? 22 : 32,
-            fontWeight: FontWeight.w800,
-            color: const Color(0xFF111827),
-          ),
-        ),
-        if (!isTiny) ...[
-          const SizedBox(height: 8),
-          const Text(
-            'تنظيم وتحرير وحذف مقاطع الفيديو الخاصة بك بسهولة.',
-            style: TextStyle(fontSize: 18, color: Color(0xFF6B7280)),
-          ),
-        ],
         const SizedBox(height: 24),
         TextField(
           controller: _searchController,
@@ -507,6 +514,7 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
                             ? Colors.white
                             : const Color(0xFF111827),
                         fontWeight: FontWeight.bold,
+                        fontSize: sf(context, 14),
                       ),
                     ),
                   ),
@@ -748,9 +756,9 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
                       children: [
                         Text(
                           title.isEmpty ? 'بدون عنوان' : title,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontSize: sf(context, 16),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -760,7 +768,7 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
                           description.isEmpty ? 'لا يوجد وصف' : description,
                           style: TextStyle(
                             color: Colors.grey.shade600,
-                            fontSize: 14,
+                            fontSize: sf(context, 14),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

@@ -12,6 +12,7 @@ import 'package:educational_platform/services/engagement_service.dart';
 import 'package:educational_platform/components/shared_video_widgets.dart';
 import 'package:educational_platform/live_stream_page.dart';
 import 'package:educational_platform/components/admin_send_notification_dialog.dart';
+import 'package:educational_platform/utils/typography.dart';
 import 'package:educational_platform/services/settings_service.dart';
 
 class AdminDashboard extends StatefulWidget {
@@ -229,8 +230,23 @@ class _AdminDashboardState extends State<AdminDashboard> {
   }
 
   Widget _buildSidebar() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    // Responsive drawer width: narrower on very small screens, fixed on medium, slightly wider on large
+    double drawerWidth;
+    if (screenWidth < 360) {
+      drawerWidth = screenWidth * 0.85; // very small phones
+    } else if (screenWidth < 600) {
+      drawerWidth = screenWidth * 0.72; // small phones
+    } else if (screenWidth < 900) {
+      drawerWidth = 320; // tablets / small desktops
+    } else {
+      drawerWidth = 360; // large desktops
+    }
+    // Clamp to sensible bounds
+    drawerWidth = drawerWidth.clamp(240.0, 420.0);
+
     return Drawer(
-      width: 320,
+      width: drawerWidth,
       child: Container(
         height: double.infinity,
         decoration: const BoxDecoration(
@@ -324,17 +340,17 @@ class _AdminDashboardState extends State<AdminDashboard> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
+          Text(
             'لوحة التحكم',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: sf(context, 24),
               fontWeight: FontWeight.bold,
-              color: Color(0xFF6D28D9),
+              color: const Color(0xFF6D28D9),
             ),
           ),
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.close, color: Colors.grey),
+            icon: Icon(Icons.close, color: Colors.grey, size: sd(context, 20)),
           ),
         ],
       ),
@@ -373,7 +389,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       : isActive
                       ? const Color(0xFF6D28D9)
                       : Colors.grey,
-                  size: 20,
+                  size: sd(context, 20),
                 ),
                 const SizedBox(width: 16),
                 Text(
@@ -385,6 +401,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         ? const Color(0xFF6D28D9)
                         : const Color(0xFF374151),
                     fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+                    fontSize: sf(context, 14),
                   ),
                 ),
               ],
@@ -505,7 +522,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: isTiny ? 12 : (isMobile ? 14 : 18),
+                                  fontSize: sf(
+                                    context,
+                                    isTiny ? 12 : (isMobile ? 14 : 18),
+                                  ),
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -569,7 +589,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                 title,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  fontSize: isTiny ? 18 : (isMobile ? 24 : 32),
+                                  fontSize: sf(
+                                    context,
+                                    isTiny ? 18 : (isMobile ? 24 : 32),
+                                  ),
                                   fontWeight: FontWeight.w800,
                                   color: Colors.white,
                                 ),
@@ -579,7 +602,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                 desc,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  fontSize: isTiny ? 12 : (isMobile ? 14 : 16),
+                                  fontSize: sf(
+                                    context,
+                                    isTiny ? 12 : (isMobile ? 14 : 16),
+                                  ),
                                   color: Colors.white70,
                                   fontWeight: FontWeight.w300,
                                 ),
@@ -615,16 +641,16 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 child: TextField(
                   textAlign: TextAlign.right,
                   textDirection: TextDirection.rtl,
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: TextStyle(
+                    fontSize: sf(context, 16),
                     color: Color(0xFF1F2937),
                   ),
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: 'ابحث عن دروس، مستخدمين، أو محتوى...',
+                    hintText: 'ابحث عن دروس أو محتوى',
                     hintStyle: TextStyle(
                       color: Colors.grey.shade500,
-                      fontSize: 16,
+                      fontSize: sf(context, 16),
                     ),
                     suffixIcon: Container(
                       margin: const EdgeInsets.all(8),

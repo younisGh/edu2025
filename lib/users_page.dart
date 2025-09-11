@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:educational_platform/utils/typography.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -272,6 +273,88 @@ class _UsersPageState extends State<UsersPage> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: const Color(0xFFF9FAFB),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          toolbarHeight: 80,
+          centerTitle: false,
+          titleSpacing: 16,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'إدارة المستخدمين',
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: sf(context, 18),
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'عرض وتصفية وتعديل بيانات المستخدمين',
+                style: TextStyle(
+                  fontSize: sf(context, 12),
+                  color: const Color(0xFFE5E7EB),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+              ),
+            ),
+          ),
+          actions: [
+            Builder(
+              builder: (context) {
+                final w = MediaQuery.of(context).size.width;
+                final isTiny = w < 360;
+                final isMobile = w < 600;
+                return Padding(
+                  padding: const EdgeInsetsDirectional.only(end: 16),
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/signup');
+                    },
+                    icon: Icon(
+                      Icons.person_add_alt_1_rounded,
+                      color: Colors.white,
+                      size: sd(context, isTiny ? 16 : (isMobile ? 18 : 20)),
+                    ),
+                    label: Text(
+                      'إضافة مستخدم',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: sf(
+                          context,
+                          isTiny ? 11 : (isMobile ? 12 : 14),
+                        ),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF6D28D9),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isTiny ? 10 : (isMobile ? 14 : 18),
+                        vertical: isTiny ? 8 : (isMobile ? 10 : 12),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      elevation: 2,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
         body: Stack(
           children: [
             // Main Content
@@ -293,7 +376,10 @@ class _UsersPageState extends State<UsersPage> {
   Widget _buildHeader() {
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: EdgeInsets.symmetric(
+        horizontal: sp(context, 24),
+        vertical: sp(context, 16),
+      ),
       child: Row(
         children: [
           IconButton(
@@ -301,59 +387,35 @@ class _UsersPageState extends State<UsersPage> {
             icon: const Icon(Icons.menu, color: Color(0xFF6B7280)),
           ),
           const SizedBox(width: 16),
-          const Text(
-            'إدارة المستخدمين',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1F2937),
-            ),
-          ),
-          const Spacer(),
-          SizedBox(
-            width: 300,
-            child: TextField(
-              textDirection: TextDirection.rtl,
-              decoration: InputDecoration(
-                hintText: 'بحث...',
-                hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
-                filled: true,
-                fillColor: const Color(0xFFF3F4F6),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(25),
-                  borderSide: BorderSide.none,
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 300),
+                child: TextField(
+                  textDirection: TextDirection.rtl,
+                  decoration: InputDecoration(
+                    hintText: 'بحث...',
+                    hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
+                    filled: true,
+                    fillColor: const Color(0xFFF3F4F6),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    suffixIcon:
+                        const Icon(Icons.search, color: Color(0xFF9CA3AF)),
+                  ),
+                  onChanged: (value) => setState(() => searchQuery = value),
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 12,
-                ),
-                suffixIcon: const Icon(Icons.search, color: Color(0xFF9CA3AF)),
               ),
-              onChanged: (value) => setState(() => searchQuery = value),
             ),
           ),
           const SizedBox(width: 16),
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.pushNamed(context, '/signup');
-            },
-            icon: const Icon(Icons.add, color: Colors.white),
-            label: const Text(
-              'إضافة مستخدم',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6D28D9),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25),
-              ),
-              elevation: 4,
-            ),
-          ),
         ],
       ),
     );
@@ -361,7 +423,7 @@ class _UsersPageState extends State<UsersPage> {
 
   Widget _buildMainContent() {
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(sp(context, 24)),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -505,9 +567,12 @@ class _UsersPageState extends State<UsersPage> {
   Widget _buildDesktopHeader() {
     return Container(
       color: const Color(0xFFF3F4F6),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.symmetric(
+        horizontal: sp(context, 16),
+        vertical: sp(context, 12),
+      ),
       child: Row(
-        children: const [
+        children: [
           Expanded(
             flex: 3,
             child: Text(
@@ -516,7 +581,7 @@ class _UsersPageState extends State<UsersPage> {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF6B7280),
-                fontSize: 14,
+                fontSize: sf(context, 14),
               ),
             ),
           ),
@@ -528,7 +593,7 @@ class _UsersPageState extends State<UsersPage> {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF6B7280),
-                fontSize: 14,
+                fontSize: sf(context, 14),
               ),
             ),
           ),
@@ -540,7 +605,7 @@ class _UsersPageState extends State<UsersPage> {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF6B7280),
-                fontSize: 14,
+                fontSize: sf(context, 14),
               ),
             ),
           ),
@@ -552,11 +617,13 @@ class _UsersPageState extends State<UsersPage> {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF6B7280),
-                fontSize: 14,
+                fontSize: sf(context, 14),
               ),
             ),
           ),
-          SizedBox(width: 200), // space for hover actions (matches row)
+          SizedBox(
+            width: _actionsWidth(context), // space for hover actions (matches row)
+          ),
         ],
       ),
     );
@@ -565,6 +632,8 @@ class _UsersPageState extends State<UsersPage> {
   Widget _buildDesktopRow(UserData user) {
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
     final hovered = _hoveredUserId == user.id;
+    final screenW = MediaQuery.of(context).size.width;
+    final actionIconSize = screenW < 900 ? 14.0 : 16.0;
     return MouseRegion(
       onEnter: (_) => setState(() => _hoveredUserId = user.id),
       onExit: (_) => setState(() => _hoveredUserId = null),
@@ -575,7 +644,10 @@ class _UsersPageState extends State<UsersPage> {
           color: hovered ? const Color(0xFFF9FAFB) : Colors.white,
           border: const Border(bottom: BorderSide(color: Color(0xFFF3F4F6))),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: EdgeInsets.symmetric(
+          horizontal: sp(context, 16),
+          vertical: sp(context, 12),
+        ),
         child: Row(
           children: [
             Expanded(flex: 3, child: _buildUserCell(user)),
@@ -583,7 +655,7 @@ class _UsersPageState extends State<UsersPage> {
             Expanded(flex: 2, child: _buildDateCell(user.joinDate)),
             Expanded(flex: 2, child: _buildRoleChip(user)),
             SizedBox(
-              width: 200,
+              width: _actionsWidth(context),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: AnimatedOpacity(
@@ -605,48 +677,39 @@ class _UsersPageState extends State<UsersPage> {
                         children: [
                           IconButton(
                             onPressed: () => _viewUser(user),
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.visibility_outlined,
-                              color: Color(0xFF4B5563),
-                              size: 16,
+                              color: const Color(0xFF4B5563),
+                              size: actionIconSize,
                             ),
-                            visualDensity: VisualDensity.compact,
-                            padding: const EdgeInsets.all(2),
-                            constraints: const BoxConstraints.tightFor(
-                              width: 32,
-                              height: 32,
-                            ),
+                            visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints.tightFor(width: 28, height: 28),
                             tooltip: 'تفاصيل',
                           ),
                           IconButton(
                             onPressed: () => _editUser(user),
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.edit_outlined,
-                              color: Color(0xFF4B5563),
-                              size: 16,
+                              color: const Color(0xFF4B5563),
+                              size: actionIconSize,
                             ),
-                            visualDensity: VisualDensity.compact,
-                            padding: const EdgeInsets.all(2),
-                            constraints: const BoxConstraints.tightFor(
-                              width: 32,
-                              height: 32,
-                            ),
+                            visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints.tightFor(width: 28, height: 28),
                             tooltip: 'تعديل',
                           ),
                           if (user.id != currentUid)
                             IconButton(
                               onPressed: () => _deleteUser(user),
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.delete_outline,
-                                color: Color(0xFFEF4444),
-                                size: 16,
+                                color: const Color(0xFFEF4444),
+                                size: actionIconSize,
                               ),
-                              visualDensity: VisualDensity.compact,
-                              padding: const EdgeInsets.all(2),
-                              constraints: const BoxConstraints.tightFor(
-                                width: 32,
-                                height: 32,
-                              ),
+                              visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints.tightFor(width: 28, height: 28),
                               tooltip: 'حذف',
                             ),
                         ],
@@ -663,14 +726,16 @@ class _UsersPageState extends State<UsersPage> {
   }
 
   Widget _buildUserCell(UserData user) {
+    final w = MediaQuery.of(context).size.width;
+    final avatarRadius = w < 900 ? 18.0 : 22.0;
     return Row(
       children: [
         CircleAvatar(
-          radius: 22,
+          radius: avatarRadius,
           backgroundImage: NetworkImage(user.avatar),
           backgroundColor: const Color(0xFFF3F4F6),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 10),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -689,7 +754,7 @@ class _UsersPageState extends State<UsersPage> {
                     ? 'حساب محظور'
                     : (user.isActive ? 'مستخدم نشط' : 'مستخدم غير نشط'),
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 11,
                   color: user.isBanned ? Colors.red : const Color(0xFF6B7280),
                 ),
               ),
@@ -703,14 +768,20 @@ class _UsersPageState extends State<UsersPage> {
   Widget _buildPhoneCell(String phone) {
     return Text(
       phone,
-      style: const TextStyle(color: Color(0xFF6B7280), fontSize: 14),
+      style: TextStyle(
+        color: const Color(0xFF6B7280),
+        fontSize: sf(context, 14),
+      ),
     );
   }
 
   Widget _buildDateCell(String date) {
     return Text(
       date,
-      style: const TextStyle(color: Color(0xFF6B7280), fontSize: 14),
+      style: TextStyle(
+        color: const Color(0xFF6B7280),
+        fontSize: sf(context, 14),
+      ),
     );
   }
 
@@ -740,7 +811,7 @@ class _UsersPageState extends State<UsersPage> {
         style: TextStyle(
           color: textColor,
           fontWeight: FontWeight.w600,
-          fontSize: 12,
+          fontSize: sf(context, 12),
         ),
         textAlign: TextAlign.center,
       ),
@@ -750,27 +821,57 @@ class _UsersPageState extends State<UsersPage> {
   // Inline actions (hover on desktop)
   Widget _buildInlineActions(UserData user) {
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    final w = MediaQuery.of(context).size.width;
+    final iconSize = w < 700 ? 16.0 : 18.0;
     return Wrap(
-      spacing: 4,
+      spacing: 2,
       children: [
         IconButton(
           onPressed: () => _viewUser(user),
-          icon: const Icon(Icons.visibility_outlined, color: Color(0xFF6B7280)),
+          icon: Icon(
+            Icons.visibility_outlined,
+            color: const Color(0xFF6B7280),
+            size: iconSize,
+          ),
+          padding: EdgeInsets.zero,
+          visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+          constraints: const BoxConstraints.tightFor(width: 28, height: 28),
           tooltip: 'تفاصيل',
         ),
         IconButton(
           onPressed: () => _editUser(user),
-          icon: const Icon(Icons.edit_outlined, color: Color(0xFF6B7280)),
+          icon: Icon(
+            Icons.edit_outlined,
+            color: const Color(0xFF6B7280),
+            size: iconSize,
+          ),
+          padding: EdgeInsets.zero,
+          visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+          constraints: const BoxConstraints.tightFor(width: 28, height: 28),
           tooltip: 'تعديل',
         ),
         if (user.id != currentUid)
           IconButton(
             onPressed: () => _deleteUser(user),
-            icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
+            icon: Icon(
+              Icons.delete_outline,
+              color: const Color(0xFFEF4444),
+              size: iconSize,
+            ),
+            padding: EdgeInsets.zero,
+            visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+            constraints: const BoxConstraints.tightFor(width: 28, height: 28),
             tooltip: 'حذف',
           ),
       ],
     );
+  }
+
+  double _actionsWidth(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
+    if (w < 700) return 120;
+    if (w < 900) return 150;
+    return 200;
   }
 
   // Mobile list item: name + always visible actions (view, edit, delete)
@@ -779,7 +880,10 @@ class _UsersPageState extends State<UsersPage> {
       decoration: const BoxDecoration(
         border: Border(bottom: BorderSide(color: Color(0xFFF3F4F6))),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: EdgeInsets.symmetric(
+        horizontal: sp(context, 12),
+        vertical: sp(context, 10),
+      ),
       child: Row(
         children: [
           CircleAvatar(
@@ -970,17 +1074,29 @@ class _UsersPageState extends State<UsersPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            'عرض ${total == 0 ? 0 : (start + 1)}-$end من $total مستخدم',
-            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+          Expanded(
+            child: Text(
+              'عرض ${total == 0 ? 0 : (start + 1)}-$end من $total مستخدم',
+              style: TextStyle(
+                fontSize: sf(context, 14),
+                color: Colors.grey[600],
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              softWrap: false,
+            ),
           ),
-          Row(
+          Wrap(
+            alignment: WrapAlignment.end,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 0,
+            runSpacing: 4,
             children: [
               IconButton(
                 onPressed: currentPage > 1
                     ? () => setState(() => currentPage--)
                     : null,
-                icon: const Icon(Icons.chevron_right),
+                icon: Icon(Icons.chevron_right, size: sd(context, 20)),
               ),
               ...List.generate(totalPages, (index) {
                 final pageNum = index + 1;
@@ -988,9 +1104,9 @@ class _UsersPageState extends State<UsersPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 2),
                   child: pageNum == currentPage
                       ? Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: sd(context, 16),
+                            vertical: sd(context, 8),
                           ),
                           decoration: BoxDecoration(
                             color: const Color(0xFF6D28D9),
@@ -998,9 +1114,9 @@ class _UsersPageState extends State<UsersPage> {
                           ),
                           child: Text(
                             '$pageNum',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
-                              fontSize: 14,
+                              fontSize: sf(context, 14),
                             ),
                           ),
                         )
@@ -1009,9 +1125,9 @@ class _UsersPageState extends State<UsersPage> {
                               setState(() => currentPage = pageNum),
                           child: Text(
                             '$pageNum',
-                            style: const TextStyle(
-                              color: Color(0xFF6B7280),
-                              fontSize: 14,
+                            style: TextStyle(
+                              color: const Color(0xFF6B7280),
+                              fontSize: sf(context, 14),
                             ),
                           ),
                         ),
@@ -1021,7 +1137,7 @@ class _UsersPageState extends State<UsersPage> {
                 onPressed: currentPage < totalPages
                     ? () => setState(() => currentPage++)
                     : null,
-                icon: const Icon(Icons.chevron_left),
+                icon: Icon(Icons.chevron_left, size: sd(context, 20)),
               ),
             ],
           ),
@@ -1038,99 +1154,127 @@ class _UsersPageState extends State<UsersPage> {
   }
 
   Widget _buildSidebar() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    double sidebarWidth;
+    if (screenWidth < 360) {
+      sidebarWidth = screenWidth * 0.85; // very small phones
+    } else if (screenWidth < 600) {
+      sidebarWidth = screenWidth * 0.72; // small phones
+    } else if (screenWidth < 900) {
+      sidebarWidth = 320; // tablets / small desktops
+    } else {
+      sidebarWidth = 360; // large desktops
+    }
+    // Clamp to sensible bounds like admin
+    sidebarWidth = sidebarWidth.clamp(240.0, 420.0);
+
     return Positioned(
       top: 0,
       right: 0,
       height: MediaQuery.of(context).size.height,
-      width: 288,
-      child: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 20,
-              offset: Offset(-4, 0),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'لوحة التحكم',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF6D28D9),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => setState(() => sidebarOpen = false),
-                    icon: const Icon(Icons.close, color: Color(0xFF6B7280)),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Column(
-                  children: [
-                    _buildSidebarItem(
-                      Icons.dashboard_outlined,
-                      'لوحة التحكم',
-                      false,
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushReplacementNamed(
-                          context,
-                          '/admin_dashboard',
-                        );
-                      },
-                    ),
-                    _buildSidebarItem(Icons.school_outlined, 'الدورات', false),
-                    _buildSidebarItem(
-                      Icons.movie_outlined,
-                      'الفيديوهات',
-                      false,
-                    ),
-                    _buildSidebarItem(
-                      Icons.group_outlined,
-                      'إدارة المستخدمين',
-                      true,
-                    ),
-                    _buildSidebarItem(
-                      Icons.bar_chart_outlined,
-                      'التحليلات',
-                      false,
-                    ),
-                    _buildSidebarItem(
-                      Icons.settings_outlined,
-                      'الإعدادات',
-                      false,
-                    ),
-                    const Spacer(),
-                    _buildSidebarItem(
-                      Icons.person_outlined,
-                      'الملف الشخصي',
-                      false,
-                    ),
-                    _buildSidebarItem(
-                      Icons.logout,
-                      'تسجيل الخروج',
-                      false,
-                      isLogout: true,
-                    ),
-                  ],
+      child: Material(
+        color: Colors.transparent,
+        child: SizedBox(
+          width: sidebarWidth,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 20,
+                  offset: Offset(-4, 0),
                 ),
-              ),
+              ],
             ),
-          ],
+            child: Column(
+              children: [
+                // Header
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'إدارة المستخدمين',
+                        style: TextStyle(
+                          fontSize: sf(context, 20),
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF6D28D9),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => setState(() => sidebarOpen = false),
+                        icon: Icon(
+                          Icons.close,
+                          color: const Color(0xFF6B7280),
+                          size: sd(context, 20),
+                        ),
+                        tooltip: 'إغلاق القائمة',
+                      ),
+                    ],
+                  ),
+                ),
+                // Items
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    children: [
+                      _buildSidebarItem(
+                        Icons.dashboard_outlined,
+                        'لوحة التحكم',
+                        false,
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.pushReplacementNamed(
+                            context,
+                            '/admin_dashboard',
+                          );
+                        },
+                      ),
+                      _buildSidebarItem(
+                        Icons.school_outlined,
+                        'الدورات',
+                        false,
+                      ),
+                      _buildSidebarItem(
+                        Icons.movie_outlined,
+                        'الفيديوهات',
+                        false,
+                      ),
+                      _buildSidebarItem(
+                        Icons.group_outlined,
+                        'إدارة المستخدمين',
+                        true,
+                      ),
+                      _buildSidebarItem(
+                        Icons.bar_chart_outlined,
+                        'التحليلات',
+                        false,
+                      ),
+                      _buildSidebarItem(
+                        Icons.settings_outlined,
+                        'الإعدادات',
+                        false,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildSidebarItem(
+                        Icons.person_outlined,
+                        'الملف الشخصي',
+                        false,
+                      ),
+                      _buildSidebarItem(
+                        Icons.logout,
+                        'تسجيل الخروج',
+                        false,
+                        isLogout: true,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -1153,6 +1297,7 @@ class _UsersPageState extends State<UsersPage> {
               : isLogout
               ? Colors.red
               : const Color(0xFF9CA3AF),
+          size: sd(context, 20),
         ),
         title: Text(
           title,

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:educational_platform/utils/typography.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:educational_platform/homePages/users_dashboard.dart';
@@ -564,24 +565,24 @@ class _SignUpPageState extends State<SignUpPage>
                               ),
                             ),
                             const SizedBox(height: 16),
-                            const Text(
+                            Text(
                               'إنشاء حساب جديد',
                               style: TextStyle(
-                                fontSize: 28,
+                                fontSize: sf(context, 28),
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF430DD6),
+                                color: const Color(0xFF430DD6),
                               ),
                             ),
                             const SizedBox(height: 32),
 
                             // Name Field
-                            const Align(
+                            Align(
                               alignment: Alignment.centerRight,
                               child: Text(
                                 'الاسم',
                                 style: TextStyle(
-                                  fontSize: 16,
-                                  color: Color(0xFF1E1E1E),
+                                  fontSize: sf(context, 16),
+                                  color: const Color(0xFF1E1E1E),
                                 ),
                               ),
                             ),
@@ -614,13 +615,13 @@ class _SignUpPageState extends State<SignUpPage>
                             const SizedBox(height: 20),
 
                             // Phone Number Field
-                            const Align(
+                            Align(
                               alignment: Alignment.centerRight,
                               child: Text(
                                 'رقم الهاتف',
                                 style: TextStyle(
-                                  fontSize: 16,
-                                  color: Color(0xFF1E1E1E),
+                                  fontSize: sf(context, 16),
+                                  color: const Color(0xFF1E1E1E),
                                 ),
                               ),
                             ),
@@ -629,14 +630,14 @@ class _SignUpPageState extends State<SignUpPage>
                               builder: (context, constraints) {
                                 final isNarrow = constraints.maxWidth < 360;
                                 final fieldFont = TextStyle(
-                                  fontSize: isNarrow ? 14 : 16,
+                                  fontSize: sf(context, isNarrow ? 14 : 16),
                                 );
                                 final hintFont = TextStyle(
-                                  fontSize: isNarrow ? 13 : 14,
+                                  fontSize: sf(context, isNarrow ? 13 : 14),
                                   color: Colors.black45,
                                 );
                                 final codeFont = TextStyle(
-                                  fontSize: isNarrow ? 12 : 14,
+                                  fontSize: sf(context, isNarrow ? 12 : 14),
                                   color: Colors.black54,
                                 );
                                 return TextFormField(
@@ -682,13 +683,13 @@ class _SignUpPageState extends State<SignUpPage>
                             const SizedBox(height: 20),
 
                             // Password Field
-                            const Align(
+                            Align(
                               alignment: Alignment.centerRight,
                               child: Text(
                                 'كلمة المرور',
                                 style: TextStyle(
-                                  fontSize: 16,
-                                  color: Color(0xFF1E1E1E),
+                                  fontSize: sf(context, 16),
+                                  color: const Color(0xFF1E1E1E),
                                 ),
                               ),
                             ),
@@ -737,13 +738,13 @@ class _SignUpPageState extends State<SignUpPage>
                             const SizedBox(height: 20),
 
                             // Confirm Password Field
-                            const Align(
+                            Align(
                               alignment: Alignment.centerRight,
                               child: Text(
                                 'تأكيد كلمة المرور',
                                 style: TextStyle(
-                                  fontSize: 16,
-                                  color: Color(0xFF1E1E1E),
+                                  fontSize: sf(context, 16),
+                                  color: const Color(0xFF1E1E1E),
                                 ),
                               ),
                             ),

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:educational_platform/services/notification_service.dart';
+import 'package:educational_platform/utils/typography.dart';
 
 class NotificationBell extends StatelessWidget {
   final VoidCallback? onOpenAll;
@@ -19,7 +20,7 @@ class NotificationBell extends StatelessWidget {
           clipBehavior: Clip.none,
           children: [
             PopupMenuButton<_MenuAction>(
-              icon: const Icon(Icons.notifications_none),
+              icon: Icon(Icons.notifications_none, size: sd(context, 24)),
               tooltip: 'الإشعارات',
               onSelected: (action) {
                 if (action == _MenuAction.openAll) {
@@ -53,9 +54,9 @@ class NotificationBell extends StatelessWidget {
                   ),
                   child: Text(
                     count > 99 ? '99+' : '$count',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 11,
+                      fontSize: sf(context, 11),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -107,9 +108,10 @@ class _UnreadList extends StatelessWidget {
               return ListTile(
                 dense: true,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                leading: const Icon(
+                leading: Icon(
                   Icons.notifications_active,
                   color: Colors.amber,
+                  size: sd(context, 18),
                 ),
                 title: Text(
                   title.isEmpty ? 'إشعار' : title,

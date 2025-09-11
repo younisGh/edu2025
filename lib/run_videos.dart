@@ -11,6 +11,7 @@ import 'package:educational_platform/services/engagement_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:educational_platform/utils/typography.dart';
 
 class RunVideosPage extends StatefulWidget {
   final String title;
@@ -396,9 +397,9 @@ class _RunVideosPageState extends State<RunVideosPage> {
           color: Colors.black,
           child: Center(
             child: _isError
-                ? const Text(
+                ? Text(
                     'تعذر تشغيل هذا الفيديو.',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(color: Colors.white, fontSize: sf(context, 14)),
                   )
                 : _isYouTube
                 ? kIsWeb
@@ -466,18 +467,18 @@ class _RunVideosPageState extends State<RunVideosPage> {
         children: [
           Text(
             widget.title.isEmpty ? 'تشغيل الفيديو' : widget.title,
-            style: const TextStyle(
-              fontSize: 26,
+            style: TextStyle(
+              fontSize: sf(context, 26),
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1E293B),
+              color: const Color(0xFF1E293B),
             ),
           ),
           const SizedBox(height: 8),
           Text(
             widget.description ?? 'وصف قصير وجذاب للفيديو.',
-            style: const TextStyle(
-              fontSize: 16,
-              color: Color(0xFF475569),
+            style: TextStyle(
+              fontSize: sf(context, 16),
+              color: const Color(0xFF475569),
               height: 1.5,
             ),
           ),
@@ -496,9 +497,10 @@ class _RunVideosPageState extends State<RunVideosPage> {
                   final views = snap.data ?? 0;
                   return Text(
                     '$views',
-                    style: const TextStyle(
-                      color: Color(0xFF64748B),
+                    style: TextStyle(
+                      color: const Color(0xFF64748B),
                       fontWeight: FontWeight.w600,
+                      fontSize: sf(context, 14),
                     ),
                   );
                 },
@@ -593,13 +595,14 @@ class _RunVideosPageState extends State<RunVideosPage> {
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            Icon(icon, color: color, size: 28),
+            Icon(icon, color: color, size: sd(context, 28)),
             const SizedBox(height: 8),
             Text(
               label,
-              style: const TextStyle(
-                color: Color(0xFF475569),
+              style: TextStyle(
+                color: const Color(0xFF475569),
                 fontWeight: FontWeight.w600,
+                fontSize: sf(context, 14),
               ),
             ),
           ],
@@ -616,12 +619,12 @@ class _RunVideosPageState extends State<RunVideosPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'التعليقات',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: sf(context, 18),
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF1E293B),
+                color: const Color(0xFF1E293B),
               ),
             ),
             const SizedBox(height: 8),
@@ -745,9 +748,9 @@ class _RunVideosPageState extends State<RunVideosPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'أضف تعليقًا',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: sf(context, 16)),
               ),
               const SizedBox(height: 12),
               TextField(
@@ -800,9 +803,12 @@ class _RunVideosPageState extends State<RunVideosPage> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'قيّم هذا الدرس',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: sf(context, 16),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -909,14 +915,14 @@ class _RunVideosPageState extends State<RunVideosPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
             child: Text(
               'فيديوهات ذات صلة',
               style: TextStyle(
-                fontSize: 20,
+                fontSize: sf(context, 20),
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF1E293B),
+                color: const Color(0xFF1E293B),
               ),
             ),
           ),
@@ -1038,10 +1044,10 @@ class _RunVideosPageState extends State<RunVideosPage> {
                 title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: Color(0xFF1E293B),
+                  fontSize: sf(context, 16),
+                  color: const Color(0xFF1E293B),
                 ),
               ),
             ),

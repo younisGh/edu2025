@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:educational_platform/utils/typography.dart';
 import 'package:educational_platform/services/settings_service.dart';
 
 class Footer extends StatelessWidget {
@@ -22,7 +23,7 @@ class Footer extends StatelessWidget {
           return Text(
             '$title @ 2025 جميع الحقوق محفوظة - شركة Cotree',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.grey, fontSize: 14),
+            style: TextStyle(color: Colors.grey, fontSize: sf(context, 14)),
           );
         },
       ),

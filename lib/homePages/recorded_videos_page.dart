@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:educational_platform/run_videos.dart';
 import 'package:educational_platform/components/shared_video_widgets.dart';
+import 'package:educational_platform/utils/typography.dart';
 import 'package:educational_platform/services/engagement_service.dart';
 
 class RecordedVideosPage extends StatefulWidget {
@@ -83,7 +84,7 @@ class _RecordedVideosPageState extends State<RecordedVideosPage> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('تسجيلات البث المباشر'),
+          title: Text('تسجيلات البث المباشر', style: TextStyle(fontSize: sf(context, 18))),
           backgroundColor: Colors.white,
           foregroundColor: const Color(0xFF111827),
           elevation: 0.5,
@@ -249,11 +250,11 @@ class _RecordedVideosPageState extends State<RecordedVideosPage> {
                                             )
                                           : Container(
                                               color: Colors.grey.shade200,
-                                              child: const Center(
+                                              child: Center(
                                                 child: Icon(
                                                   Icons.ondemand_video_rounded,
                                                   color: Colors.grey,
-                                                  size: 48,
+                                                  size: sd(context, 48),
                                                 ),
                                               ),
                                             ),
@@ -287,9 +288,9 @@ class _RecordedVideosPageState extends State<RecordedVideosPage> {
                                               title,
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(
+                                              style: TextStyle(
                                                 fontWeight: FontWeight.bold,
-                                                fontSize: 16,
+                                                fontSize: sf(context, 16),
                                               ),
                                             ),
                                             const SizedBox(height: 6),
@@ -307,9 +308,9 @@ class _RecordedVideosPageState extends State<RecordedVideosPage> {
                                         ),
                                         Row(
                                           children: [
-                                            const Icon(
+                                            Icon(
                                               Icons.visibility,
-                                              size: 16,
+                                              size: sd(context, 16),
                                               color: Colors.grey,
                                             ),
                                             const SizedBox(width: 4),
@@ -345,12 +346,12 @@ class _RecordedVideosPageState extends State<RecordedVideosPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'أكمل المشاهدة',
           style: TextStyle(
-            fontSize: 20,
+            fontSize: sf(context, 20),
             fontWeight: FontWeight.bold,
-            color: Color(0xFF1F2937),
+            color: const Color(0xFF1F2937),
           ),
         ),
         const SizedBox(height: 10),
@@ -469,11 +470,11 @@ class _RecordedVideosPageState extends State<RecordedVideosPage> {
                       ? Image.network(thumbnail, fit: BoxFit.cover)
                       : Container(
                           color: Colors.grey.shade200,
-                          child: const Center(
+                          child: Center(
                             child: Icon(
                               Icons.ondemand_video_rounded,
                               color: Colors.grey,
-                              size: 48,
+                              size: sd(context, 48),
                             ),
                           ),
                         ),
@@ -497,7 +498,7 @@ class _RecordedVideosPageState extends State<RecordedVideosPage> {
                 title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: sf(context, 14)),
               ),
             ),
           ],

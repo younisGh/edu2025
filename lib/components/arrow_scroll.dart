@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:educational_platform/utils/typography.dart';
 
 class ArrowScroll extends StatefulWidget {
   const ArrowScroll({
@@ -18,7 +19,7 @@ class ArrowScroll extends StatefulWidget {
 
 class _ArrowScrollState extends State<ArrowScroll> {
   Timer? _scrollTimer;
-  final double _scrollSpeed = 20.0;
+  double get _scrollSpeed => sd(context, 20.0);
 
   @override
   void dispose() {

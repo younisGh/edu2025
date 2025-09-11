@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:educational_platform/services/notification_service.dart';
 import 'package:educational_platform/components/arrow_scroll.dart';
+import 'package:educational_platform/utils/typography.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -81,7 +82,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('الإشعارات'),
+          title: Text('الإشعارات', style: TextStyle(fontSize: sf(context, 18))),
           actions: [
             LayoutBuilder(
               builder: (context, constraints) {
@@ -92,12 +93,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   return IconButton(
                     tooltip: 'تعليم الكل كمقروء',
                     onPressed: _markAll,
-                    icon: const Icon(Icons.done_all),
+                    icon: Icon(Icons.done_all, size: sd(context, 20)),
                   );
                 }
                 return TextButton.icon(
                   onPressed: _markAll,
-                  icon: const Icon(Icons.done_all),
+                  icon: Icon(Icons.done_all, size: sd(context, 20)),
                   label: const Text('تعليم الكل كمقروء'),
                 );
               },
@@ -246,8 +247,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           if (createdAt != null)
                             Text(
                               _formatTime(createdAt),
-                              style: const TextStyle(
-                                fontSize: 12,
+                              style: TextStyle(
+                                fontSize: sf(context, 12),
                                 color: Colors.grey,
                               ),
                             ),
@@ -296,7 +297,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                 });
                               }
                             },
-                            icon: const Icon(Icons.delete_outline),
+                            icon: Icon(Icons.delete_outline, size: sd(context, 20)),
                           ),
                         ],
                       ),

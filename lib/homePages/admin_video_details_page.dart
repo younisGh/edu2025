@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:educational_platform/services/engagement_service.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:educational_platform/utils/typography.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:typed_data';
 
@@ -188,7 +189,12 @@ class _AdminVideoDetailsPageState extends State<AdminVideoDetailsPage> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: const Color(0xFFF8FAFC),
-        appBar: AppBar(title: const Text('تفاصيل الفيديو - لوحة التحكم')),
+        appBar: AppBar(
+          title: Text(
+            'تفاصيل الفيديو - لوحة التحكم',
+            style: TextStyle(fontSize: sf(context, 18)),
+          ),
+        ),
         body: LayoutBuilder(
           builder: (context, constraints) {
             final maxW = constraints.maxWidth;
@@ -280,7 +286,7 @@ class _AdminVideoDetailsPageState extends State<AdminVideoDetailsPage> {
           children: [
             Text(
               widget.title.isEmpty ? 'بدون عنوان' : widget.title,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: sf(context, 18)),
             ),
             const SizedBox(height: 6),
             Text(
@@ -290,10 +296,10 @@ class _AdminVideoDetailsPageState extends State<AdminVideoDetailsPage> {
             const SizedBox(height: 8),
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.remove_red_eye_outlined,
-                  size: 20,
-                  color: Color(0xFF64748B),
+                  size: sd(context, 20),
+                  color: const Color(0xFF64748B),
                 ),
                 const SizedBox(width: 6),
                 StreamBuilder<int>(

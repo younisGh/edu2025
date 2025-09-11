@@ -2,6 +2,7 @@ import 'package:educational_platform/services/video_service.dart';
 import 'package:educational_platform/services/notification_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:educational_platform/utils/typography.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:educational_platform/services/settings_service.dart';
 import 'package:cloud_functions/cloud_functions.dart';
@@ -70,10 +71,13 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
               return Directionality(
                 textDirection: TextDirection.rtl,
                 child: AlertDialog(
-                  title: const Text('اختر مقاطع للاستيراد أو لملء الحقول'),
+                  title: Text(
+                    'اختر مقاطع للاستيراد أو لملء الحقول',
+                    style: TextStyle(fontSize: sf(context, 16)),
+                  ),
                   content: SizedBox(
-                    width: 520,
-                    height: 420,
+                    width: sd(context, 520),
+                    height: sh(context, 420),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -81,25 +85,31 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                         TextField(
                           decoration: InputDecoration(
                             hintText: 'ابحث بعنوان الفيديو...',
+                            hintStyle: TextStyle(
+                              color: Colors.grey[400],
+                              fontSize: sf(context, 12),
+                            ),
                             prefixIcon: const Icon(Icons.search),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(
+                                sd(context, 8),
+                              ),
                             ),
                             isDense: true,
                           ),
                           onChanged: (v) =>
                               setS(() => filter = v.trim().toLowerCase()),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: gapS(context)),
                         // Hint: use "اختيار" to fill, check for bulk import
-                        const Text(
+                        Text(
                           'ملاحظة: استخدم زر "اختيار" لتعبئة الحقول مباشرة، أو حدِّد بعلامات الاختيار للاستيراد الجماعي.',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: sf(context, 12),
                             color: Color(0xFF6B7280),
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: gapS(context)),
                         Expanded(
                           child: ListView.separated(
                             itemCount: videos.length,
@@ -128,10 +138,12 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                                       }),
                                     ),
                                     ClipRRect(
-                                      borderRadius: BorderRadius.circular(6),
+                                      borderRadius: BorderRadius.circular(
+                                        sd(context, 6),
+                                      ),
                                       child: SizedBox(
-                                        width: 56,
-                                        height: 32,
+                                        width: sd(context, 56),
+                                        height: sh(context, 32),
                                         child:
                                             (v['thumbnailUrl']
                                                     ?.toString()
@@ -145,19 +157,19 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                                                       color: const Color(
                                                         0xFFE5E7EB,
                                                       ),
-                                                      child: const Icon(
+                                                      child: Icon(
                                                         Icons
                                                             .ondemand_video_rounded,
-                                                        size: 18,
+                                                        size: sd(context, 18),
                                                         color: Colors.grey,
                                                       ),
                                                     ),
                                               )
                                             : Container(
                                                 color: const Color(0xFFE5E7EB),
-                                                child: const Icon(
+                                                child: Icon(
                                                   Icons.ondemand_video_rounded,
-                                                  size: 18,
+                                                  size: sd(context, 18),
                                                   color: Colors.grey,
                                                 ),
                                               ),
@@ -169,14 +181,19 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                                   title.isEmpty == true
                                       ? (v['videoId'] ?? '')
                                       : title,
+                                  style: TextStyle(fontSize: sf(context, 14)),
                                 ),
                                 subtitle: Text(
                                   v['videoUrl'] ?? '',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: sf(context, 12),
+                                    color: Colors.grey[600],
+                                  ),
                                 ),
                                 trailing: Wrap(
-                                  spacing: 8,
+                                  spacing: sd(context, 8),
                                   crossAxisAlignment: WrapCrossAlignment.center,
                                   children: [
                                     if (sel.contains(i))
@@ -187,7 +204,12 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                                     OutlinedButton(
                                       onPressed: () =>
                                           Navigator.of(ctx).pop(<int>[i, -1]),
-                                      child: const Text('اختيار'),
+                                      child: Text(
+                                        'اختيار',
+                                        style: TextStyle(
+                                          fontSize: sf(context, 14),
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -195,20 +217,26 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                             },
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: gapS(context)),
                         Wrap(
-                          spacing: 8,
+                          spacing: sd(context, 8),
                           children: [
                             TextButton(
                               onPressed: () => Navigator.of(ctx).pop(<int>[]),
-                              child: const Text('إلغاء'),
+                              child: Text(
+                                'إلغاء',
+                                style: TextStyle(fontSize: sf(context, 14)),
+                              ),
                             ),
                             ElevatedButton.icon(
                               onPressed: sel.isEmpty
                                   ? null
                                   : () => Navigator.of(ctx).pop(sel.toList()),
                               icon: const Icon(Icons.download_rounded),
-                              label: const Text('استيراد المحدد'),
+                              label: Text(
+                                'استيراد المحدد',
+                                style: TextStyle(fontSize: sf(context, 14)),
+                              ),
                             ),
                             // Single-fill is now done by tapping the item directly
                           ],
@@ -244,7 +272,6 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
         }
         return;
       }
-
       // Bulk import selected
       final selIdx = selected
           .where((i) => i >= 0 && i < videos.length)
@@ -283,6 +310,159 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
     } finally {
       if (mounted) setState(() => _isImporting = false);
     }
+  }
+
+  Widget _buildModeSwitcher(Color textPrimary, Color textSecondary) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(sd(context, 8)),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: InkWell(
+              onTap: () => setState(() => _isUploadMode = false),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: EdgeInsets.symmetric(vertical: sp(context, 10)),
+                decoration: BoxDecoration(
+                  color: _isUploadMode ? Colors.transparent : Colors.white,
+                  borderRadius: BorderRadius.circular(sd(context, 8)),
+                ),
+                child: Center(
+                  child: Text(
+                    'رابط يوتيوب',
+                    style: TextStyle(
+                      color: _isUploadMode ? textSecondary : textPrimary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: sf(context, 14),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: InkWell(
+              onTap: () => setState(() => _isUploadMode = true),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: EdgeInsets.symmetric(vertical: sp(context, 10)),
+                decoration: BoxDecoration(
+                  color: _isUploadMode ? Colors.white : Colors.transparent,
+                  borderRadius: BorderRadius.circular(sd(context, 8)),
+                ),
+                child: Center(
+                  child: Text(
+                    'رفع ملف فيديو',
+                    style: TextStyle(
+                      color: _isUploadMode ? textPrimary : textSecondary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: sf(context, 14),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryDropdown(Color textPrimary) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'الفئة (اختياري)',
+          style: TextStyle(
+            fontSize: sf(context, 14),
+            fontWeight: FontWeight.w500,
+            color: textPrimary,
+          ),
+        ),
+        SizedBox(height: gapS(context)),
+        StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+          stream: FirebaseFirestore.instance
+              .collection('categories')
+              .orderBy('name')
+              .snapshots(),
+          builder: (context, snapshot) {
+            final docs = snapshot.data?.docs ?? [];
+            final dropdownItems = <DropdownMenuItem<String>>[
+              DropdownMenuItem<String>(
+                value: '',
+                child: Text(
+                  'بدون فئة',
+                  style: TextStyle(fontSize: sf(context, 14)),
+                ),
+              ),
+              ...docs.map((doc) {
+                final data = doc.data();
+                final name = (data['name'] ?? '').toString();
+                return DropdownMenuItem<String>(
+                  value: doc.id,
+                  child: Text(
+                    name.isEmpty ? doc.id : name,
+                    style: TextStyle(fontSize: sf(context, 14)),
+                  ),
+                );
+              }),
+            ];
+
+            final currentValue = (_selectedCategoryId?.isNotEmpty ?? false)
+                ? _selectedCategoryId
+                : '';
+
+            return DropdownButtonFormField<String>(
+              initialValue: currentValue,
+              items: dropdownItems,
+              style: TextStyle(fontSize: sf(context, 14)),
+              onChanged: (val) {
+                setState(() {
+                  if (val == null || val.isEmpty) {
+                    _selectedCategoryId = null;
+                    _selectedCategoryName = null;
+                  } else {
+                    _selectedCategoryId = val;
+                    final doc = docs.firstWhere(
+                      (d) => d.id == val,
+                      orElse: () => docs.first,
+                    );
+                    final data = doc.data();
+                    _selectedCategoryName = (data['name'] ?? '').toString();
+                  }
+                });
+              },
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.white,
+                hintText: 'اختر فئة للفيديو (اختياري)',
+                hintStyle: TextStyle(
+                  color: Colors.grey[400],
+                  fontSize: sf(context, 12),
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(sd(context, 8)),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(sd(context, 8)),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(sd(context, 8)),
+                  borderSide: const BorderSide(color: Color(0xFFEA2A33)),
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    );
   }
 
   Future<void> _pickPdfFile() async {
@@ -330,14 +510,14 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
       child: Dialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.0),
+          borderRadius: BorderRadius.circular(sd(context, 12)),
         ),
         child: Container(
           width: double.maxFinite,
-          constraints: const BoxConstraints(maxWidth: 500),
+          constraints: BoxConstraints(maxWidth: sd(context, 500)),
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: EdgeInsets.all(sp(context, 24)),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -345,9 +525,9 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildHeader(context, textPrimary, textSecondary),
-                    const SizedBox(height: 32),
+                    SizedBox(height: gapL(context)),
                     _buildModeSwitcher(textPrimary, textSecondary),
-                    const SizedBox(height: 16),
+                    SizedBox(height: gapM(context)),
                     if (!_isUploadMode) ...[
                       // Channel helper + Import button
                       StreamBuilder<AppSettings>(
@@ -363,39 +543,46 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                                       : 'معرف القناة المحفوظ: $channelId',
                                   style: TextStyle(
                                     color: Colors.grey[700],
-                                    fontSize: 12,
+                                    fontSize: sf(context, 12),
                                   ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              SizedBox(width: sd(context, 8)),
                               TextButton.icon(
                                 onPressed: (channelId.isEmpty || _isImporting)
                                     ? null
                                     : _openImportPicker,
                                 icon: _isImporting
-                                    ? const SizedBox(
-                                        width: 14,
-                                        height: 14,
+                                    ? SizedBox(
+                                        width: sd(context, 14),
+                                        height: sh(context, 14),
                                         child: CircularProgressIndicator(
-                                          strokeWidth: 2,
+                                          strokeWidth: sd(context, 2),
                                         ),
                                       )
-                                    : const Icon(
+                                    : Icon(
                                         Icons.download_rounded,
-                                        size: 18,
+                                        size: sd(context, 18),
                                       ),
-                                label: const Text('استيراد'),
+                                label: Text(
+                                  'استيراد',
+                                  style: TextStyle(fontSize: sf(context, 14)),
+                                ),
                               ),
                             ],
                           );
                         },
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: gapS(context)),
                       _buildTextField(
                         controller: _videoUrlController,
                         label: 'رابط الفيديو',
-                        hint: 'الصق رابط الفيديو من يوتيوب هنا...',
+                        hint: "الصق رابط الفيديو هنا",
+                        hintTextStyle: TextStyle(
+                          color: const Color.fromARGB(255, 115, 114, 114),
+                          fontSize: sf(context, 12),
+                        ),
                         textPrimary: textPrimary,
                         validator: (value) {
                           if (_isUploadMode) {
@@ -414,9 +601,9 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                     if (_isUploadMode) ...[
                       _buildVideoUpload(textPrimary, textSecondary),
                     ],
-                    const SizedBox(height: 24),
+                    SizedBox(height: gapL(context)),
                     _buildCategoryDropdown(textPrimary),
-                    const SizedBox(height: 24),
+                    SizedBox(height: gapL(context)),
                     _buildTextField(
                       controller: _titleController,
                       label: 'عنوان الفيديو',
@@ -429,7 +616,7 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: gapL(context)),
                     _buildTextField(
                       controller: _descriptionController,
                       label: 'تفاصيل الفيديو',
@@ -443,9 +630,9 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: gapL(context)),
                     _buildPdfUpload(textPrimary, textSecondary, primaryColor),
-                    const SizedBox(height: 32),
+                    SizedBox(height: gapL(context)),
                     _buildActionButtons(context, primaryColor),
                   ],
                 ),
@@ -457,146 +644,7 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
     );
   }
 
-  Widget _buildCategoryDropdown(Color textPrimary) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'الفئة (اختياري)',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: textPrimary,
-          ),
-        ),
-        const SizedBox(height: 8),
-        StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: FirebaseFirestore.instance
-              .collection('categories')
-              .orderBy('name')
-              .snapshots(),
-          builder: (context, snapshot) {
-            final items = snapshot.data?.docs ?? [];
-            final dropdownItems = <DropdownMenuItem<String>>[
-              const DropdownMenuItem<String>(
-                value: '',
-                child: Text('بدون فئة'),
-              ),
-              ...items.map((doc) {
-                final data = doc.data();
-                final name = (data['name'] ?? '').toString();
-                return DropdownMenuItem<String>(
-                  value: doc.id,
-                  child: Text(name.isEmpty ? doc.id : name),
-                );
-              }),
-            ];
-
-            // Ensure selected id is valid
-            final currentValue = (_selectedCategoryId?.isNotEmpty ?? false)
-                ? _selectedCategoryId
-                : '';
-
-            return DropdownButtonFormField<String>(
-              initialValue: currentValue,
-              items: dropdownItems,
-              onChanged: (val) {
-                setState(() {
-                  if (val == null || val.isEmpty) {
-                    _selectedCategoryId = null;
-                    _selectedCategoryName = null;
-                  } else {
-                    _selectedCategoryId = val;
-                    final doc = items.firstWhere(
-                      (d) => d.id == val,
-                      orElse: () => items.first,
-                    );
-                    final data = doc.data();
-                    _selectedCategoryName = (data['name'] ?? '').toString();
-                  }
-                });
-              },
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.white,
-                hintText: 'اختر فئة للفيديو (اختياري)',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
-                ),
-                focusedBorder: const OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(8)),
-                  borderSide: BorderSide(color: Color(0xFFEA2A33)),
-                ),
-              ),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildModeSwitcher(Color textPrimary, Color textSecondary) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: InkWell(
-              onTap: () => setState(() => _isUploadMode = false),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                decoration: BoxDecoration(
-                  color: _isUploadMode ? Colors.transparent : Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Center(
-                  child: Text(
-                    'رابط يوتيوب',
-                    style: TextStyle(
-                      color: _isUploadMode ? textSecondary : textPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: InkWell(
-              onTap: () => setState(() => _isUploadMode = true),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                decoration: BoxDecoration(
-                  color: _isUploadMode ? Colors.white : Colors.transparent,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Center(
-                  child: Text(
-                    'رفع ملف فيديو',
-                    style: TextStyle(
-                      color: _isUploadMode ? textPrimary : textSecondary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // (Removed a corrupted duplicate of _buildHeader here)
 
   Widget _buildVideoUpload(Color textPrimary, Color textSecondary) {
     return Column(
@@ -605,64 +653,74 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
         Text(
           'ملف الفيديو',
           style: TextStyle(
-            fontSize: 14,
+            fontSize: sf(context, 14),
             fontWeight: FontWeight.w500,
             color: textPrimary,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: gapS(context)),
         GestureDetector(
           onTap: _pickVideoFile,
           child: Container(
-            height: 120,
+            height: sd(context, 132),
             decoration: BoxDecoration(
               border: Border.all(
                 color: Colors.grey[300]!,
                 style: BorderStyle.solid,
-                width: 2,
+                width: sd(context, 2),
               ),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(sd(context, 8)),
             ),
             child: Center(
               child: _videoFile == null
                   ? Column(
+                      mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
                           Icons.video_file_rounded,
-                          size: 32,
+                          size: sd(context, 32),
                           color: textSecondary,
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: gapS(context)),
                         Text(
                           'قم باختيار ملف فيديو أو اسحبه هنا',
-                          style: TextStyle(fontSize: 14, color: textSecondary),
+                          style: TextStyle(
+                            fontSize: sf(context, 14),
+                            color: textSecondary,
+                          ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: sp(context, 4)),
                         Text(
                           'MP4, MOV, MKV, AVI, WEBM (حتى 200 ميجا تقريباً)',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: sf(context, 12),
                             color: Colors.grey[500],
                           ),
                         ),
                       ],
                     )
                   : Column(
+                      mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.check_circle,
-                          size: 40,
+                          size: sd(context, 40),
                           color: Colors.green,
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: gapS(context)),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: sp(context, 8),
+                          ),
                           child: Text(
                             _videoFile!.name,
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 14, color: textPrimary),
+                            style: TextStyle(
+                              fontSize: sf(context, 14),
+                              color: textPrimary,
+                            ),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 2,
                           ),
@@ -687,25 +745,30 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'إضافة فيديو جديد',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: textPrimary,
+            Expanded(
+              child: Text(
+                'إضافة فيديو',
+                style: TextStyle(
+                  fontSize: sf(context, 22),
+                  fontWeight: FontWeight.bold,
+                  color: textPrimary,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                softWrap: false,
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.close),
+              icon: Icon(Icons.close, size: sd(context, 20)),
               color: textSecondary,
               onPressed: () => Navigator.of(context).pop(),
             ),
           ],
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: sp(context, 4)),
         Text(
-          'قم بملء التفاصيل أدناه لإضافة فيديو جديد إلى المنصة.',
-          style: TextStyle(color: textSecondary, fontSize: 14),
+          ' املء التفاصيل أدناه لإضافة فيديو',
+          style: TextStyle(color: textSecondary, fontSize: sf(context, 14)),
         ),
       ],
     );
@@ -718,6 +781,8 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
     required TextEditingController controller,
     int maxLines = 1,
     String? Function(String?)? validator,
+    TextStyle? hintTextStyle,
+    TextStyle? textStyle,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -725,35 +790,38 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
         Text(
           label,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: sf(context, 14),
             fontWeight: FontWeight.w500,
             color: textPrimary,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: gapS(context)),
         TextFormField(
           controller: controller,
           maxLines: maxLines,
           validator: validator,
+          style: textStyle,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: Colors.grey[400]),
+            hintStyle:
+                hintTextStyle ??
+                TextStyle(color: Colors.grey[400], fontSize: sf(context, 12)),
             filled: true,
             fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: sd(context, 16),
+              vertical: sd(context, 12),
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(sd(context, 8)),
               borderSide: BorderSide(color: Colors.grey[300]!),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(sd(context, 8)),
               borderSide: BorderSide(color: Colors.grey[300]!),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(sd(context, 8)),
               borderSide: const BorderSide(color: Color(0xFFEA2A33)),
             ),
           ),
@@ -773,47 +841,47 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
         Text(
           'ملف PDF ذو صلة',
           style: TextStyle(
-            fontSize: 14,
+            fontSize: sf(context, 14),
             fontWeight: FontWeight.w500,
             color: textPrimary,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: gapS(context)),
         GestureDetector(
           onTap: _pickPdfFile,
           child: Container(
-            height: 120,
+            height: sd(context, 132),
             decoration: BoxDecoration(
               border: Border.all(
                 color: Colors.grey[300]!,
                 style: BorderStyle.solid,
-                width: 2,
+                width: sd(context, 2),
               ),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(sd(context, 8)),
             ),
             child: Center(
               child: _pdfFile == null
                   ? Column(
+                      mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
                           Icons.picture_as_pdf,
-                          size: 32,
+                          size: sd(context, 32),
                           color: textSecondary,
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: gapS(context)),
                         RichText(
                           text: TextSpan(
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: sf(context, 14),
                               color: textSecondary,
-                              fontFamily: 'Noto Kufi Arabic',
                             ),
                             children: [
                               TextSpan(
                                 text: 'قم بتحميل ملف',
                                 style: TextStyle(
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w600,
                                   color: primaryColor,
                                 ),
                               ),
@@ -821,11 +889,11 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: sp(context, 4)),
                         Text(
-                          'PDF (بحد أقصى 10 ميجا)',
+                          'PDF فقط (حتى 20 ميجا تقريباً)',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: sf(context, 12),
                             color: Colors.grey[500],
                           ),
                         ),
@@ -834,14 +902,23 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                   : Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.check_circle, size: 40, color: Colors.green),
-                        const SizedBox(height: 8),
+                        Icon(
+                          Icons.check_circle,
+                          size: sd(context, 40),
+                          color: Colors.green,
+                        ),
+                        SizedBox(height: gapS(context)),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: sp(context, 8),
+                          ),
                           child: Text(
                             _pdfFile!.name,
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 14, color: textPrimary),
+                            style: TextStyle(
+                              fontSize: sf(context, 14),
+                              color: textPrimary,
+                            ),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 2,
                           ),
@@ -863,14 +940,20 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
           onPressed: () => Navigator.of(context).pop(),
           style: TextButton.styleFrom(
             backgroundColor: Colors.grey[200],
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            padding: EdgeInsets.symmetric(
+              horizontal: sd(context, 24),
+              vertical: sd(context, 12),
+            ),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(sd(context, 8)),
             ),
           ),
-          child: const Text('إلغاء', style: TextStyle(color: Colors.black87)),
+          child: Text(
+            'إلغاء',
+            style: TextStyle(color: Colors.black87, fontSize: sf(context, 14)),
+          ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: sd(context, 12)),
         ElevatedButton(
           onPressed: _isLoading
               ? null
@@ -910,18 +993,28 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                       final send = await showDialog<bool>(
                         context: ctx,
                         builder: (context) => AlertDialog(
-                          title: const Text('إرسال إشعار؟'),
-                          content: const Text(
+                          title: Text(
+                            'إرسال إشعار؟',
+                            style: TextStyle(fontSize: sf(context, 16)),
+                          ),
+                          content: Text(
                             'تمت إضافة الفيديو بنجاح. هل تريد إرسال إشعار للمستخدمين؟',
+                            style: TextStyle(fontSize: sf(context, 14)),
                           ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.of(ctx).pop(false),
-                              child: const Text('لا'),
+                              child: Text(
+                                'لا',
+                                style: TextStyle(fontSize: sf(context, 14)),
+                              ),
                             ),
                             ElevatedButton(
                               onPressed: () => Navigator.of(ctx).pop(true),
-                              child: const Text('نعم'),
+                              child: Text(
+                                'نعم',
+                                style: TextStyle(fontSize: sf(context, 14)),
+                              ),
                             ),
                           ],
                         ),
@@ -987,21 +1080,24 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
           style: ElevatedButton.styleFrom(
             backgroundColor: primaryColor,
             foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            padding: EdgeInsets.symmetric(
+              horizontal: sd(context, 24),
+              vertical: sd(context, 12),
+            ),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(sd(context, 8)),
             ),
           ),
           child: _isLoading
-              ? const SizedBox(
-                  height: 20,
-                  width: 20,
+              ? SizedBox(
+                  height: sd(context, 20),
+                  width: sd(context, 20),
                   child: CircularProgressIndicator(
                     color: Colors.white,
-                    strokeWidth: 3,
+                    strokeWidth: sd(context, 3),
                   ),
                 )
-              : const Text('إضافة'),
+              : Text('إضافة', style: TextStyle(fontSize: sf(context, 14))),
         ),
       ],
     );

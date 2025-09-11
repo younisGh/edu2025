@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:educational_platform/utils/typography.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -178,10 +179,10 @@ class _ProfilePageState extends State<ProfilePage> {
                     color: Colors.white.withValues(alpha: 0.3),
                   ),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.arrow_forward_ios,
                   color: Colors.white,
-                  size: 20,
+                  size: sd(context, 20),
                 ),
               ),
             ),
@@ -325,9 +326,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 3),
               ),
-              child: const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Icon(Icons.camera_alt, color: Colors.white, size: 20),
+              child: Padding(
+                padding: EdgeInsets.all(sd(context, 8.0)),
+                child: Icon(Icons.camera_alt, color: Colors.white, size: sd(context, 20)),
               ),
             ),
           ),
@@ -353,10 +354,10 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'المعلومات الشخصية',
             style: TextStyle(
-              fontSize: 20,
+              fontSize: sf(context, 20),
               fontWeight: FontWeight.bold,
               color: textColor,
             ),
@@ -417,7 +418,7 @@ class _ProfilePageState extends State<ProfilePage> {
             color: secondaryColor,
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, color: primaryColor, size: 24),
+          child: Icon(icon, color: primaryColor, size: sd(context, 24)),
         ),
         const SizedBox(width: 16),
         Expanded(
@@ -426,14 +427,14 @@ class _ProfilePageState extends State<ProfilePage> {
             children: [
               Text(
                 label,
-                style: const TextStyle(fontSize: 14, color: subTextColor),
+                style: TextStyle(fontSize: sf(context, 14), color: subTextColor),
               ),
               const SizedBox(height: 4),
               isEditing
                   ? TextField(
                       controller: controller,
-                      style: const TextStyle(
-                        fontSize: 16,
+                      style: TextStyle(
+                        fontSize: sf(context, 16),
                         fontWeight: FontWeight.w600,
                         color: textColor,
                       ),
@@ -445,8 +446,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     )
                   : Text(
                       controller.text,
-                      style: const TextStyle(
-                        fontSize: 16,
+                      style: TextStyle(
+                        fontSize: sf(context, 16),
                         fontWeight: FontWeight.w600,
                         color: textColor,
                       ),
@@ -458,10 +459,10 @@ class _ProfilePageState extends State<ProfilePage> {
           icon: Icon(
             isEditing ? Icons.check_circle : Icons.edit_outlined,
             color: isEditing ? primaryColor : subTextColor,
-            size: 20,
+            size: sd(context, 20),
           ),
           onPressed: onToggle,
-          splashRadius: 20,
+          splashRadius: sd(context, 20),
           constraints: const BoxConstraints(),
         ),
       ],
@@ -569,7 +570,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: Text(
                     text,
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: sf(context, 16),
                       fontWeight: FontWeight.w600,
                       color: isLogout ? Colors.redAccent : textColor,
                     ),
