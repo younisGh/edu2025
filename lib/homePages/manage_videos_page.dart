@@ -3,7 +3,6 @@ import 'package:educational_platform/components/add_video_dialog.dart';
 import 'package:educational_platform/services/video_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:educational_platform/run_videos.dart';
 import 'package:educational_platform/homePages/admin_video_details_page.dart';
 import 'dart:async';
 import 'package:educational_platform/components/shared_video_widgets.dart';
@@ -622,14 +621,14 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
     final isMobile = width < 600;
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => RunVideosPage(
-              title: title.isEmpty ? 'بدون عنوان' : title,
-              videoUrl: videoUrl,
-              description: description.isEmpty ? null : description,
-            ),
-          ),
+        Navigator.pushNamed(
+          context,
+          '/run_videos',
+          arguments: {
+            'title': title.isEmpty ? 'بدون عنوان' : title,
+            'videoUrl': videoUrl,
+            'description': description.isEmpty ? null : description,
+          },
         );
       },
       child: Card(

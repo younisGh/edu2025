@@ -12,6 +12,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:educational_platform/utils/typography.dart';
+import 'package:educational_platform/components/arrow_scroll.dart';
 
 class RunVideosPage extends StatefulWidget {
   final String title;
@@ -45,6 +46,7 @@ class _RunVideosPageState extends State<RunVideosPage> {
   String? _currentCategoryName;
   Timer? _progressTimer;
   bool _markedCompleted = false;
+  final ScrollController _scrollController = ScrollController();
 
   // Build initials from a user's name (supports single or multi-part names)
   String _initialsFromName(String name) {
@@ -362,6 +364,7 @@ class _RunVideosPageState extends State<RunVideosPage> {
     _ytController?.dispose();
     _ytIframeController?.close();
     _commentCtrl.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -371,14 +374,18 @@ class _RunVideosPageState extends State<RunVideosPage> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: const Color(0xFFF8FAFC),
-        body: CustomScrollView(
-          slivers: [
-            _buildSliverAppBar(),
-            SliverToBoxAdapter(child: _buildVideoDetails()),
-            SliverToBoxAdapter(child: _buildActionButtons()),
-            _buildCommentsSection(),
-            _buildRelatedVideosSection(),
-          ],
+        body: ArrowScroll(
+          scrollController: _scrollController,
+          child: CustomScrollView(
+            controller: _scrollController,
+            slivers: [
+              _buildSliverAppBar(),
+              SliverToBoxAdapter(child: _buildVideoDetails()),
+              SliverToBoxAdapter(child: _buildActionButtons()),
+              _buildCommentsSection(),
+              _buildRelatedVideosSection(),
+            ],
+          ),
         ),
       ),
     );

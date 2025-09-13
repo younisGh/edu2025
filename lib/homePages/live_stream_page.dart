@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 // Conditional import: real web implementation on web, stub elsewhere
-import 'web_recording/web_local_recorder_stub.dart'
-    if (dart.library.html) 'web_recording/web_local_recorder_web.dart';
+import '../web_recording/web_local_recorder_stub.dart'
+    if (dart.library.html) '../web_recording/web_local_recorder_web.dart';
 // Screen share bridge (web-only)
-import 'web_stream/screen_share_stub.dart'
-    if (dart.library.html) 'web_stream/screen_share_web.dart';
+import '../web_stream/screen_share_stub.dart'
+    if (dart.library.html) '../web_stream/screen_share_web.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -762,7 +762,11 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.person, color: Colors.white, size: sd(context, 16)),
+                  Icon(
+                    Icons.person,
+                    color: Colors.white,
+                    size: sd(context, 16),
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     name,

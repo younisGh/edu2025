@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:educational_platform/utils/typography.dart';
+import 'package:educational_platform/components/arrow_scroll.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -33,6 +34,7 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _isLoading = true;
   bool _isUploading = false;
   Future<String?>? _photoUrlFuture;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -100,6 +102,7 @@ class _ProfilePageState extends State<ProfilePage> {
     _phoneController.dispose();
     _emailController.dispose();
     _addressController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -117,20 +120,24 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   _buildBackground(context),
                   SafeArea(
-                    child: SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 80), // Space for back button
-                            _buildProfileHeader(),
-                            const SizedBox(height: 32),
-                            _buildPersonalInfoSection(),
-                            const SizedBox(height: 32),
-                            _buildActionButtons(),
-                            const SizedBox(height: 32),
-                          ],
+                    child: ArrowScroll(
+                      scrollController: _scrollController,
+                      child: SingleChildScrollView(
+                        controller: _scrollController,
+                        physics: const BouncingScrollPhysics(),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 80), // Space for back button
+                              _buildProfileHeader(),
+                              const SizedBox(height: 32),
+                              _buildPersonalInfoSection(),
+                              const SizedBox(height: 32),
+                              _buildActionButtons(),
+                              const SizedBox(height: 32),
+                            ],
+                          ),
                         ),
                       ),
                     ),

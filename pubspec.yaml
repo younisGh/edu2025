@@ -123,12 +123,14 @@ flutter:
   # see https://flutter.dev/to/font-from-package
 
 flutter_launcher_icons:
-  android: true
+  android: "launcher_icon"
   ios: true
+  image_path: "assets/images/edu.png"
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/images/edu.png"
+  min_sdk_android: 21
   web:
     generate: true
-    image_path: "edu.png"
+    image_path: "assets/images/edu.png"
     background_color: "#ffffff"
     theme_color: "#ffffff"
-  image_path: "edu.png"
-  min_sdk_android: 21

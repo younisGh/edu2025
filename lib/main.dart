@@ -1,9 +1,9 @@
 import 'package:educational_platform/homePages/admin_dashboard.dart';
 import 'package:educational_platform/homePages/manage_videos_page.dart';
 import 'package:educational_platform/homePages/profile_page.dart';
-import 'package:educational_platform/users_page.dart';
-import 'package:educational_platform/run_videos.dart';
-import 'package:educational_platform/live_stream_page.dart';
+import 'package:educational_platform/homePages/users_page.dart';
+import 'package:educational_platform/homePages/run_videos.dart';
+import 'package:educational_platform/homePages/live_stream_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -90,14 +90,35 @@ class MyApp extends StatelessWidget {
             '/admin_dashboard': (context) => const AdminDashboard(),
             '/manage_videos': (context) => const ManageVideosPage(),
             '/users_page': (context) => const UsersPage(),
-            '/run_videos': (context) => const RunVideosPage(
-              title: 'فيديو افتراضي',
-              videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-              description: 'هذا وصف لفيديو افتراضي.',
-            ),
             '/live_stream': (context) => const LiveStreamPage(),
             '/profile_page': (context) => const ProfilePage(),
             '/notifications': (context) => const NotificationsPage(),
+          },
+          onGenerateRoute: (settings) {
+            if (settings.name == '/run_videos') {
+              final args = settings.arguments;
+              if (args is Map) {
+                final title = (args['title'] ?? '').toString();
+                final videoUrl = (args['videoUrl'] ?? '').toString();
+                final description = args['description']?.toString();
+                return MaterialPageRoute(
+                  builder: (_) => RunVideosPage(
+                    title: title,
+                    videoUrl: videoUrl,
+                    description: (description != null && description.isNotEmpty)
+                        ? description
+                        : null,
+                  ),
+                  settings: settings,
+                );
+              }
+              // If arguments are missing or invalid, fall back to a safe page
+              return MaterialPageRoute(
+                builder: (_) => const GuestDashboard(),
+                settings: settings,
+              );
+            }
+            return null; // Use default handling for other routes
           },
         );
       },

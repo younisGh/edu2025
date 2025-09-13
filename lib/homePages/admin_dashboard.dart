@@ -7,10 +7,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:educational_platform/homePages/profile_page.dart';
 import 'package:educational_platform/homePages/settings_page.dart';
 import 'package:educational_platform/homePages/analytics_page.dart';
-import 'package:educational_platform/run_videos.dart';
 import 'package:educational_platform/services/engagement_service.dart';
 import 'package:educational_platform/components/shared_video_widgets.dart';
-import 'package:educational_platform/live_stream_page.dart';
+import 'package:educational_platform/homePages/live_stream_page.dart';
 import 'package:educational_platform/components/admin_send_notification_dialog.dart';
 import 'package:educational_platform/utils/typography.dart';
 import 'package:educational_platform/services/settings_service.dart';
@@ -958,14 +957,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
     return InkWell(
       onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => RunVideosPage(
-              title: title,
-              videoUrl: videoUrl,
-              description: description.isNotEmpty ? description : null,
-            ),
-          ),
+        Navigator.pushNamed(
+          context,
+          '/run_videos',
+          arguments: {
+            'title': title,
+            'videoUrl': videoUrl,
+            'description': description.isNotEmpty ? description : null,
+          },
         );
       },
       borderRadius: BorderRadius.circular(12),
@@ -1244,7 +1243,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     builder: (context, snap) {
                       final count = snap.data?.docs.length ?? 0;
                       return _buildStatCard(
-                        'المستخدمون المسجلون',
+                        'المستخدمون',
                         count.toString(),
                         '',
                         Icons.group,
@@ -1261,7 +1260,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     builder: (context, snap) {
                       final count = snap.data?.docs.length ?? 0;
                       return _buildStatCard(
-                        'إجمالي الفيديوهات',
+                        'الفيديوهات',
                         count.toString(),
                         '',
                         Icons.videocam_rounded,
@@ -1287,7 +1286,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         }
                       }
                       return _buildStatCard(
-                        'إجمالي المشاهدات',
+                        'المشاهدات',
                         totalViews.toString(),
                         '',
                         Icons.visibility_rounded,
@@ -1666,18 +1665,16 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
                           return GestureDetector(
                             onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => RunVideosPage(
-                                    title: (title.isEmpty
-                                        ? 'بدون عنوان'
-                                        : title),
-                                    videoUrl: videoUrl,
-                                    description: description.isEmpty
-                                        ? null
-                                        : description,
-                                  ),
-                                ),
+                              Navigator.pushNamed(
+                                context,
+                                '/run_videos',
+                                arguments: {
+                                  'title': title.isEmpty ? 'بدون عنوان' : title,
+                                  'videoUrl': videoUrl,
+                                  'description': description.isNotEmpty
+                                      ? description
+                                      : null,
+                                },
                               );
                             },
                             child: AnimatedContainer(

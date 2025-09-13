@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:educational_platform/run_videos.dart';
 import 'package:educational_platform/components/shared_video_widgets.dart';
 import 'package:educational_platform/utils/typography.dart';
 import 'package:educational_platform/services/engagement_service.dart';
@@ -84,7 +83,10 @@ class _RecordedVideosPageState extends State<RecordedVideosPage> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('تسجيلات البث المباشر', style: TextStyle(fontSize: sf(context, 18))),
+          title: Text(
+            'تسجيلات البث المباشر',
+            style: TextStyle(fontSize: sf(context, 18)),
+          ),
           backgroundColor: Colors.white,
           foregroundColor: const Color(0xFF111827),
           elevation: 0.5,
@@ -216,16 +218,16 @@ class _RecordedVideosPageState extends State<RecordedVideosPage> {
 
                         return GestureDetector(
                           onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => RunVideosPage(
-                                  title: title,
-                                  videoUrl: videoUrl,
-                                  description: description.isEmpty
-                                      ? null
-                                      : description,
-                                ),
-                              ),
+                            Navigator.pushNamed(
+                              context,
+                              '/run_videos',
+                              arguments: {
+                                'title': title,
+                                'videoUrl': videoUrl,
+                                'description': description.isEmpty
+                                    ? null
+                                    : description,
+                              },
                             );
                           },
                           child: Card(
@@ -411,16 +413,16 @@ class _RecordedVideosPageState extends State<RecordedVideosPage> {
                         thumbnail: thumb,
                         progress: pct,
                         onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => RunVideosPage(
-                                title: title,
-                                videoUrl: videoUrl,
-                                description: description.isEmpty
-                                    ? null
-                                    : description,
-                              ),
-                            ),
+                          Navigator.pushNamed(
+                            context,
+                            '/run_videos',
+                            arguments: {
+                              'title': title,
+                              'videoUrl': videoUrl,
+                              'description': description.isEmpty
+                                  ? null
+                                  : description,
+                            },
                           );
                         },
                       );
@@ -498,7 +500,10 @@ class _RecordedVideosPageState extends State<RecordedVideosPage> {
                 title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: sf(context, 14)),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: sf(context, 14),
+                ),
               ),
             ),
           ],

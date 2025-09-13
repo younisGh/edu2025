@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:educational_platform/utils/typography.dart';
+import 'package:educational_platform/components/arrow_scroll.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -16,6 +17,7 @@ class _UsersPageState extends State<UsersPage> {
   String searchQuery = '';
   int currentPage = 1;
   final int itemsPerPage = 5;
+  final ScrollController _scrollController = ScrollController();
   String? _hoveredUserId; // for desktop hover actions
   Stream<List<UserData>>?
   _usersStreamCached; // cached to avoid resubscribe on rebuild
@@ -28,6 +30,12 @@ class _UsersPageState extends State<UsersPage> {
   void initState() {
     super.initState();
     // Lazy init will handle caching on first access
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   // Lazy getter for a cached users stream
@@ -355,19 +363,22 @@ class _UsersPageState extends State<UsersPage> {
             ),
           ],
         ),
-        body: Stack(
-          children: [
-            // Main Content
-            Column(
-              children: [
-                _buildHeader(),
-                Expanded(child: _buildMainContent()),
-              ],
-            ),
-            // Sidebar
-            if (sidebarOpen) _buildSidebarOverlay(),
-            if (sidebarOpen) _buildSidebar(),
-          ],
+        body: ArrowScroll(
+          scrollController: _scrollController,
+          child: Stack(
+            children: [
+              // Main Content
+              Column(
+                children: [
+                  _buildHeader(),
+                  Expanded(child: _buildMainContent()),
+                ],
+              ),
+              // Sidebar
+              if (sidebarOpen) _buildSidebarOverlay(),
+              if (sidebarOpen) _buildSidebar(),
+            ],
+          ),
         ),
       ),
     );
@@ -525,6 +536,7 @@ class _UsersPageState extends State<UsersPage> {
                     children: [
                       Expanded(
                         child: SingleChildScrollView(
+                          controller: _scrollController,
                           child: _buildUsersTableFrom(visible),
                         ),
                       ),

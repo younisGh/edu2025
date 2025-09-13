@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:educational_platform/utils/typography.dart';
+import 'package:educational_platform/components/arrow_scroll.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -14,6 +15,7 @@ class _SettingsPageState extends State<SettingsPage> {
   final _channelCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
   bool _savingGeneral = false;
+  final ScrollController _scrollController = ScrollController();
 
   DocumentReference<Map<String, dynamic>> get _generalRef =>
       FirebaseFirestore.instance.collection('app_config').doc('general');
@@ -26,6 +28,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _titleCtrl.dispose();
     _channelCtrl.dispose();
     _descCtrl.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -168,172 +171,176 @@ class _SettingsPageState extends State<SettingsPage> {
           icon: const Icon(Icons.add),
           label: const Text('إضافة صنف'),
         ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Card(
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: Colors.grey.shade200),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                    stream: _generalRef.snapshots(),
-                    builder: (context, snap) {
-                      final data = (snap.data?.data()) ?? {};
-                      _titleCtrl.value = TextEditingValue(
-                        text: (data['platformTitle'] ?? '').toString(),
-                      );
-                      _channelCtrl.value = TextEditingValue(
-                        text: (data['channelId'] ?? '').toString(),
-                      );
-                      _descCtrl.value = TextEditingValue(
-                        text: (data['platformDescription'] ?? '').toString(),
-                      );
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'إعدادات عامة',
-                            style: TextStyle(
-                              fontSize: sf(context, 18),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          TextField(
-                            controller: _titleCtrl,
-                            decoration: const InputDecoration(
-                              labelText: 'عنوان المنصة',
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          TextField(
-                            controller: _descCtrl,
-                            maxLines: 2,
-                            decoration: const InputDecoration(
-                              labelText: 'وصف المنصة',
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          TextField(
-                            controller: _channelCtrl,
-                            decoration: const InputDecoration(
-                              labelText: 'Channel ID',
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: _savingGeneral ? null : _saveGeneral,
-                              icon: const Icon(Icons.save),
-                              label: Text(
-                                _savingGeneral ? 'جارٍ الحفظ...' : 'حفظ',
+        body: ArrowScroll(
+          scrollController: _scrollController,
+          child: SingleChildScrollView(
+            controller: _scrollController,
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Card(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: Colors.grey.shade200),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                      stream: _generalRef.snapshots(),
+                      builder: (context, snap) {
+                        final data = (snap.data?.data()) ?? {};
+                        _titleCtrl.value = TextEditingValue(
+                          text: (data['platformTitle'] ?? '').toString(),
+                        );
+                        _channelCtrl.value = TextEditingValue(
+                          text: (data['channelId'] ?? '').toString(),
+                        );
+                        _descCtrl.value = TextEditingValue(
+                          text: (data['platformDescription'] ?? '').toString(),
+                        );
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'إعدادات عامة',
+                              style: TextStyle(
+                                fontSize: sf(context, 18),
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                          ),
-                        ],
-                      );
-                    },
+                            const SizedBox(height: 12),
+                            TextField(
+                              controller: _titleCtrl,
+                              decoration: const InputDecoration(
+                                labelText: 'عنوان المنصة',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            TextField(
+                              controller: _descCtrl,
+                              maxLines: 2,
+                              decoration: const InputDecoration(
+                                labelText: 'وصف المنصة',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            TextField(
+                              controller: _channelCtrl,
+                              decoration: const InputDecoration(
+                                labelText: 'Channel ID',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                onPressed: _savingGeneral ? null : _saveGeneral,
+                                icon: const Icon(Icons.save),
+                                label: Text(
+                                  _savingGeneral ? 'جارٍ الحفظ...' : 'حفظ',
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Card(
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: Colors.grey.shade200),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'الأصناف',
-                        style: TextStyle(
-                          fontSize: sf(context, 18),
-                          fontWeight: FontWeight.bold,
+                const SizedBox(height: 16),
+                Card(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: Colors.grey.shade200),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'الأصناف',
+                          style: TextStyle(
+                            fontSize: sf(context, 18),
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                        stream: _categoriesCol.orderBy('name').snapshots(),
-                        builder: (context, snap) {
-                          if (snap.connectionState == ConnectionState.waiting) {
-                            return const Center(
-                              child: Padding(
-                                padding: EdgeInsets.all(16.0),
-                                child: CircularProgressIndicator(),
-                              ),
-                            );
-                          }
-                          final docs = snap.data?.docs ?? [];
-                          if (docs.isEmpty) {
-                            return const Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text('لا توجد أصناف حتى الآن.'),
-                            );
-                          }
-                          return ListView.separated(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: docs.length,
-                            separatorBuilder: (_, _) =>
-                                const Divider(height: 1),
-                            itemBuilder: (context, i) {
-                              final doc = docs[i];
-                              final data = doc.data();
-                              return ListTile(
-                                leading: const Icon(Icons.label_outline),
-                                title: Text(data['name'] ?? ''),
-                                subtitle: Text(
-                                  doc.id,
-                                  style: const TextStyle(color: Colors.grey),
-                                ),
-                                trailing: PopupMenuButton<String>(
-                                  onSelected: (v) async {
-                                    if (v == 'edit') {
-                                      await _showCategoryDialog(
-                                        id: doc.id,
-                                        initialName: (data['name'] ?? '')
-                                            .toString(),
-                                      );
-                                    } else if (v == 'delete') {
-                                      await _confirmDeleteCategory(doc.id);
-                                    }
-                                  },
-                                  itemBuilder: (_) => const [
-                                    PopupMenuItem(
-                                      value: 'edit',
-                                      child: Text('تعديل'),
-                                    ),
-                                    PopupMenuItem(
-                                      value: 'delete',
-                                      child: Text('حذف'),
-                                    ),
-                                  ],
+                        const SizedBox(height: 12),
+                        StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                          stream: _categoriesCol.orderBy('name').snapshots(),
+                          builder: (context, snap) {
+                            if (snap.connectionState == ConnectionState.waiting) {
+                              return const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: CircularProgressIndicator(),
                                 ),
                               );
-                            },
-                          );
-                        },
-                      ),
-                    ],
+                            }
+                            final docs = snap.data?.docs ?? [];
+                            if (docs.isEmpty) {
+                              return const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('لا توجد أصناف حتى الآن.'),
+                              );
+                            }
+                            return ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: docs.length,
+                              separatorBuilder: (_, _) =>
+                                  const Divider(height: 1),
+                              itemBuilder: (context, i) {
+                                final doc = docs[i];
+                                final data = doc.data();
+                                return ListTile(
+                                  leading: const Icon(Icons.label_outline),
+                                  title: Text(data['name'] ?? ''),
+                                  subtitle: Text(
+                                    doc.id,
+                                    style: const TextStyle(color: Colors.grey),
+                                  ),
+                                  trailing: PopupMenuButton<String>(
+                                    onSelected: (v) async {
+                                      if (v == 'edit') {
+                                        await _showCategoryDialog(
+                                          id: doc.id,
+                                          initialName: (data['name'] ?? '')
+                                              .toString(),
+                                        );
+                                      } else if (v == 'delete') {
+                                        await _confirmDeleteCategory(doc.id);
+                                      }
+                                    },
+                                    itemBuilder: (_) => const [
+                                      PopupMenuItem(
+                                        value: 'edit',
+                                        child: Text('تعديل'),
+                                      ),
+                                      PopupMenuItem(
+                                        value: 'delete',
+                                        child: Text('حذف'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 80),
-            ],
+                const SizedBox(height: 80),
+              ],
+            ),
           ),
         ),
       ),

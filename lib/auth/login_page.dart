@@ -392,7 +392,7 @@ class _LoginPageState extends State<LoginPage>
                             opacity: _fade,
                             child: Image.asset(
                               'assets/images/edu.png',
-                              height: 64,
+                              height: sd(context, 96),
                               fit: BoxFit.contain,
                             ),
                           ),

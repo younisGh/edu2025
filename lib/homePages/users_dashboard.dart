@@ -7,10 +7,9 @@ import 'package:educational_platform/services/settings_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:educational_platform/run_videos.dart';
 import 'package:educational_platform/services/engagement_service.dart';
 import 'package:educational_platform/components/shared_video_widgets.dart';
-import 'package:educational_platform/live_stream_page.dart'; // Added import
+import 'package:educational_platform/homePages/live_stream_page.dart'; // Added import
 import 'package:educational_platform/components/notification_bell.dart';
 import 'package:educational_platform/utils/typography.dart';
 
@@ -108,12 +107,10 @@ class _UsersDashboardState extends State<UsersDashboard>
     final isMobile = screenWidth < 600;
     return GestureDetector(
       onTap: () {
-        Navigator.push(
+        Navigator.pushNamed(
           context,
-          MaterialPageRoute(
-            builder: (context) =>
-                RunVideosPage(title: title, videoUrl: videoUrl),
-          ),
+          '/run_videos',
+          arguments: {'title': title, 'videoUrl': videoUrl},
         );
       },
       child: Card(
@@ -1294,15 +1291,14 @@ class _UsersDashboardState extends State<UsersDashboard>
                         title: title.isEmpty ? 'فيديو' : title,
                         thumbnail: thumb,
                         onTap: () {
-                          Navigator.push(
+                          Navigator.pushNamed(
                             context,
-                            MaterialPageRoute(
-                              builder: (_) => RunVideosPage(
-                                title: title,
-                                videoUrl: videoUrl,
-                                description: description,
-                              ),
-                            ),
+                            '/run_videos',
+                            arguments: {
+                              'title': title,
+                              'videoUrl': videoUrl,
+                              'description': description,
+                            },
                           );
                         },
                       );
@@ -1577,15 +1573,14 @@ class _UsersDashboardState extends State<UsersDashboard>
                         thumbnail: thumb,
                         progress: progress,
                         onTap: () {
-                          Navigator.push(
+                          Navigator.pushNamed(
                             context,
-                            MaterialPageRoute(
-                              builder: (_) => RunVideosPage(
-                                title: title,
-                                videoUrl: videoUrl,
-                                description: description,
-                              ),
-                            ),
+                            '/run_videos',
+                            arguments: {
+                              'title': title,
+                              'videoUrl': videoUrl,
+                              'description': description,
+                            },
                           );
                         },
                       );

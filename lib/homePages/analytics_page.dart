@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:educational_platform/utils/typography.dart';
+import 'package:educational_platform/components/arrow_scroll.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:educational_platform/services/engagement_service.dart';
 
@@ -13,6 +14,7 @@ class AnalyticsPage extends StatefulWidget {
 
 class _AnalyticsPageState extends State<AnalyticsPage> {
   late DateTimeRange _range;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -25,6 +27,12 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     ).subtract(const Duration(days: 6));
     final end = DateTime(now.year, now.month, now.day);
     _range = DateTimeRange(start: start, end: end);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   String _rangeLabel(DateTimeRange r) {
@@ -100,72 +108,76 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           ),
         ),
         body: SafeArea(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.all(sp(context, 24)),
-            physics: const BouncingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Date range filter UI
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey.shade200),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.date_range_rounded,
-                        color: Color(0xFF667EEA),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          _rangeLabel(_range),
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF111827),
-                            fontSize: sf(context, 14),
+          child: ArrowScroll(
+            scrollController: _scrollController,
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              padding: EdgeInsets.all(sp(context, 24)),
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Date range filter UI
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.grey.shade200),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.date_range_rounded,
+                          color: Color(0xFF667EEA),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            _rangeLabel(_range),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF111827),
+                              fontSize: sf(context, 14),
+                            ),
                           ),
                         ),
-                      ),
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF667EEA),
-                          foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: sd(context, 16),
-                            vertical: sd(context, 12),
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF667EEA),
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: sd(context, 16),
+                              vertical: sd(context, 12),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          onPressed: _pickRange,
+                          icon: const Icon(Icons.edit_calendar_rounded),
+                          label: const Text('تغيير المدى'),
                         ),
-                        onPressed: _pickRange,
-                        icon: const Icon(Icons.edit_calendar_rounded),
-                        label: const Text('تغيير المدى'),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                SizedBox(height: sp(context, 24)),
-                const _KpiSection(),
-                SizedBox(height: sp(context, 24)),
-                const _TopVideosByViewsSection(),
-                SizedBox(height: sp(context, 24)),
-                _VideosAddedTrendSection(dateRange: _range),
-                SizedBox(height: sp(context, 24)),
-                const _FavoriteVideosSection(),
-              ],
+                  SizedBox(height: sp(context, 24)),
+                  const _KpiSection(),
+                  SizedBox(height: sp(context, 24)),
+                  const _TopVideosByViewsSection(),
+                  SizedBox(height: sp(context, 24)),
+                  _VideosAddedTrendSection(dateRange: _range),
+                  SizedBox(height: sp(context, 24)),
+                  const _FavoriteVideosSection(),
+                ],
+              ),
             ),
           ),
         ),
