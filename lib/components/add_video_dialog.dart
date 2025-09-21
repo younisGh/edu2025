@@ -26,6 +26,7 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
   bool _isUploadMode = false; // false: link mode (YouTube), true: upload mode
   String? _selectedCategoryId;
   String? _selectedCategoryName;
+  String _videoType = 'free'; // 'free' or 'paid'
   bool _isImporting = false;
 
   Future<void> _openImportPicker() async {
@@ -499,6 +500,59 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
     super.dispose();
   }
 
+  Widget _buildVideoTypeDropdown(Color textPrimary) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'نوع الفيديو',
+          style: TextStyle(
+            fontSize: sf(context, 14),
+            fontWeight: FontWeight.w500,
+            color: textPrimary,
+          ),
+        ),
+        SizedBox(height: gapS(context)),
+        DropdownButtonFormField<String>(
+          initialValue: _videoType,
+          items: const [
+            DropdownMenuItem(
+              value: 'free',
+              child: Text('مجاني'),
+            ),
+            DropdownMenuItem(
+              value: 'paid',
+              child: Text('مدفوع'),
+            ),
+          ],
+          onChanged: (value) {
+            if (value != null) {
+              setState(() {
+                _videoType = value;
+              });
+            }
+          },
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(sd(context, 8)),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(sd(context, 8)),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(sd(context, 8)),
+              borderSide: const BorderSide(color: Color(0xFFEA2A33)),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     const primaryColor = Color(0xFFEA2A33);
@@ -603,6 +657,8 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                     ],
                     SizedBox(height: gapL(context)),
                     _buildCategoryDropdown(textPrimary),
+                    SizedBox(height: gapL(context)),
+                    _buildVideoTypeDropdown(textPrimary),
                     SizedBox(height: gapL(context)),
                     _buildTextField(
                       controller: _titleController,
@@ -985,6 +1041,7 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
                         videoFile: _isUploadMode ? _videoFile : null,
                         categoryId: _selectedCategoryId,
                         categoryName: _selectedCategoryName,
+                        videoType: _videoType, // Pass the video type
                       );
 
                       if (!ctx.mounted) return;

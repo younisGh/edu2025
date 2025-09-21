@@ -42,6 +42,182 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
     );
   }
 
+  Widget _buildResponsiveActions({
+    required BuildContext context,
+    required bool isMobile,
+    required bool allowGuest,
+    required VoidCallback onDetails,
+    required VoidCallback onEdit,
+    required VoidCallback onToggleGuest,
+    required VoidCallback onDelete,
+  }) {
+    return LayoutBuilder(builder: (ctx, constraints) {
+      final maxW = constraints.maxWidth;
+      // Ultra narrow: use compact icon row
+      if (maxW < 360) {
+        return Align(
+          alignment: Alignment.centerLeft,
+          child: Directionality(
+            textDirection: TextDirection.ltr,
+            child: Wrap(
+              alignment: WrapAlignment.start,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 2,
+              runSpacing: 2,
+              children: [
+                _actionIcon('تفاصيل', Icons.info_outline, Colors.blue, onDetails),
+                _actionIcon('تعديل', Icons.edit, Colors.amber, onEdit),
+                _actionIcon(
+                  allowGuest ? 'إلغاء الإتاحة للزوار' : 'إتاحة للزوار',
+                  allowGuest ? Icons.public_off : Icons.public,
+                  allowGuest ? Colors.red : Colors.green,
+                  onToggleGuest,
+                ),
+                _actionIcon('حذف', Icons.delete, Colors.red, onDelete),
+              ],
+            ),
+          ),
+        );
+      }
+      // Mobile/tablet: use Wrap with small pill buttons to avoid overflow
+      if (maxW < 700) {
+        return Align(
+          alignment: Alignment.centerLeft,
+          child: Directionality(
+            textDirection: TextDirection.ltr,
+            child: Wrap(
+              alignment: WrapAlignment.start,
+              runAlignment: WrapAlignment.center,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                _actionPill('تفاصيل', Colors.blue, onDetails),
+                _actionPill('تعديل', Colors.amber, onEdit),
+                _actionPill(
+                  allowGuest ? 'إلغاء الإتاحة للزوار' : 'إتاحة للزوار',
+                  allowGuest ? Colors.red : Colors.green,
+                  onToggleGuest,
+                ),
+                _actionPill('حذف', Colors.red, onDelete),
+              ],
+            ),
+          ),
+        );
+      }
+      // Wide screens: row with evenly spaced pill buttons
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Flexible(child: _actionPill('تفاصيل', Colors.blue, onDetails)),
+              const SizedBox(width: 8),
+              Flexible(child: _actionPill('تعديل', Colors.amber, onEdit)),
+              const SizedBox(width: 8),
+              Flexible(
+                child: _actionPill(
+                  allowGuest ? 'إلغاء الإتاحة للزوار' : 'إتاحة للزوار',
+                  allowGuest ? Colors.red : Colors.green,
+                  onToggleGuest,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Flexible(child: _actionPill('حذف', Colors.red, onDelete)),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _actionIcon(
+      String tooltip, IconData icon, Color color, VoidCallback onPressed) {
+    return IconButton(
+      tooltip: tooltip,
+      onPressed: onPressed,
+      icon: Icon(icon, color: color),
+      visualDensity: const VisualDensity(horizontal: -2, vertical: -2),
+      padding: const EdgeInsets.all(4),
+      constraints: const BoxConstraints(),
+    );
+  }
+
+  Widget _actionPill(String label, Color color, VoidCallback onPressed) {
+    return SizedBox(
+      height: 36,
+      child: TextButton.icon(
+        onPressed: onPressed,
+        icon: Icon(
+          _iconForLabel(label),
+          size: 18,
+          color: color,
+        ),
+        label: Text(
+          label,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(color: color, fontWeight: FontWeight.bold),
+        ),
+        style: TextButton.styleFrom(
+          backgroundColor: color.withValues(alpha: 0.08),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      ),
+    );
+  }
+
+  IconData _iconForLabel(String label) {
+    if (label.contains('تفاصيل')) return Icons.info_outline;
+    if (label.contains('تعديل')) return Icons.edit;
+    if (label.contains('حذف')) return Icons.delete;
+    if (label.contains('إتاحة') || label.contains('إلغاء الإتاحة')) {
+      return Icons.public;
+    }
+    return Icons.circle;
+  }
+
+  Future<void> _toggleGuestAvailability(String docId, bool currentlyAllowed) async {
+    try {
+      final updates = <String, dynamic>{
+        'allowGuest': !currentlyAllowed,
+      };
+      if (!currentlyAllowed) {
+        // When enabling guest access, ensure status is published
+        updates['status'] = 'published';
+        // Ensure timeAdded exists to satisfy guest query ordering
+        final snap = await FirebaseFirestore.instance
+            .collection('videos')
+            .doc(docId)
+            .get();
+        final hasTime = (snap.data()?['timeAdded']) != null;
+        if (!hasTime) {
+          updates['timeAdded'] = FieldValue.serverTimestamp();
+        }
+      }
+      await FirebaseFirestore.instance
+          .collection('videos')
+          .doc(docId)
+          .set(updates, SetOptions(merge: true));
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(!currentlyAllowed
+              ? 'تم إتاحة الفيديو للزوار'
+              : 'تم إلغاء إتاحة الفيديو للزوار'),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('تعذر تحديث الإتاحة: $e')),
+      );
+    }
+  }
+
   // ملاحظة: تمت إزالة وظيفة الاستيراد من يوتيوب حسب الطلب
 
   Future<void> _showEditVideoDialog(
@@ -63,87 +239,62 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
     String? selectedCategoryName = (data['category'] ?? '').toString().isEmpty
         ? null
         : (data['category'] ?? '').toString();
+    String videoType = (data['videoType'] ?? 'free').toString();
 
     await showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('تعديل الفيديو'),
-          content: SizedBox(
-            width: 500,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: nameController,
-                    decoration: const InputDecoration(labelText: 'العنوان'),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: descController,
-                    decoration: const InputDecoration(labelText: 'الوصف'),
-                    maxLines: 3,
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: urlController,
-                    decoration: const InputDecoration(
-                      labelText: 'رابط الفيديو (YouTube)',
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      'الفئة',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey[800],
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('تعديل الفيديو'),
+              content: SizedBox(
+                width: 500,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        controller: nameController,
+                        decoration: const InputDecoration(labelText: 'العنوان'),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                    stream: FirebaseFirestore.instance
-                        .collection('categories')
-                        .orderBy('name')
-                        .snapshots(),
-                    builder: (context, snapshot) {
-                      final catDocs = snapshot.data?.docs ?? [];
-                      final items = <DropdownMenuItem<String>>[
-                        const DropdownMenuItem<String>(
-                          value: '',
-                          child: Text('بدون فئة'),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: descController,
+                        decoration: const InputDecoration(labelText: 'الوصف'),
+                        maxLines: 3,
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: urlController,
+                        decoration: const InputDecoration(
+                          labelText: 'رابط الفيديو (YouTube)',
                         ),
-                        ...catDocs.map((d) {
-                          final name = (d.data()['name'] ?? '').toString();
-                          return DropdownMenuItem<String>(
-                            value: d.id,
-                            child: Text(name.isEmpty ? d.id : name),
-                          );
-                        }),
-                      ];
-                      final currentVal =
-                          (selectedCategoryId?.isNotEmpty ?? false)
-                          ? selectedCategoryId
-                          : '';
-                      return DropdownButtonFormField<String>(
-                        initialValue: currentVal,
-                        items: items,
+                      ),
+                      const SizedBox(height: 12),
+                      // Video Type Dropdown
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          'نوع الفيديو',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey[800],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      DropdownButtonFormField<String>(
+                        initialValue: videoType,
+                        items: const [
+                          DropdownMenuItem(value: 'free', child: Text('مجاني')),
+                          DropdownMenuItem(value: 'paid', child: Text('مدفوع')),
+                        ],
                         onChanged: (val) {
-                          if (val == null || val.isEmpty) {
-                            selectedCategoryId = null;
-                            selectedCategoryName = null;
-                          } else {
-                            selectedCategoryId = val;
-                            final match = catDocs.where((d) => d.id == val);
-                            if (match.isNotEmpty) {
-                              selectedCategoryName =
-                                  (match.first.data()['name'] ?? '').toString();
-                            } else {
-                              selectedCategoryName = null;
-                            }
+                          if (val != null) {
+                            setState(() {
+                              videoType = val;
+                            });
                           }
                         },
                         decoration: InputDecoration(
@@ -153,57 +304,112 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
                             borderRadius: BorderRadius.circular(8),
                             borderSide: BorderSide(color: Colors.grey[300]!),
                           ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.grey[300]!),
-                          ),
-                          focusedBorder: const OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(8)),
-                            borderSide: BorderSide(color: Color(0xFFEA2A33)),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          'الفئة',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey[800],
                           ),
                         ),
-                      );
-                    },
+                      ),
+                      const SizedBox(height: 6),
+                      StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                        stream: FirebaseFirestore.instance
+                            .collection('categories')
+                            .orderBy('name')
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          final catDocs = snapshot.data?.docs ?? [];
+                          final items = <DropdownMenuItem<String>>[
+                            const DropdownMenuItem<String>(
+                              value: '',
+                              child: Text('بدون فئة'),
+                            ),
+                            ...catDocs.map((d) {
+                              final name = (d.data()['name'] ?? '').toString();
+                              return DropdownMenuItem<String>(
+                                value: d.id,
+                                child: Text(name.isEmpty ? d.id : name),
+                              );
+                            }),
+                          ];
+                          final currentVal =
+                              (selectedCategoryId?.isNotEmpty ?? false)
+                                  ? selectedCategoryId
+                                  : '';
+                          return DropdownButtonFormField<String>(
+                            initialValue: currentVal,
+                            items: items,
+                            onChanged: (val) {
+                              setState(() {
+                                if (val == null || val.isEmpty) {
+                                  selectedCategoryId = null;
+                                  selectedCategoryName = null;
+                                } else {
+                                  selectedCategoryId = val;
+                                  final match = catDocs.firstWhere((d) => d.id == val, orElse: () => catDocs.first);
+                                  selectedCategoryName = (match.data()['name'] ?? '').toString();
+                                }
+                              });
+                            },
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(color: Colors.grey[300]!),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('إلغاء'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final name = nameController.text.trim();
-                final desc = descController.text.trim();
-                final url = urlController.text.trim();
-                if (name.isEmpty || url.isEmpty) return;
-                try {
-                  await _videoService.updateVideo(
-                    docId: docId,
-                    name: name,
-                    description: desc,
-                    videoUrl: url,
-                    categoryId: selectedCategoryId,
-                    categoryName: selectedCategoryName,
-                  );
-                  if (!context.mounted) return;
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('تم تحديث الفيديو بنجاح')),
-                  );
-                } catch (_) {
-                  if (!mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('حدث خطأ أثناء التحديث')),
-                  );
-                }
-              },
-              child: const Text('حفظ'),
-            ),
-          ],
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('إلغاء'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    final name = nameController.text.trim();
+                    final desc = descController.text.trim();
+                    final url = urlController.text.trim();
+                    if (name.isEmpty || url.isEmpty) return;
+                    try {
+                      await _videoService.updateVideo(
+                        docId: docId,
+                        name: name,
+                        description: desc,
+                        videoUrl: url,
+                        categoryId: selectedCategoryId,
+                        categoryName: selectedCategoryName,
+                        videoType: videoType,
+                      );
+                      if (!context.mounted) return;
+                      Navigator.of(context).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('تم تحديث الفيديو بنجاح')),
+                      );
+                    } catch (_) {
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('حدث خطأ أثناء التحديث')),
+                      );
+                    }
+                  },
+                  child: const Text('حفظ'),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -610,6 +816,8 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
     final String title = (data['name'] ?? '').toString();
     final String description = (data['description'] ?? '').toString();
     final String videoUrl = (data['videoUrl'] ?? '').toString();
+    final String videoType = (data['videoType'] ?? 'free').toString();
+    final bool allowGuest = (data['allowGuest'] ?? false) == true;
     final String thumbnailFromDoc = (data['thumbnailUrl'] ?? '').toString();
     final String thumbnailUrl = thumbnailFromDoc.isNotEmpty
         ? thumbnailFromDoc
@@ -695,6 +903,62 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
                       ),
                     ),
                   ),
+                  // Type badge top-right
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: videoType == 'paid'
+                            ? Colors.amber.shade700
+                            : Colors.green.shade600,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        videoType == 'paid' ? 'مدفوع' : 'مجاني',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Guest availability badge top-left (only if enabled)
+                  if (allowGuest)
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF059669), // emerald-600
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.public, size: 14, color: Colors.white),
+                            SizedBox(width: 4),
+                            Text(
+                              'متاح للزوار',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   // Views badge bottom-left
                   Positioned(
                     left: 8,
@@ -775,86 +1039,27 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
                         const SizedBox(height: 8),
                       ],
                     ),
-                    isMobile
-                        ? FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerRight,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  tooltip: 'تفاصيل',
-                                  onPressed: () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (_) => AdminVideoDetailsPage(
-                                          title: title.isEmpty
-                                              ? 'بدون عنوان'
-                                              : title,
-                                          videoUrl: videoUrl,
-                                          description: description.isEmpty
-                                              ? null
-                                              : description,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  icon: const Icon(
-                                    Icons.info_outline,
-                                    color: Colors.blue,
-                                  ),
-                                ),
-                                IconButton(
-                                  tooltip: 'تعديل',
-                                  onPressed: () =>
-                                      _showEditVideoDialog(doc.id, data),
-                                  icon: const Icon(
-                                    Icons.edit,
-                                    color: Colors.amber,
-                                  ),
-                                ),
-                                IconButton(
-                                  tooltip: 'حذف',
-                                  onPressed: () =>
-                                      _confirmDeleteVideo(doc.id, title),
-                                  icon: const Icon(
-                                    Icons.delete,
-                                    color: Colors.red,
-                                  ),
-                                ),
-                              ],
+                    _buildResponsiveActions(
+                      context: context,
+                      isMobile: isMobile,
+                      allowGuest: allowGuest,
+                      onDetails: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => AdminVideoDetailsPage(
+                              title: title.isEmpty ? 'بدون عنوان' : title,
+                              videoUrl: videoUrl,
+                              description:
+                                  description.isEmpty ? null : description,
                             ),
-                          )
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              _buildActionButton('تفاصيل', Colors.blue, () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => AdminVideoDetailsPage(
-                                      title: title.isEmpty
-                                          ? 'بدون عنوان'
-                                          : title,
-                                      videoUrl: videoUrl,
-                                      description: description.isEmpty
-                                          ? null
-                                          : description,
-                                    ),
-                                  ),
-                                );
-                              }),
-                              _buildActionButton(
-                                'تعديل',
-                                Colors.amber,
-                                () => _showEditVideoDialog(doc.id, data),
-                              ),
-                              _buildActionButton(
-                                'حذف',
-                                Colors.red,
-                                () => _confirmDeleteVideo(doc.id, title),
-                              ),
-                            ],
                           ),
+                        );
+                      },
+                      onEdit: () => _showEditVideoDialog(doc.id, data),
+                      onToggleGuest: () =>
+                          _toggleGuestAvailability(doc.id, allowGuest),
+                      onDelete: () => _confirmDeleteVideo(doc.id, title),
+                    ),
                   ],
                 ),
               ),
@@ -889,25 +1094,5 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
     }
   }
 
-  Widget _buildActionButton(String title, Color color, VoidCallback onPressed) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 2.0),
-        child: TextButton(
-          onPressed: onPressed,
-          style: TextButton.styleFrom(
-            backgroundColor: color.withValues(alpha: 0.1),
-            foregroundColor: color,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          child: Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
-      ),
-    );
-  }
+  
 }

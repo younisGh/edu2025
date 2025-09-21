@@ -146,6 +146,15 @@ class _AdminDashboardState extends State<AdminDashboard> {
     });
   }
 
+  void _navigateToViewingRequests() {
+    Navigator.of(context).pop(); // Close the drawer first
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        Navigator.of(context).pushNamed('/viewing_requests');
+      }
+    });
+  }
+
   void _toggleSidebar() {
     _scaffoldKey.currentState?.openDrawer();
   }
@@ -289,6 +298,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         'إدارة المستخدمين',
                         false,
                         onTap: _navigateToUsers,
+                      ),
+                      _buildSidebarItem(
+                        Icons.visibility,
+                        'طلبات المشاهدة',
+                        false,
+                        onTap: _navigateToViewingRequests,
                       ),
                       _buildSidebarItem(
                         Icons.notifications_active,
@@ -941,11 +956,15 @@ class _AdminDashboardState extends State<AdminDashboard> {
     final data = doc.data();
     final title = (data['name'] ?? '').toString();
     final description = (data['description'] ?? '').toString();
-    final videoUrl = (data['videoUrl'] ?? '').toString();
+    final videoUrl = ((data['videoUrl'] ?? data['vodUrl']) ?? '').toString();
+    final videoType = (data['videoType'] ?? 'free').toString();
     final thumbFromDoc = (data['thumbnailUrl'] ?? '').toString();
+
     final thumb = thumbFromDoc.isNotEmpty
         ? thumbFromDoc
         : _deriveYoutubeThumbnail(videoUrl);
+
+    // Date (timeAdded)
     String dateStr = '';
     final ts = data['timeAdded'];
     if (ts is Timestamp) {
@@ -953,9 +972,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
       dateStr =
           '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
     }
-    final videoKey = EngagementService.instance.videoKeyFromUrl(videoUrl);
 
-    return InkWell(
+    final service = EngagementService.instance;
+    final videoKey = service.videoKeyFromUrl(videoUrl);
+
+    return GestureDetector(
       onTap: () {
         Navigator.pushNamed(
           context,
@@ -963,25 +984,19 @@ class _AdminDashboardState extends State<AdminDashboard> {
           arguments: {
             'title': title,
             'videoUrl': videoUrl,
-            'description': description.isNotEmpty ? description : null,
+            'description': description,
           },
         );
       },
-      borderRadius: BorderRadius.circular(12),
-      splashColor: const Color(0xFF667EEA).withValues(alpha: 0.15),
-      highlightColor: Colors.transparent,
       child: Card(
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: Colors.grey.shade200),
-        ),
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         clipBehavior: Clip.antiAlias,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            AspectRatio(
-              aspectRatio: 16 / 9,
+            Expanded(
+              flex: 3,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
@@ -1011,29 +1026,53 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         ),
                       ),
                     ),
-                  Container(color: Colors.black.withValues(alpha: 0.26)),
-                  Center(
+                  // Dark overlay to improve foreground contrast
+                  Container(color: Colors.black26),
+                  // Play button overlay
+                  const Center(
+                    child: Icon(
+                      Icons.play_circle_outline,
+                      color: Colors.white70,
+                      size: 48,
+                    ),
+                  ),
+
+                  // Top-right: Video type badge
+                  Positioned(
+                    top: 8,
+                    right: 8,
                     child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
                       ),
-                      child: const Icon(
-                        Icons.play_arrow_rounded,
-                        size: 36,
-                        color: Color(0xFFEA2A33),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            videoType == 'paid'
+                                ? Colors.amber.shade700
+                                : Colors.green.shade600,
+                            videoType == 'paid'
+                                ? Colors.amber.shade600
+                                : Colors.green.shade500,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        videoType == 'paid' ? 'مدفوع' : 'مجاني',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                   ),
-                  // Views bottom-left
+
+                  // Bottom-left: views badge (live from EngagementService)
                   Positioned(
                     left: 8,
                     bottom: 8,
@@ -1056,9 +1095,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                           ),
                           const SizedBox(width: 4),
                           StreamBuilder<int>(
-                            stream: EngagementService.instance.viewsStream(
-                              videoKey,
-                            ),
+                            stream: service.viewsStream(videoKey),
                             builder: (context, snap) {
                               final v = snap.data ?? 0;
                               return Text(
@@ -1074,7 +1111,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       ),
                     ),
                   ),
-                  // Date bottom-right
+
+                  // Bottom-right: date badge
                   if (dateStr.isNotEmpty)
                     Positioned(
                       right: 8,
@@ -1090,58 +1128,59 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Icon(
+                          children: [
+                            const Icon(
                               Icons.calendar_today,
                               size: 14,
                               color: Colors.white,
                             ),
-                            SizedBox(width: 4),
+                            const SizedBox(width: 4),
+                            Text(
+                              dateStr,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ],
-                        ),
-                      ),
-                    ),
-                  if (dateStr.isNotEmpty)
-                    Positioned(
-                      right: 8 + 28, // leave space for the icon
-                      bottom: 8,
-                      child: Text(
-                        dateStr,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title.isEmpty ? 'بدون عنوان' : title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Color(0xFF111827),
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        title.isEmpty ? 'بدون عنوان' : title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    description.isEmpty ? 'لا يوجد وصف' : description,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF6B7280),
+                    const SizedBox(height: 4),
+                    Flexible(
+                      child: Text(
+                        description.isEmpty ? 'لا يوجد وصف' : description,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF6B7280),
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],

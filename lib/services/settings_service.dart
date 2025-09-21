@@ -4,11 +4,13 @@ class AppSettings {
   final String platformTitle;
   final String channelId;
   final String platformDescription;
+  final String whatsappNumber;
 
   const AppSettings({
     required this.platformTitle,
     required this.channelId,
     required this.platformDescription,
+    required this.whatsappNumber,
   });
 
   factory AppSettings.fromMap(Map<String, dynamic>? data) {
@@ -17,6 +19,7 @@ class AppSettings {
       platformTitle: (map['platformTitle'] ?? '').toString(),
       channelId: (map['channelId'] ?? '').toString(),
       platformDescription: (map['platformDescription'] ?? '').toString(),
+      whatsappNumber: (map['whatsappNumber'] ?? '').toString(),
     );
   }
 }

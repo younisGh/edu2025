@@ -14,6 +14,7 @@ class _SettingsPageState extends State<SettingsPage> {
   final _titleCtrl = TextEditingController();
   final _channelCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
+  final _whatsappCtrl = TextEditingController();
   bool _savingGeneral = false;
   final ScrollController _scrollController = ScrollController();
 
@@ -28,6 +29,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _titleCtrl.dispose();
     _channelCtrl.dispose();
     _descCtrl.dispose();
+    _whatsappCtrl.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -39,6 +41,7 @@ class _SettingsPageState extends State<SettingsPage> {
         'platformTitle': _titleCtrl.text.trim(),
         'channelId': _channelCtrl.text.trim(),
         'platformDescription': _descCtrl.text.trim(),
+        'whatsappNumber': _whatsappCtrl.text.trim(),
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
       if (mounted) {
@@ -200,6 +203,9 @@ class _SettingsPageState extends State<SettingsPage> {
                         _descCtrl.value = TextEditingValue(
                           text: (data['platformDescription'] ?? '').toString(),
                         );
+                        _whatsappCtrl.value = TextEditingValue(
+                          text: (data['whatsappNumber'] ?? '').toString(),
+                        );
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -226,6 +232,15 @@ class _SettingsPageState extends State<SettingsPage> {
                                 labelText: 'وصف المنصة',
                                 border: OutlineInputBorder(),
                               ),
+                            ),
+                            const SizedBox(height: 12),
+                            TextField(
+                              controller: _whatsappCtrl,
+                              decoration: const InputDecoration(
+                                labelText: 'رقم الواتساب',
+                                border: OutlineInputBorder(),
+                              ),
+                              keyboardType: TextInputType.phone,
                             ),
                             const SizedBox(height: 12),
                             TextField(

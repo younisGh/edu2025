@@ -38,6 +38,7 @@ class _UsersDashboardState extends State<UsersDashboard>
     'userDashboardScroll',
   );
   String _sortOption = 'latest'; // latest, oldest, most_viewed, least_viewed
+  List<String> _accessibleVideos = []; // To store accessible paid video IDs
 
   // Search state
   final TextEditingController _searchController = TextEditingController();
@@ -85,6 +86,8 @@ class _UsersDashboardState extends State<UsersDashboard>
       return '${words.sublist(0, 10).join(' ')}…';
     })();
     final videoUrl = ((data['videoUrl'] ?? data['vodUrl']) ?? '').toString();
+    final videoId = doc.id;
+    final videoType = (data['videoType'] ?? 'free').toString();
     final thumbFromDoc = (data['thumbnailUrl'] ?? '').toString();
 
     final thumb = thumbFromDoc.isNotEmpty
@@ -107,11 +110,21 @@ class _UsersDashboardState extends State<UsersDashboard>
     final isMobile = screenWidth < 600;
     return GestureDetector(
       onTap: () {
-        Navigator.pushNamed(
-          context,
-          '/run_videos',
-          arguments: {'title': title, 'videoUrl': videoUrl},
-        );
+        if (videoType == 'paid' && !_accessibleVideos.contains(videoId)) {
+          _showRequestAccessDialog(videoId, title);
+        } else {
+          // Increment views only when the video is played
+          EngagementService.instance.incrementViews(videoUrl);
+          Navigator.pushNamed(
+            context,
+            '/run_videos',
+            arguments: {
+              'title': title,
+              'videoUrl': videoUrl,
+              'description': description,
+            },
+          );
+        }
       },
       child: Card(
         elevation: 0,
@@ -192,6 +205,31 @@ class _UsersDashboardState extends State<UsersDashboard>
                             },
                           ),
                         ],
+                      ),
+                    ),
+                  ),
+                  // Top-right: Video type badge
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: videoType == 'paid'
+                            ? Colors.amber.shade700
+                            : Colors.green.shade600,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        videoType == 'paid' ? 'مدفوع' : 'مجاني',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                   ),
@@ -429,6 +467,9 @@ class _UsersDashboardState extends State<UsersDashboard>
           setState(() {
             _userName = userData['name'] ?? user.displayName ?? 'المستخدم';
             _photoUrl = resolved ?? pic;
+            if (userData['accessibleVideos'] is List) {
+              _accessibleVideos = List<String>.from(userData['accessibleVideos']);
+            }
           });
         } else {
           // Fallback if user document doesn't exist
@@ -787,6 +828,89 @@ class _UsersDashboardState extends State<UsersDashboard>
         ],
       ),
     );
+  }
+
+  void _showRequestAccessDialog(String videoId, String videoTitle) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('طلب مشاهدة'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'هذا الفيديو يتطلب إذنًا للمشاهدة. يرجى التواصل مع الإدارة عبر الواتساب لإتمام الطلب, ثم اضغط على زر إرسال الطلب أدناه.',
+                ),
+                const SizedBox(height: 16),
+                // Fetch and display WhatsApp number from settings
+                StreamBuilder<AppSettings>(
+                  stream: SettingsService.instance.stream(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData || snapshot.data!.whatsappNumber.isEmpty) {
+                      return const Text(
+                        'رقم الواتساب غير متوفر حالياً.',
+                        style: TextStyle(color: Colors.red),
+                      );
+                    }
+                    return SelectableText(
+                      'رقم الواتساب: ${snapshot.data!.whatsappNumber}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('إلغاء'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _sendViewingRequest(videoId, videoTitle);
+                Navigator.of(context).pop();
+              },
+              child: const Text('إرسال الطلب'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _sendViewingRequest(String videoId, String videoTitle) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    try {
+      await FirebaseFirestore.instance.collection('viewing_requests').add({
+        'userId': user.uid,
+        'userName': _userName,
+        'videoId': videoId,
+        'videoTitle': videoTitle,
+        'requestDate': FieldValue.serverTimestamp(),
+        'status': 'pending',
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تم إرسال طلبك بنجاح.')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('حدث خطأ أثناء إرسال الطلب: $e')),
+        );
+      }
+    }
   }
 
   Widget _buildSidebarItem(

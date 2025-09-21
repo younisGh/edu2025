@@ -1,15 +1,17 @@
+import 'package:educational_platform/components/arrow_scroll.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart'
+    as yt_flutter;
+import 'package:youtube_player_iframe/youtube_player_iframe.dart' as yt_iframe;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:educational_platform/services/engagement_service.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:educational_platform/utils/typography.dart';
 import 'package:file_picker/file_picker.dart';
-import 'dart:typed_data';
 
 class AdminVideoDetailsPage extends StatefulWidget {
   final String title;
@@ -31,10 +33,12 @@ class _AdminVideoDetailsPageState extends State<AdminVideoDetailsPage> {
   // Player state
   VideoPlayerController? _videoController;
   ChewieController? _chewieController;
-  YoutubePlayerController? _ytController;
+  yt_flutter.YoutubePlayerController? _ytController;
+  yt_iframe.YoutubePlayerController? _ytIframeController;
   bool _isYouTube = false;
   bool _isError = false;
   late final String _videoKey;
+  final ScrollController _scrollController = ScrollController();
 
   // Removed manual PDF link editing; no controller needed.
 
@@ -55,7 +59,18 @@ class _AdminVideoDetailsPageState extends State<AdminVideoDetailsPage> {
   void dispose() {
     _chewieController?.dispose();
     _videoController?.dispose();
-    _ytController?.dispose();
+    _scrollController.dispose();
+    try {
+      _ytController?.dispose();
+      if (kIsWeb) {
+        // On web, avoid calling close() to prevent removeJavaScriptChannel error
+        try {
+          _ytIframeController?.stopVideo();
+        } catch (_) {}
+      } else {
+        _ytIframeController?.close();
+      }
+    } catch (_) {}
     super.dispose();
   }
 
@@ -128,15 +143,39 @@ class _AdminVideoDetailsPageState extends State<AdminVideoDetailsPage> {
         if (vid == null || vid.isEmpty) {
           throw Exception('Invalid YouTube URL');
         }
-        _ytController = YoutubePlayerController(
-          initialVideoId: vid,
-          flags: const YoutubePlayerFlags(
-            autoPlay: true,
-            showLiveFullscreenButton: true,
-            forceHD: false,
-            enableCaption: true,
-          ),
-        );
+        final isLive = _isYouTubeLiveUrl(widget.videoUrl);
+        if (kIsWeb) {
+          _ytIframeController = yt_iframe.YoutubePlayerController.fromVideoId(
+            videoId: vid,
+            autoPlay: false, // disable autoplay on web to avoid restrictions
+            params: const yt_iframe.YoutubePlayerParams(
+              showFullscreenButton: true,
+            ),
+          );
+        } else {
+          _ytController = yt_flutter.YoutubePlayerController(
+            initialVideoId: vid,
+            flags: const yt_flutter.YoutubePlayerFlags(
+              autoPlay: true,
+              showLiveFullscreenButton: true,
+              forceHD: false,
+              enableCaption: true,
+            ),
+          );
+          if (isLive) {
+            _ytController?.dispose();
+            _ytController = yt_flutter.YoutubePlayerController(
+              initialVideoId: vid,
+              flags: const yt_flutter.YoutubePlayerFlags(
+                autoPlay: true,
+                showLiveFullscreenButton: true,
+                forceHD: false,
+                enableCaption: true,
+                isLive: true,
+              ),
+            );
+          }
+        }
         if (mounted) setState(() {});
       } else {
         _videoController = VideoPlayerController.networkUrl(
@@ -174,6 +213,12 @@ class _AdminVideoDetailsPageState extends State<AdminVideoDetailsPage> {
         final v = uri.queryParameters['v'];
         if (v != null && v.isNotEmpty) return v;
         final segments = uri.pathSegments;
+        // Handle /live/VIDEO_ID format
+        if (segments.isNotEmpty &&
+            segments.first == 'live' &&
+            segments.length > 1) {
+          return segments[1];
+        }
         final embedIndex = segments.indexOf('embed');
         if (embedIndex != -1 && embedIndex + 1 < segments.length) {
           return segments[embedIndex + 1];
@@ -183,57 +228,79 @@ class _AdminVideoDetailsPageState extends State<AdminVideoDetailsPage> {
     return null;
   }
 
+  bool _isYouTubeLiveUrl(String url) {
+    try {
+      final uri = Uri.parse(url);
+      if (!uri.host.contains('youtube.com')) return false;
+      final segments = uri.pathSegments;
+      return segments.isNotEmpty &&
+          segments.first == 'live' &&
+          segments.length > 1;
+    } catch (_) {
+      return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF8FAFC),
-        appBar: AppBar(
-          title: Text(
-            'تفاصيل الفيديو - لوحة التحكم',
-            style: TextStyle(fontSize: sf(context, 18)),
+    return ArrowScroll(
+      scrollController: _scrollController,
+      child: Directionality(
+        textDirection: TextDirection.rtl,
+        child: Scaffold(
+          backgroundColor: const Color(0xFFF8FAFC),
+          appBar: AppBar(
+            title: Text(
+              'تفاصيل الفيديو - لوحة التحكم',
+              style: TextStyle(fontSize: sf(context, 18)),
+            ),
           ),
-        ),
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            final maxW = constraints.maxWidth;
-            final isWide = maxW >= 1000;
-            final colGap = 16.0;
-            final itemW = isWide
-                ? (maxW - (colGap * 3)) / 2
-                : maxW - (colGap * 2);
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _buildPlayerCard(),
-                  const SizedBox(height: 16),
-                  Wrap(
-                    spacing: colGap,
-                    runSpacing: colGap,
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              final maxW = constraints.maxWidth;
+              final isWide = maxW >= 1000;
+              final colGap = 16.0;
+              final itemW = isWide
+                  ? (maxW - (colGap * 3)) / 2
+                  : maxW - (colGap * 2);
+              return Scrollbar(
+                controller: _scrollController,
+                thumbVisibility: true,
+                radius: const Radius.circular(8),
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      SizedBox(width: itemW, child: _buildInfoCard()),
-                      SizedBox(width: itemW, child: _buildPdfCard()),
-                      SizedBox(
-                        width: itemW,
-                        child: _buildCommentsCard(compact: true),
-                      ),
-                      SizedBox(
-                        width: itemW,
-                        child: _buildRatingsCard(compact: true),
-                      ),
-                      SizedBox(
-                        width: itemW,
-                        child: _buildFavoritesCard(compact: true),
+                      _buildPlayerCard(),
+                      const SizedBox(height: 16),
+                      Wrap(
+                        spacing: colGap,
+                        runSpacing: colGap,
+                        children: [
+                          SizedBox(width: itemW, child: _buildInfoCard()),
+                          SizedBox(width: itemW, child: _buildPdfCard()),
+                          SizedBox(
+                            width: itemW,
+                            child: _buildCommentsCard(compact: true),
+                          ),
+                          SizedBox(
+                            width: itemW,
+                            child: _buildRatingsCard(compact: true),
+                          ),
+                          SizedBox(
+                            width: itemW,
+                            child: _buildFavoritesCard(compact: true),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
-            );
-          },
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
@@ -256,9 +323,17 @@ class _AdminVideoDetailsPageState extends State<AdminVideoDetailsPage> {
                     child: _isError
                         ? const Text('تعذر تشغيل الفيديو')
                         : _isYouTube
-                        ? (_ytController != null)
-                              ? YoutubePlayer(controller: _ytController!)
-                              : const CircularProgressIndicator()
+                        ? kIsWeb
+                              ? (_ytIframeController != null
+                                    ? yt_iframe.YoutubePlayer(
+                                        controller: _ytIframeController!,
+                                      )
+                                    : const CircularProgressIndicator())
+                              : (_ytController != null
+                                    ? yt_flutter.YoutubePlayer(
+                                        controller: _ytController!,
+                                      )
+                                    : const CircularProgressIndicator())
                         : (_chewieController != null &&
                               _chewieController!
                                   .videoPlayerController
@@ -286,7 +361,10 @@ class _AdminVideoDetailsPageState extends State<AdminVideoDetailsPage> {
           children: [
             Text(
               widget.title.isEmpty ? 'بدون عنوان' : widget.title,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: sf(context, 18)),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: sf(context, 18),
+              ),
             ),
             const SizedBox(height: 6),
             Text(

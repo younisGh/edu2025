@@ -547,14 +547,15 @@ class _GuestDashboardState extends State<GuestDashboard> {
   }
 
   Widget _buildVideoGrid() {
-    Query<Map<String, dynamic>> q = FirebaseFirestore.instance.collection(
-      'videos',
-    );
+    Query<Map<String, dynamic>> q = FirebaseFirestore.instance
+        .collection('videos')
+        .where('allowGuest', isEqualTo: true)
+        .where('status', isEqualTo: 'published');
     if (_activeTab != 'all') {
       q = q.where('categoryId', isEqualTo: _activeTab);
     }
-    // Default ordering by latest
-    q = q.orderBy('timeAdded', descending: true);
+    // ملاحظة: تم إزالة الترتيب من جهة الخادم لتجنب الحاجة إلى فهرس مركّب
+    // سيتم ترتيب النتائج محلياً حسب timeAdded تنازلياً.
 
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream: q.snapshots(),
@@ -562,10 +563,247 @@ class _GuestDashboardState extends State<GuestDashboard> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
+        if (snapshot.hasError) {
+          final err = snapshot.error?.toString() ?? 'حدث خطأ غير متوقع';
+          final lower = err.toLowerCase();
+          final isIndexError = lower.contains('requires an index') || lower.contains('failed-precondition');
+          if (!isIndexError) {
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'تعذر جلب الفيديوهات للزوار',
+                    style: TextStyle(color: Colors.red.shade700, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  SelectableText(
+                    err,
+                    style: const TextStyle(color: Color(0xFF374151)),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            );
+          }
+
+          // Fallback without orderBy to keep content visible while index is created
+          // Build an equivalent query without ordering
+          Query<Map<String, dynamic>> fallback = FirebaseFirestore.instance
+              .collection('videos')
+              .where('allowGuest', isEqualTo: true)
+              .where('status', isEqualTo: 'published');
+          if (_activeTab != 'all') {
+            fallback = fallback.where('categoryId', isEqualTo: _activeTab);
+          }
+          return FutureBuilder<QuerySnapshot<Map<String, dynamic>>>(
+            future: fallback.get(),
+            builder: (context, fbSnap) {
+              if (fbSnap.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (fbSnap.hasError) {
+                return Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'تعذر جلب الفيديوهات للزوار (الاستعلام البديل)',
+                        style: TextStyle(color: Colors.red.shade700, fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      SelectableText(
+                        fbSnap.error?.toString() ?? 'خطأ غير معروف',
+                        style: const TextStyle(color: Color(0xFF374151)),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                );
+              }
+              final items = fbSnap.data?.docs ?? [];
+              if (items.isEmpty) {
+                return const Center(
+                  child: Text('لا توجد فيديوهات متاحة حالياً للزوار'),
+                );
+              }
+              final width = MediaQuery.of(context).size.width;
+              final isMobile = width < 600;
+              final isTiny = width < 345;
+              final crossAxisCount = isMobile
+                  ? 1
+                  : width > 1200
+                      ? 4
+                      : width > 800
+                          ? 3
+                          : 2;
+
+              return Column(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF3C7),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFFDE68A)),
+                    ),
+                    child: const Text(
+                      'تنبيه: تم عرض النتائج بدون ترتيب زمني مؤقتاً لعدم توفر الفهرس المطلوب. يرجى إنشاء فهرس مركّب للحقول allowGuest, status, timeAdded (ومع categoryId عند تصفية الفئة).',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Color(0xFF92400E), fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: SelectableText(
+                      err,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Color(0xFF6B7280)),
+                    ),
+                  ),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const ClampingScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      crossAxisSpacing: 24,
+                      mainAxisSpacing: 24,
+                      childAspectRatio: isTiny
+                          ? 0.85
+                          : isMobile
+                              ? 1.05
+                              : 1.25,
+                    ),
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      final d = items[index];
+                      final data = d.data();
+                      final title = (data['name'] ?? '').toString();
+                      final desc = (data['description'] ?? '').toString();
+                      final videoUrl = ((data['videoUrl'] ?? data['vodUrl']) ?? '').toString();
+                      final thumb = (data['thumbnailUrl'] ?? '').toString();
+
+                      return InkWell(
+                        borderRadius: BorderRadius.circular(20),
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  VideoPlayerPage(title: title, videoUrl: videoUrl),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Colors.white, Colors.grey.shade50],
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                flex: 2,
+                                child: ClipRRect(
+                                  borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(20),
+                                  ),
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      if (thumb.isNotEmpty)
+                                        Image.network(
+                                          thumb,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (c, e, s) =>
+                                              Container(color: const Color(0xFFEEF2FF)),
+                                        )
+                                      else
+                                        Container(color: const Color(0xFFEEF2FF)),
+                                      Center(
+                                        child: Container(
+                                          width: isTiny ? 40 : (isMobile ? 48 : 64),
+                                          height: isTiny ? 40 : (isMobile ? 48 : 64),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withValues(alpha: 0.9),
+                                            shape: BoxShape.circle,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withValues(alpha: 0.2),
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 2),
+                                              ),
+                                            ],
+                                          ),
+                                          child: const Icon(
+                                            Icons.play_arrow_rounded,
+                                            color: Color(0xFF667EEA),
+                                            size: 28,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      title.isEmpty ? 'بدون عنوان' : title,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: sf(context, isTiny ? 14 : 16),
+                                        color: const Color(0xFF111827),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      desc.isEmpty ? '—' : desc,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: Colors.grey.shade600,
+                                        fontSize: sf(context, isTiny ? 12 : 14),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
         final docs = snapshot.data?.docs ?? [];
         // Client-side search filter
-        final filtered = _searchQuery.isEmpty
-            ? docs
+        List<QueryDocumentSnapshot<Map<String, dynamic>>> filtered = _searchQuery.isEmpty
+            ? [...docs]
             : docs.where((d) {
                 final data = d.data();
                 final name = (data['name'] ?? '').toString().toLowerCase();
@@ -575,6 +813,23 @@ class _GuestDashboardState extends State<GuestDashboard> {
                 final q = _searchQuery.toLowerCase();
                 return name.contains(q) || desc.contains(q);
               }).toList();
+
+        // Client-side ordering by timeAdded desc
+        filtered.sort((a, b) {
+          final ta = a.data()['timeAdded'];
+          final tb = b.data()['timeAdded'];
+          // Handle nulls by treating them as oldest
+          if (ta == null && tb == null) return 0;
+          if (ta == null) return 1;
+          if (tb == null) return -1;
+          try {
+            final na = (ta is Timestamp) ? ta.millisecondsSinceEpoch : DateTime.tryParse(ta.toString())?.millisecondsSinceEpoch ?? 0;
+            final nb = (tb is Timestamp) ? tb.millisecondsSinceEpoch : DateTime.tryParse(tb.toString())?.millisecondsSinceEpoch ?? 0;
+            return nb.compareTo(na);
+          } catch (_) {
+            return 0;
+          }
+        });
 
         if (filtered.isEmpty) {
           return const Center(child: Text('لا توجد فيديوهات متاحة حالياً.'));

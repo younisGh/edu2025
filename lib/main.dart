@@ -4,7 +4,6 @@ import 'package:educational_platform/homePages/profile_page.dart';
 import 'package:educational_platform/homePages/users_page.dart';
 import 'package:educational_platform/homePages/run_videos.dart';
 import 'package:educational_platform/homePages/live_stream_page.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -16,6 +15,8 @@ import 'package:educational_platform/homePages/users_dashboard.dart';
 import 'auth/signup_page.dart';
 import 'services/settings_service.dart';
 import 'package:educational_platform/homePages/notifications_page.dart';
+import 'package:educational_platform/homePages/viewing_requests_page.dart';
+import 'package:educational_platform/homePages/admin_video_details_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -69,17 +70,21 @@ class MyApp extends StatelessWidget {
           builder: (context, child) {
             return Directionality(
               textDirection: TextDirection.rtl,
-              child: child!,
+              child: DefaultTextStyle.merge(
+                style: const TextStyle(
+                  // Keep primary Arabic font, add fallbacks for missing glyphs (Latin/emoji)
+                  fontFamily: 'NotoKufiArabic',
+                  fontFamilyFallback: ['NotoNaskhArabic', 'Roboto', 'sans-serif'],
+                ),
+                child: child!,
+              ),
             );
           },
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
             useMaterial3: true,
             // إعادة الخط السابق Noto Kufi Arabic لكل الموقع
-            fontFamily: GoogleFonts.notoKufiArabic().fontFamily,
-            textTheme: GoogleFonts.notoKufiArabicTextTheme(
-              Theme.of(context).textTheme,
-            ),
+            fontFamily: 'NotoKufiArabic',
           ),
           home: const GuestDashboard(),
           routes: {
@@ -93,8 +98,31 @@ class MyApp extends StatelessWidget {
             '/live_stream': (context) => const LiveStreamPage(),
             '/profile_page': (context) => const ProfilePage(),
             '/notifications': (context) => const NotificationsPage(),
+            '/viewing_requests': (context) => const ViewingRequestsPage(),
           },
           onGenerateRoute: (settings) {
+            if (settings.name == '/admin_video_details') {
+              final args = settings.arguments;
+              if (args is Map) {
+                final title = (args['title'] ?? '').toString();
+                final videoUrl = (args['videoUrl'] ?? '').toString();
+                final description = args['description']?.toString();
+                return MaterialPageRoute(
+                  builder: (_) => AdminVideoDetailsPage(
+                    title: title,
+                    videoUrl: videoUrl,
+                    description: description,
+                  ),
+                  settings: settings,
+                );
+              }
+              // Fallback if arguments are missing or invalid
+              return MaterialPageRoute(
+                builder: (_) => const AdminDashboard(),
+                settings: settings,
+              );
+            }
+
             if (settings.name == '/run_videos') {
               final args = settings.arguments;
               if (args is Map) {

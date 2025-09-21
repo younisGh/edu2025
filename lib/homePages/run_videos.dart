@@ -47,6 +47,7 @@ class _RunVideosPageState extends State<RunVideosPage> {
   Timer? _progressTimer;
   bool _markedCompleted = false;
   final ScrollController _scrollController = ScrollController();
+  String? _resolvedVideoUrl; // keep last resolved video URL (non-YouTube)
 
   // Build initials from a user's name (supports single or multi-part names)
   String _initialsFromName(String name) {
@@ -78,6 +79,20 @@ class _RunVideosPageState extends State<RunVideosPage> {
   }
 
   Future<String?> _resolvePhotoUrl(String? url) async {
+    try {
+      if (url == null || url.isEmpty) return null;
+      if (url.startsWith('gs://')) {
+        final ref = FirebaseStorage.instance.refFromURL(url);
+        return await ref.getDownloadURL();
+      }
+      return url;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // Resolve playable URL for videos as well (handles Firebase Storage gs://)
+  Future<String?> _resolveVideoUrl(String? url) async {
     try {
       if (url == null || url.isEmpty) return null;
       if (url.startsWith('gs://')) {
@@ -233,11 +248,13 @@ class _RunVideosPageState extends State<RunVideosPage> {
         if (videoId == null || videoId.isEmpty) {
           throw Exception('Invalid YouTube URL');
         }
+        final isLive = _isYouTubeLiveUrl(widget.videoUrl);
 
         if (kIsWeb) {
+          // On web, disable autoplay to avoid browser autoplay restrictions
           _ytIframeController = YoutubePlayerController.fromVideoId(
             videoId: videoId,
-            autoPlay: true,
+            autoPlay: false,
             params: const YoutubePlayerParams(showFullscreenButton: true),
           );
         } else {
@@ -251,10 +268,30 @@ class _RunVideosPageState extends State<RunVideosPage> {
               enableCaption: true,
             ),
           )..addListener(_ytPlayerListener);
+          // If live, update flags accordingly (recreate controller to apply flag)
+          if (isLive) {
+            _ytController?.dispose();
+            _ytController = yt_flutter.YoutubePlayerController(
+              initialVideoId: videoId,
+              flags: yt_flutter.YoutubePlayerFlags(
+                autoPlay: true,
+                mute: false,
+                isLive: true,
+                forceHD: false,
+                enableCaption: true,
+              ),
+            )..addListener(_ytPlayerListener);
+          }
         }
       } else {
+        // Resolve Firebase Storage and other URLs to a playable HTTPS URL if needed
+        final resolvedUrl = await _resolveVideoUrl(widget.videoUrl);
+        if (resolvedUrl == null || resolvedUrl.isEmpty) {
+          throw Exception('Invalid video URL');
+        }
+        _resolvedVideoUrl = resolvedUrl;
         _videoController = VideoPlayerController.networkUrl(
-          Uri.parse(widget.videoUrl),
+          Uri.parse(resolvedUrl),
         );
         await _videoController!.initialize();
         _chewieController = ChewieController(
@@ -268,6 +305,32 @@ class _RunVideosPageState extends State<RunVideosPage> {
     } catch (_) {
       if (mounted) setState(() => _isError = true);
     }
+  }
+
+  // Retry initialization safely
+  Future<void> _retryInitPlayer() async {
+    setState(() => _isError = false);
+    try {
+      _chewieController?.dispose();
+      _videoController?.dispose();
+      _ytController?.dispose();
+      if (_ytIframeController != null) {
+        if (kIsWeb) {
+          try {
+            _ytIframeController!.stopVideo();
+          } catch (_) {}
+        } else {
+          try {
+            _ytIframeController!.close();
+          } catch (_) {}
+        }
+      }
+      _chewieController = null;
+      _videoController = null;
+      _ytController = null;
+      _ytIframeController = null;
+    } catch (_) {}
+    await _initPlayer();
   }
 
   void _startProgressTimer() {
@@ -329,6 +392,10 @@ class _RunVideosPageState extends State<RunVideosPage> {
         final v = uri.queryParameters['v'];
         if (v != null && v.isNotEmpty) return v;
         final segments = uri.pathSegments;
+        // Handle /live/VIDEO_ID format
+        if (segments.isNotEmpty && segments.first == 'live' && segments.length > 1) {
+          return segments[1];
+        }
         final embedIndex = segments.indexOf('embed');
         if (embedIndex != -1 && embedIndex + 1 < segments.length) {
           return segments[embedIndex + 1];
@@ -336,6 +403,17 @@ class _RunVideosPageState extends State<RunVideosPage> {
       }
     } catch (_) {}
     return null;
+  }
+
+  bool _isYouTubeLiveUrl(String url) {
+    try {
+      final uri = Uri.parse(url);
+      if (!uri.host.contains('youtube.com')) return false;
+      final segments = uri.pathSegments;
+      return segments.isNotEmpty && segments.first == 'live' && segments.length > 1;
+    } catch (_) {
+      return false;
+    }
   }
 
   @override
@@ -362,7 +440,19 @@ class _RunVideosPageState extends State<RunVideosPage> {
     _chewieController?.dispose();
     _videoController?.dispose();
     _ytController?.dispose();
-    _ytIframeController?.close();
+    // On web, calling close() may trigger removeJavaScriptChannel which isn't implemented.
+    // Use stopVideo() on web and only call close() on non-web platforms.
+    if (_ytIframeController != null) {
+      if (kIsWeb) {
+        try {
+          _ytIframeController!.stopVideo();
+        } catch (_) {}
+      } else {
+        try {
+          _ytIframeController!.close();
+        } catch (_) {}
+      }
+    }
     _commentCtrl.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -404,9 +494,34 @@ class _RunVideosPageState extends State<RunVideosPage> {
           color: Colors.black,
           child: Center(
             child: _isError
-                ? Text(
-                    'تعذر تشغيل هذا الفيديو.',
-                    style: TextStyle(color: Colors.white, fontSize: sf(context, 14)),
+                ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'تعذر تشغيل هذا الفيديو.',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: sf(context, 14),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      ElevatedButton(
+                        onPressed: _retryInitPlayer,
+                        child: const Text('إعادة المحاولة'),
+                      ),
+                      if (!_isYouTube && _resolvedVideoUrl != null) ...[
+                        const SizedBox(height: 8),
+                        ElevatedButton(
+                          onPressed: () async {
+                            final uri = Uri.tryParse(_resolvedVideoUrl!);
+                            if (uri != null) {
+                              await launchUrl(uri, mode: LaunchMode.externalApplication);
+                            }
+                          },
+                          child: const Text('فتح في نافذة جديدة'),
+                        ),
+                      ],
+                    ],
                   )
                 : _isYouTube
                 ? kIsWeb
@@ -757,7 +872,10 @@ class _RunVideosPageState extends State<RunVideosPage> {
             children: [
               Text(
                 'أضف تعليقًا',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: sf(context, 16)),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: sf(context, 16),
+                ),
               ),
               const SizedBox(height: 12),
               TextField(

@@ -6,7 +6,7 @@ extend type Resource {
   """
   ✨ Count the number of rows in the `Resource` table.
   """
-  _count: Int! @fdc_generated(from: "Resource", purpose: QUERY_COUNT)
+  _count: Int! @fdc_generated(from: "Resource.", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `Resource` table where the `createdAt` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -96,7 +96,7 @@ extend type Review {
   """
   ✨ Count the number of rows in the `Review` table.
   """
-  _count: Int! @fdc_generated(from: "Review", purpose: QUERY_COUNT)
+  _count: Int! @fdc_generated(from: "Review.", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `Review` table where the `createdAt` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -254,7 +254,7 @@ extend type Session {
   """
   ✨ Count the number of rows in the `Session` table.
   """
-  _count: Int! @fdc_generated(from: "Session", purpose: QUERY_COUNT)
+  _count: Int! @fdc_generated(from: "Session.", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `Session` table where the `createdAt` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -532,7 +532,7 @@ extend type Subject {
   """
   ✨ Count the number of rows in the `Subject` table.
   """
-  _count: Int! @fdc_generated(from: "Subject", purpose: QUERY_COUNT)
+  _count: Int! @fdc_generated(from: "Subject.", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `Subject` table where the `createdAt` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -654,7 +654,7 @@ extend type TutorProfile {
   """
   ✨ Count the number of rows in the `TutorProfile` table.
   """
-  _count: Int! @fdc_generated(from: "TutorProfile", purpose: QUERY_COUNT)
+  _count: Int! @fdc_generated(from: "TutorProfile.", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `TutorProfile` table where the `averageRating` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -822,7 +822,7 @@ extend type TutorSubject {
   """
   ✨ Count the number of rows in the `TutorSubject` table.
   """
-  _count: Int! @fdc_generated(from: "TutorSubject", purpose: QUERY_COUNT)
+  _count: Int! @fdc_generated(from: "TutorSubject.", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `TutorSubject` table where the `createdAt` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -1071,7 +1071,7 @@ extend type User {
   """
   ✨ Count the number of rows in the `User` table.
   """
-  _count: Int! @fdc_generated(from: "User", purpose: QUERY_COUNT)
+  _count: Int! @fdc_generated(from: "User.", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `User` table where the `bio` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """

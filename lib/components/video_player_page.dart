@@ -41,10 +41,11 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
         if (vid == null || vid.isEmpty) {
           throw Exception('Invalid YouTube URL');
         }
+        final isLive = _isYouTubeLiveUrl(widget.videoUrl);
         if (kIsWeb) {
           _ytIframeController = yt_iframe.YoutubePlayerController.fromVideoId(
             videoId: vid,
-            autoPlay: true,
+            autoPlay: false, // disable autoplay on web to avoid restrictions
             params: const yt_iframe.YoutubePlayerParams(
               showFullscreenButton: true,
             ),
@@ -59,6 +60,19 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
               enableCaption: true,
             ),
           );
+          if (isLive) {
+            _ytController?.dispose();
+            _ytController = yt_flutter.YoutubePlayerController(
+              initialVideoId: vid,
+              flags: const yt_flutter.YoutubePlayerFlags(
+                autoPlay: true,
+                showLiveFullscreenButton: true,
+                forceHD: false,
+                enableCaption: true,
+                isLive: true,
+              ),
+            );
+          }
         }
         if (mounted) setState(() {});
       } else {
@@ -102,8 +116,12 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
       if (uri.host.contains('youtube.com')) {
         final v = uri.queryParameters['v'];
         if (v != null && v.isNotEmpty) return v;
-        // handle /embed/VIDEO_ID
+        // handle /live/VIDEO_ID
         final segments = uri.pathSegments;
+        if (segments.isNotEmpty && segments.first == 'live' && segments.length > 1) {
+          return segments[1];
+        }
+        // handle /embed/VIDEO_ID
         final embedIndex = segments.indexOf('embed');
         if (embedIndex != -1 && embedIndex + 1 < segments.length) {
           return segments[embedIndex + 1];
@@ -113,14 +131,27 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     return null;
   }
 
+  bool _isYouTubeLiveUrl(String url) {
+    try {
+      final uri = Uri.parse(url);
+      if (!uri.host.contains('youtube.com')) return false;
+      final segments = uri.pathSegments;
+      return segments.isNotEmpty && segments.first == 'live' && segments.length > 1;
+    } catch (_) {
+      return false;
+    }
+  }
+
   @override
   void dispose() {
     _chewieController?.dispose();
     _videoController?.dispose();
     try {
       if (kIsWeb) {
-        // Safety: close iframe controller on web
-        _ytIframeController?.close();
+        // On web, avoid calling close() to prevent removeJavaScriptChannel error
+        try {
+          _ytIframeController?.stopVideo();
+        } catch (_) {}
       } else {
         _ytController?.dispose();
       }

@@ -46,6 +46,7 @@ class VideoService {
     PlatformFile? videoFile, // New: allow direct video upload
     String? categoryId,
     String? categoryName,
+    String videoType = 'free', // Add videoType parameter
   }) async {
     try {
       // 1. Upload video file if provided, otherwise use the given URL (e.g., YouTube)
@@ -83,6 +84,7 @@ class VideoService {
           'categoryId': categoryId,
         if (categoryName != null && categoryName.isNotEmpty)
           'category': categoryName,
+        'videoType': videoType, // Save the video type
         // You can add other fields like duration, etc.
       });
 
@@ -118,6 +120,7 @@ class VideoService {
     required String videoUrl,
     String? categoryId,
     String? categoryName,
+    String? videoType,
   }) async {
     try {
       final String? thumbnailUrl = _deriveYoutubeThumbnail(videoUrl);
@@ -130,6 +133,7 @@ class VideoService {
       };
       if (categoryId != null) payload['categoryId'] = categoryId;
       if (categoryName != null) payload['category'] = categoryName;
+      if (videoType != null) payload['videoType'] = videoType;
       await _firestore.collection('videos').doc(docId).update(payload);
     } catch (e) {
       debugPrint('Error updating video: $e');
