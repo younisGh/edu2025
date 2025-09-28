@@ -17,6 +17,8 @@ import 'services/settings_service.dart';
 import 'package:educational_platform/homePages/notifications_page.dart';
 import 'package:educational_platform/homePages/viewing_requests_page.dart';
 import 'package:educational_platform/homePages/admin_video_details_page.dart';
+import 'package:educational_platform/homePages/privacy_policy_page.dart';
+import 'package:educational_platform/homePages/delete_account_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,7 +52,7 @@ class MyApp extends StatelessWidget {
         final platformTitle =
             (settings != null && settings.platformTitle.isNotEmpty)
             ? settings.platformTitle
-            : 'المنصة التعليمية';
+            : 'كلاس كاست: نظام التعلم المباشر المدعوم بـ Agora';
 
         return MaterialApp(
           title: platformTitle,
@@ -99,6 +101,8 @@ class MyApp extends StatelessWidget {
             '/profile_page': (context) => const ProfilePage(),
             '/notifications': (context) => const NotificationsPage(),
             '/viewing_requests': (context) => const ViewingRequestsPage(),
+            '/privacy_policy': (context) => const PrivacyPolicyPage(),
+            '/delete-account': (context) => const DeleteAccountPage(),
           },
           onGenerateRoute: (settings) {
             if (settings.name == '/admin_video_details') {

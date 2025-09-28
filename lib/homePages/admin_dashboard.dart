@@ -318,15 +318,27 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         onTap: _navigateToAnalytics,
                       ),
                       _buildSidebarItem(
-                        Icons.settings,
-                        'الإعدادات',
-                        false,
-                        onTap: _navigateToSettings,
-                      ),
-                      const SizedBox(height: 16),
-                      _buildSidebarItem(
-                        Icons.person,
-                        'الملف الشخصي',
+                    Icons.settings,
+                    'الإعدادات',
+                    false,
+                    onTap: _navigateToSettings,
+                  ),
+                  _buildSidebarItem(
+                    Icons.privacy_tip,
+                    'سياسة الخصوصية',
+                    false,
+                    onTap: () {
+                      Navigator.of(context).pop(); // إغلاق القائمة الجانبية أولاً
+                      Future.delayed(const Duration(milliseconds: 300), () {
+                        if (!mounted) return;
+                        Navigator.pushNamed(context, '/privacy_policy');
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  _buildSidebarItem(
+                    Icons.person,
+                    'الملف الشخصي',
                         false,
                         onTap: _navigateToProfile,
                       ),
@@ -591,7 +603,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                               (snap.data != null &&
                                   snap.data!.platformTitle.isNotEmpty)
                               ? snap.data!.platformTitle
-                              : 'المنصة التعليمية';
+                              : 'كلاس كاست: نظام التعلم المباشر المدعوم بـ Agora';
                           final desc =
                               (snap.data != null &&
                                   snap.data!.platformDescription.isNotEmpty)

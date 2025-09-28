@@ -804,6 +804,15 @@ class _UsersDashboardState extends State<UsersDashboard>
                       Navigator.pushNamed(context, '/notifications');
                     },
                   ),
+                  _buildSidebarItem(
+                    Icons.privacy_tip,
+                    'سياسة الخصوصية',
+                    false,
+                    onTap: () {
+                      _toggleSidebar();
+                      Navigator.pushNamed(context, '/privacy_policy');
+                    },
+                  ),
                   const Spacer(), // This will push the following items to the bottom
                   _buildSidebarItem(
                     Icons.person,

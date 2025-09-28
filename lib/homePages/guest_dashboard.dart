@@ -267,7 +267,7 @@ class _GuestDashboardState extends State<GuestDashboard> {
                               (snap.data != null &&
                                   snap.data!.platformTitle.isNotEmpty)
                               ? snap.data!.platformTitle
-                              : 'المنصة التعليمية';
+                              : 'كلاس كاست: نظام التعلم المباشر المدعوم بـ Agora';
                           final desc =
                               (snap.data != null &&
                                   snap.data!.platformDescription.isNotEmpty)
