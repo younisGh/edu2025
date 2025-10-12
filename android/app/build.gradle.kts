@@ -15,13 +15,13 @@ kotlin {
 }
 
 android {
-    namespace = "com.example.educational_platform"
+    namespace = "com.ahlulbait.edu2025"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.educational_platform"
+        applicationId = "com.ahlulbait.edu2025"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -30,22 +30,34 @@ android {
         versionName = flutter.versionName
         // Limit packaged resources (languages) to reduce APK size
         resourceConfigurations += listOf("ar", "en")
+        // Resolve placeholder used in AndroidManifest.xml: android:name="${applicationName}"
+        // Without this, the merged manifest may keep an unresolved placeholder and Play Console will reject the AAB.
+        manifestPlaceholders += mapOf(
+            "applicationName" to "io.flutter.app.FlutterApplication"
+        )
     }
 
     signingConfigs {
         create("release") {
             // Load keystore from android/key.properties if it exists
             val keystoreProperties = Properties()
-            val keystoreFile = rootProject.file("android/key.properties")
+            // In Flutter, the Gradle rootProject is the 'android' directory, so key.properties is at root
+            val keystoreFile = rootProject.file("key.properties")
+            println("[Signing] Looking for key.properties at: ${keystoreFile.absolutePath}")
             if (keystoreFile.exists()) {
                 keystoreFile.inputStream().use { keystoreProperties.load(it) }
                 val storeFilePath = keystoreProperties.getProperty("storeFile")
+                println("[Signing] storeFile from properties: '${storeFilePath}'")
                 if (!storeFilePath.isNullOrBlank()) {
-                    storeFile = file(storeFilePath)
+                    val resolvedStoreFile = file(storeFilePath)
+                    println("[Signing] Resolved keystore path: ${resolvedStoreFile.absolutePath}, exists=${resolvedStoreFile.exists()}")
+                    storeFile = resolvedStoreFile
                     storePassword = keystoreProperties.getProperty("storePassword")
                     keyAlias = keystoreProperties.getProperty("keyAlias")
                     keyPassword = keystoreProperties.getProperty("keyPassword")
                 }
+            } else {
+                println("[Signing] key.properties not found. Expected at: ${keystoreFile.absolutePath}")
             }
         }
     }
@@ -60,9 +72,13 @@ android {
                 "proguard-rules.pro",
             )
 
-            // Use release signing if a valid keystore is configured, otherwise fall back to debug
-            signingConfig = if (signingConfigs.findByName("release")?.storeFile != null)
-                signingConfigs.getByName("release") else signingConfigs.getByName("debug")
+            // Enforce release signing; fail fast if keystore is missing
+            val releaseConfig = signingConfigs.getByName("release")
+            println("[Signing] releaseConfig.storeFile at check time: ${releaseConfig.storeFile}")
+            signingConfig = releaseConfig
+            if (releaseConfig.storeFile == null) {
+                throw GradleException("Release keystore is not configured. Please create android/key.properties with storeFile, storePassword, keyAlias, keyPassword.")
+            }
         }
     }
 }
@@ -70,3 +86,5 @@ android {
 flutter {
     source = "../.."
 }
+
+

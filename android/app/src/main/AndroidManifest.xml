@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <!-- Permissions for local screen recording (audio via microphone only) -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -16,6 +17,15 @@
         android:label="علوم أهل البيت"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
+        <!-- Force a single definition for FirebaseInitProvider to avoid conflicts in merged manifest -->
+        <provider
+            android:name="com.google.firebase.provider.FirebaseInitProvider"
+            android:authorities="${applicationId}.firebaseinitprovider"
+            android:exported="false"
+            android:initOrder="100"
+            android:directBootAware="false"
+            tools:node="merge"
+            tools:replace="android:authorities,android:exported,android:directBootAware" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

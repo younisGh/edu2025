@@ -1,5 +1,6 @@
 // functions/index.js
 const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
+const functionsV1 = require("firebase-functions/v1");
 const logger = require("firebase-functions/logger");
 const { defineSecret } = require("firebase-functions/params");
 const { initializeApp } = require("firebase-admin/app");
@@ -70,6 +71,68 @@ exports.getAgoraRtcToken = onCall({
     if (err instanceof HttpsError) throw err;
     logger.error('getAgoraRtcToken error', err);
     throw new HttpsError('internal', 'Failed to create Agora RTC token');
+  }
+});
+
+// ===================== Ensure Firestore user doc exists on Auth creation =====================
+exports.onAuthUserCreateEnsureDoc = functionsV1.auth.user().onCreate(async (user) => {
+  try {
+    if (!user || !user.uid) return;
+    const db = getFirestore();
+    const ref = db.collection('users').doc(user.uid);
+    const snap = await ref.get();
+    if (snap.exists) return;
+
+    await ref.set({
+      name: user.displayName || 'مستخدم',
+      phone: user.phoneNumber || '',
+      email: user.email || '',
+      role: 'user',
+      createdAt: FieldValue.serverTimestamp(),
+    });
+  } catch (e) {
+    logger.error('onAuthUserCreateEnsureDoc error', e);
+  }
+});
+
+// ===================== User Self-Cleanup (Auth duplicates) =====================
+// Callable: For the authenticated user, delete any OTHER Auth user that owns the same phone number
+// This fixes legacy flows where a temporary phone-auth user was created in addition to email/password.
+exports.deleteMyAuthDuplicates = onCall({ region: 'us-central1', cors: true }, async (request) => {
+  try {
+    if (!request.auth) throw new HttpsError('unauthenticated', 'Must be authenticated.');
+    const uid = request.auth.uid;
+
+    const db = getFirestore();
+    const userDoc = await db.collection('users').doc(uid).get();
+    const data = userDoc.data() || {};
+    const phone = (data.phone && String(data.phone).trim()) || '';
+    if (!phone) {
+      return { ok: true, deleted: 0 }; // nothing to cleanup
+    }
+
+    let deleted = 0;
+    // Try to fetch an auth user by phone. If it's a different UID, delete it.
+    try {
+      const phoneUser = await getAuth().getUserByPhoneNumber(phone);
+      if (phoneUser && phoneUser.uid && phoneUser.uid !== uid) {
+        await getAuth().deleteUser(phoneUser.uid).catch((err) => {
+          if (err && err.code !== 'auth/user-not-found') throw err;
+        });
+        deleted += 1;
+      }
+    } catch (err) {
+      // If not found, ignore; only throw for non-not-found errors
+      if (!(err && (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-phone-number'))) {
+        throw err;
+      }
+    }
+
+    return { ok: true, deleted };
+  } catch (err) {
+    if (err instanceof HttpsError) throw err;
+    logger.error('deleteMyAuthDuplicates error', err);
+    throw new HttpsError('internal', 'Failed to cleanup duplicate auth accounts');
   }
 });
 

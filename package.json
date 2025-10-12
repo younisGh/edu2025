@@ -1,5 +1,7 @@
 {
   "dependencies": {
-    "agora-rtc-sdk-ng": "^4.24.0"
+    "agora-rtc-sdk-ng": "^4.24.0",
+    "firebase-admin": "^13.5.0",
+    "firebase-functions": "^6.5.0"
   }
 }

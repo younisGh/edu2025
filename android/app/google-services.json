@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:101585046920:android:f12e5cd8827ff23e7cbe3d",
+        "mobilesdk_app_id": "1:101585046920:android:218c7ed09a9577b67cbe3d",
         "android_client_info": {
-          "package_name": "com.example.educational_platform"
+          "package_name": "com.ahlulbait.edu2025"
         }
       },
       "oauth_client": [],

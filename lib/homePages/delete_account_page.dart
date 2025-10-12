@@ -1,6 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 
 class DeleteAccountPage extends StatefulWidget {
   const DeleteAccountPage({super.key});
@@ -54,6 +57,42 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
         await user.reauthenticateWithCredential(cred);
       }
 
+      // First, cleanup any duplicate auth accounts that may have the same phone number (server-side)
+      try {
+        await FirebaseFunctions.instance
+            .httpsCallable('deleteMyAuthDuplicates')
+            .call();
+      } catch (_) {
+        // Best-effort; proceed even if callable fails
+      }
+
+      // Delete Firestore user document and related stored avatar (if any) BEFORE deleting auth user
+      try {
+        final uid = user.uid;
+        final userDocRef = FirebaseFirestore.instance.collection('users').doc(uid);
+        final snap = await userDocRef.get();
+        if (snap.exists) {
+          final data = snap.data();
+          final pictureUrl = data != null ? (data['pictureUrl'] as String?) : null;
+          if (pictureUrl != null && pictureUrl.isNotEmpty) {
+            try {
+              final ref = FirebaseStorage.instance.refFromURL(pictureUrl);
+              await ref.delete();
+            } catch (_) {
+              // Ignore storage deletion failure; proceed with Firestore/Auth deletions
+            }
+          }
+          await userDocRef.delete();
+        } else {
+          // Ensure document is not left dangling due to security rules; attempt delete anyway
+          await userDocRef.delete().catchError((_) {});
+        }
+      } catch (e) {
+        // If Firestore delete fails due to rules or connectivity, surface but continue to Auth delete
+        _error = 'تعذّر حذف بيانات الحساب من قاعدة البيانات: $e';
+      }
+
+      // Finally, delete the Firebase Auth user
       await user.delete();
 
       if (context.mounted) {

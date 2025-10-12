@@ -315,13 +315,14 @@ class _LoginPageState extends State<LoginPage>
           context,
         ).pushNamedAndRemoveUntil(newRoute, (route) => false);
       } else {
-        // If user document doesn't exist, default to user dashboard and log it.
-        debugPrint(
-          'Warning: User document not found in Firestore for UID: ${user.uid}',
-        );
-        Navigator.of(
-          context,
-        ).pushNamedAndRemoveUntil('/users_dashboard', (route) => false);
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'name': user.displayName ?? 'مستخدم',
+          'phone': user.phoneNumber ?? '',
+          'email': user.email ?? '',
+          'role': 'user',
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+        Navigator.of(context).pushNamedAndRemoveUntil('/users_dashboard', (route) => false);
       }
     } on FirebaseAuthException catch (e) {
       debugPrint(

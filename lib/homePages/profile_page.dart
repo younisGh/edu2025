@@ -540,6 +540,15 @@ class _ProfilePageState extends State<ProfilePage> {
           isLogout: true,
           onTap: () {},
         ),
+        const SizedBox(height: 16),
+        _buildActionButton(
+          icon: Icons.delete_forever,
+          text: 'حذف الحساب',
+          isLogout: true,
+          onTap: () {
+            Navigator.of(context).pushNamed('/delete-account');
+          },
+        ),
       ],
     );
   }
