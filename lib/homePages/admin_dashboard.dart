@@ -318,27 +318,29 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         onTap: _navigateToAnalytics,
                       ),
                       _buildSidebarItem(
-                    Icons.settings,
-                    'الإعدادات',
-                    false,
-                    onTap: _navigateToSettings,
-                  ),
-                  _buildSidebarItem(
-                    Icons.privacy_tip,
-                    'سياسة الخصوصية',
-                    false,
-                    onTap: () {
-                      Navigator.of(context).pop(); // إغلاق القائمة الجانبية أولاً
-                      Future.delayed(const Duration(milliseconds: 300), () {
-                        if (!mounted) return;
-                        Navigator.pushNamed(context, '/privacy_policy');
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  _buildSidebarItem(
-                    Icons.person,
-                    'الملف الشخصي',
+                        Icons.settings,
+                        'الإعدادات',
+                        false,
+                        onTap: _navigateToSettings,
+                      ),
+                      _buildSidebarItem(
+                        Icons.privacy_tip,
+                        'سياسة الخصوصية',
+                        false,
+                        onTap: () {
+                          Navigator.of(
+                            context,
+                          ).pop(); // إغلاق القائمة الجانبية أولاً
+                          Future.delayed(const Duration(milliseconds: 300), () {
+                            if (!mounted) return;
+                            Navigator.pushNamed(context, '/privacy_policy');
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      _buildSidebarItem(
+                        Icons.person,
+                        'الملف الشخصي',
                         false,
                         onTap: _navigateToProfile,
                       ),
@@ -1074,7 +1076,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        videoType == 'paid' ? 'مدفوع' : 'مجاني',
+                        videoType == 'paid' ? 'طلب مشاهدة' : 'مجاني',
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,

@@ -51,90 +51,101 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
     required VoidCallback onToggleGuest,
     required VoidCallback onDelete,
   }) {
-    return LayoutBuilder(builder: (ctx, constraints) {
-      final maxW = constraints.maxWidth;
-      // Ultra narrow: use compact icon row
-      if (maxW < 360) {
-        return Align(
-          alignment: Alignment.centerLeft,
-          child: Directionality(
-            textDirection: TextDirection.ltr,
-            child: Wrap(
-              alignment: WrapAlignment.start,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 2,
-              runSpacing: 2,
-              children: [
-                _actionIcon('تفاصيل', Icons.info_outline, Colors.blue, onDetails),
-                _actionIcon('تعديل', Icons.edit, Colors.amber, onEdit),
-                _actionIcon(
-                  allowGuest ? 'إلغاء الإتاحة للزوار' : 'إتاحة للزوار',
-                  allowGuest ? Icons.public_off : Icons.public,
-                  allowGuest ? Colors.red : Colors.green,
-                  onToggleGuest,
-                ),
-                _actionIcon('حذف', Icons.delete, Colors.red, onDelete),
-              ],
-            ),
-          ),
-        );
-      }
-      // Mobile/tablet: use Wrap with small pill buttons to avoid overflow
-      if (maxW < 700) {
-        return Align(
-          alignment: Alignment.centerLeft,
-          child: Directionality(
-            textDirection: TextDirection.ltr,
-            child: Wrap(
-              alignment: WrapAlignment.start,
-              runAlignment: WrapAlignment.center,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                _actionPill('تفاصيل', Colors.blue, onDetails),
-                _actionPill('تعديل', Colors.amber, onEdit),
-                _actionPill(
-                  allowGuest ? 'إلغاء الإتاحة للزوار' : 'إتاحة للزوار',
-                  allowGuest ? Colors.red : Colors.green,
-                  onToggleGuest,
-                ),
-                _actionPill('حذف', Colors.red, onDelete),
-              ],
-            ),
-          ),
-        );
-      }
-      // Wide screens: row with evenly spaced pill buttons
-      return Align(
-        alignment: Alignment.centerLeft,
-        child: Directionality(
-          textDirection: TextDirection.ltr,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Flexible(child: _actionPill('تفاصيل', Colors.blue, onDetails)),
-              const SizedBox(width: 8),
-              Flexible(child: _actionPill('تعديل', Colors.amber, onEdit)),
-              const SizedBox(width: 8),
-              Flexible(
-                child: _actionPill(
-                  allowGuest ? 'إلغاء الإتاحة للزوار' : 'إتاحة للزوار',
-                  allowGuest ? Colors.red : Colors.green,
-                  onToggleGuest,
-                ),
+    return LayoutBuilder(
+      builder: (ctx, constraints) {
+        final maxW = constraints.maxWidth;
+        // Ultra narrow: use compact icon row
+        if (maxW < 360) {
+          return Align(
+            alignment: Alignment.centerLeft,
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: Wrap(
+                alignment: WrapAlignment.start,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 2,
+                runSpacing: 2,
+                children: [
+                  _actionIcon(
+                    'تفاصيل',
+                    Icons.info_outline,
+                    Colors.blue,
+                    onDetails,
+                  ),
+                  _actionIcon('تعديل', Icons.edit, Colors.amber, onEdit),
+                  _actionIcon(
+                    allowGuest ? 'إلغاء الإتاحة للزوار' : 'إتاحة للزوار',
+                    allowGuest ? Icons.public_off : Icons.public,
+                    allowGuest ? Colors.red : Colors.green,
+                    onToggleGuest,
+                  ),
+                  _actionIcon('حذف', Icons.delete, Colors.red, onDelete),
+                ],
               ),
-              const SizedBox(width: 8),
-              Flexible(child: _actionPill('حذف', Colors.red, onDelete)),
-            ],
+            ),
+          );
+        }
+        // Mobile/tablet: use Wrap with small pill buttons to avoid overflow
+        if (maxW < 700) {
+          return Align(
+            alignment: Alignment.centerLeft,
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: Wrap(
+                alignment: WrapAlignment.start,
+                runAlignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  _actionPill('تفاصيل', Colors.blue, onDetails),
+                  _actionPill('تعديل', Colors.amber, onEdit),
+                  _actionPill(
+                    allowGuest ? 'إلغاء الإتاحة للزوار' : 'إتاحة للزوار',
+                    allowGuest ? Colors.red : Colors.green,
+                    onToggleGuest,
+                  ),
+                  _actionPill('حذف', Colors.red, onDelete),
+                ],
+              ),
+            ),
+          );
+        }
+        // Wide screens: row with evenly spaced pill buttons
+        return Align(
+          alignment: Alignment.centerLeft,
+          child: Directionality(
+            textDirection: TextDirection.ltr,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Flexible(child: _actionPill('تفاصيل', Colors.blue, onDetails)),
+                const SizedBox(width: 8),
+                Flexible(child: _actionPill('تعديل', Colors.amber, onEdit)),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: _actionPill(
+                    allowGuest ? 'إلغاء الإتاحة للزوار' : 'إتاحة للزوار',
+                    allowGuest ? Colors.red : Colors.green,
+                    onToggleGuest,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Flexible(child: _actionPill('حذف', Colors.red, onDelete)),
+              ],
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   }
 
   Widget _actionIcon(
-      String tooltip, IconData icon, Color color, VoidCallback onPressed) {
+    String tooltip,
+    IconData icon,
+    Color color,
+    VoidCallback onPressed,
+  ) {
     return IconButton(
       tooltip: tooltip,
       onPressed: onPressed,
@@ -150,11 +161,7 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
       height: 36,
       child: TextButton.icon(
         onPressed: onPressed,
-        icon: Icon(
-          _iconForLabel(label),
-          size: 18,
-          color: color,
-        ),
+        icon: Icon(_iconForLabel(label), size: 18, color: color),
         label: Text(
           label,
           overflow: TextOverflow.ellipsis,
@@ -179,11 +186,12 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
     return Icons.circle;
   }
 
-  Future<void> _toggleGuestAvailability(String docId, bool currentlyAllowed) async {
+  Future<void> _toggleGuestAvailability(
+    String docId,
+    bool currentlyAllowed,
+  ) async {
     try {
-      final updates = <String, dynamic>{
-        'allowGuest': !currentlyAllowed,
-      };
+      final updates = <String, dynamic>{'allowGuest': !currentlyAllowed};
       if (!currentlyAllowed) {
         // When enabling guest access, ensure status is published
         updates['status'] = 'published';
@@ -205,16 +213,18 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(!currentlyAllowed
-              ? 'تم إتاحة الفيديو للزوار'
-              : 'تم إلغاء إتاحة الفيديو للزوار'),
+          content: Text(
+            !currentlyAllowed
+                ? 'تم إتاحة الفيديو للزوار'
+                : 'تم إلغاء إتاحة الفيديو للزوار',
+          ),
         ),
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('تعذر تحديث الإتاحة: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('تعذر تحديث الإتاحة: $e')));
     }
   }
 
@@ -288,7 +298,10 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
                         initialValue: videoType,
                         items: const [
                           DropdownMenuItem(value: 'free', child: Text('مجاني')),
-                          DropdownMenuItem(value: 'paid', child: Text('مدفوع')),
+                          DropdownMenuItem(
+                            value: 'paid',
+                            child: Text('طلب مشاهدة'),
+                          ),
                         ],
                         onChanged: (val) {
                           if (val != null) {
@@ -340,8 +353,8 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
                           ];
                           final currentVal =
                               (selectedCategoryId?.isNotEmpty ?? false)
-                                  ? selectedCategoryId
-                                  : '';
+                              ? selectedCategoryId
+                              : '';
                           return DropdownButtonFormField<String>(
                             initialValue: currentVal,
                             items: items,
@@ -352,8 +365,12 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
                                   selectedCategoryName = null;
                                 } else {
                                   selectedCategoryId = val;
-                                  final match = catDocs.firstWhere((d) => d.id == val, orElse: () => catDocs.first);
-                                  selectedCategoryName = (match.data()['name'] ?? '').toString();
+                                  final match = catDocs.firstWhere(
+                                    (d) => d.id == val,
+                                    orElse: () => catDocs.first,
+                                  );
+                                  selectedCategoryName =
+                                      (match.data()['name'] ?? '').toString();
                                 }
                               });
                             },
@@ -362,7 +379,9 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
                               fillColor: Colors.white,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(color: Colors.grey[300]!),
+                                borderSide: BorderSide(
+                                  color: Colors.grey[300]!,
+                                ),
                               ),
                             ),
                           );
@@ -919,7 +938,7 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        videoType == 'paid' ? 'مدفوع' : 'مجاني',
+                        videoType == 'paid' ? 'طلب مشاهدة' : 'مجاني',
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -1049,8 +1068,9 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
                             builder: (_) => AdminVideoDetailsPage(
                               title: title.isEmpty ? 'بدون عنوان' : title,
                               videoUrl: videoUrl,
-                              description:
-                                  description.isEmpty ? null : description,
+                              description: description.isEmpty
+                                  ? null
+                                  : description,
                             ),
                           ),
                         );
@@ -1093,6 +1113,4 @@ class _ManageVideosPageState extends State<ManageVideosPage> {
       return '';
     }
   }
-
-  
 }

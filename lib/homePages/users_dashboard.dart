@@ -224,7 +224,7 @@ class _UsersDashboardState extends State<UsersDashboard>
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        videoType == 'paid' ? 'مدفوع' : 'مجاني',
+                        videoType == 'paid' ? 'طلب مشاهدة' : 'مجاني',
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -468,7 +468,9 @@ class _UsersDashboardState extends State<UsersDashboard>
             _userName = userData['name'] ?? user.displayName ?? 'المستخدم';
             _photoUrl = resolved ?? pic;
             if (userData['accessibleVideos'] is List) {
-              _accessibleVideos = List<String>.from(userData['accessibleVideos']);
+              _accessibleVideos = List<String>.from(
+                userData['accessibleVideos'],
+              );
             }
           });
         } else {
@@ -858,7 +860,8 @@ class _UsersDashboardState extends State<UsersDashboard>
                 StreamBuilder<AppSettings>(
                   stream: SettingsService.instance.stream(),
                   builder: (context, snapshot) {
-                    if (!snapshot.hasData || snapshot.data!.whatsappNumber.isEmpty) {
+                    if (!snapshot.hasData ||
+                        snapshot.data!.whatsappNumber.isEmpty) {
                       return const Text(
                         'رقم الواتساب غير متوفر حالياً.',
                         style: TextStyle(color: Colors.red),
@@ -909,9 +912,9 @@ class _UsersDashboardState extends State<UsersDashboard>
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تم إرسال طلبك بنجاح.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('تم إرسال طلبك بنجاح.')));
       }
     } catch (e) {
       if (mounted) {

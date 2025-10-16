@@ -516,14 +516,8 @@ class _AddVideoDialogState extends State<AddVideoDialog> {
         DropdownButtonFormField<String>(
           initialValue: _videoType,
           items: const [
-            DropdownMenuItem(
-              value: 'free',
-              child: Text('مجاني'),
-            ),
-            DropdownMenuItem(
-              value: 'paid',
-              child: Text('مدفوع'),
-            ),
+            DropdownMenuItem(value: 'free', child: Text('مجاني')),
+            DropdownMenuItem(value: 'paid', child: Text('طلب مشاهدة')),
           ],
           onChanged: (value) {
             if (value != null) {
