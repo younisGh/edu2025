@@ -110,21 +110,17 @@ class _UsersDashboardState extends State<UsersDashboard>
     final isMobile = screenWidth < 600;
     return GestureDetector(
       onTap: () {
-        if (videoType == 'paid' && !_accessibleVideos.contains(videoId)) {
-          _showRequestAccessDialog(videoId, title);
-        } else {
-          // Increment views only when the video is played
-          EngagementService.instance.incrementViews(videoUrl);
-          Navigator.pushNamed(
-            context,
-            '/run_videos',
-            arguments: {
-              'title': title,
-              'videoUrl': videoUrl,
-              'description': description,
-            },
-          );
-        }
+        // Allow opening all videos and increment views
+        EngagementService.instance.incrementViews(videoUrl);
+        Navigator.pushNamed(
+          context,
+          '/run_videos',
+          arguments: {
+            'title': title,
+            'videoUrl': videoUrl,
+            'description': description,
+          },
+        );
       },
       child: Card(
         elevation: 0,
@@ -205,31 +201,6 @@ class _UsersDashboardState extends State<UsersDashboard>
                             },
                           ),
                         ],
-                      ),
-                    ),
-                  ),
-                  // Top-right: Video type badge
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: videoType == 'paid'
-                            ? Colors.amber.shade700
-                            : Colors.green.shade600,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        videoType == 'paid' ? 'طلب مشاهدة' : 'مجاني',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
                       ),
                     ),
                   ),
